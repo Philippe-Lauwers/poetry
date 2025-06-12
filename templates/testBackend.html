@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Poem Generator</title>
+  </head>
+  <body>
+    <h1>Write a Poem</h1>
+    <form id="poemForm">
+      <label>
+        Language:
+        <input name="lang" value="EN">
+      </label>
+      <label>
+        Form:
+        <input name="form" value="sonnet">
+      </label>
+      <label>
+        NMF Dimension:
+        <input name="nmfDim" value="random">
+      </label>
+      <button type="submit">Generate</button>
+    </form>
+
+    <h2>Your Poem</h2>
+    <pre id="output" style="white-space: pre-wrap; border: 1px solid #ccc; padding: 1em;"></pre>
+
+    <script>
+      document
+        .getElementById('poemForm')
+        .addEventListener('submit', async function(e) {
+          e.preventDefault();                                         // prevents refresh
+          const params = new URLSearchParams(new FormData(this));
+          const res    = await fetch('/write?' + params);
+          const json   = await res.json();
+          document.getElementById('output').textContent = ''; // clear previous output
+          document.getElementById('output').textContent = formatPoem(json.poem);
+        });
+      function formatPoem(poem) {
+        let txt='';
+        poem.stanzas.forEach((stanza, stanzaIndex) => {
+          stanza.verses.forEach((verse, verseIndex) => {
+            txt += verse.text
+            if (stanzaIndex < poem.stanzas.length - 1 || verseIndex < stanza.verses.length - 1) {;
+              txt += '\n';
+            }
+          });
+          if (stanzaIndex < poem.stanzas.length - 1) {
+            txt += '\n\n';
+            }
+        });
+        return txt;
+      }
+    </script>
+  </body>
+</html>
