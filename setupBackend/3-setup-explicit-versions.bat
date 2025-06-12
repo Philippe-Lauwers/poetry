@@ -163,7 +163,7 @@ GOTO :EOF
     CALL :CleanPackageName "!PACKAGE!" PACKAGE_CLEAN_NAME
     SET "TMP_NAME=!PACKAGE_CLEAN_NAME!"
     SET "TMP_URL=!URL!"
-    CALL :LogonlyMessage "   - Package !TMP_NAME! has additional index url !TMP_URL!"
+    CALL :LogonlyMessage "   - Package '!TMP_NAME!' has additional index url '!TMP_URL!'"
     ENDLOCAL & CALL SET "URL_%TMP_NAME%=%TMP_URL%"
     GOTO :EOF
 

@@ -11,7 +11,7 @@ filelock==3.18.0
 Flask==3.1.1
 fsspec==2025.5.1
 future==1.0.0
-grpcio==1.72.1
+grpcio==1.73.0
 h2
 hpack
 hyperframe
