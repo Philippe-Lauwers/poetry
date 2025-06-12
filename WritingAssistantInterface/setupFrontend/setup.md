@@ -2,8 +2,8 @@ The yaml and txt files include an overview of the package versions used in this 
 
 # Top level
 
-* WritingAssistantBackend-env-top-level.yml contains the packages that can be installed from conda-forge.
-* WritingAssistantBackend-pip-top-level.pip contains the packages that can be installed with pip.
+* WritingAssistantInterface-env-top-level.yml contains the packages that can be installed from conda-forge.
+* WritingAssistantInterface-pip-top-level.pip contains the packages that can be installed with pip.
 
 Both files contain top-level packages; dependencies are not 
 included. The files can be used to create a conda environment by running:
@@ -19,8 +19,8 @@ Exporting the environment to a file can be done with:
 This script will create yaml file that contains all packages installed from conda-forge and pip, including their dependencies.
 For the environment that is created from the above mentioned files, the export can be found in:
 
-* WritingAssistantBackend-env-explicit.yml
-* WritingAssistantBackend-pip-explicit.yml
+* WritingAssistantInterface-env-explicit.yml
+* WritingAssistantInterface-pip-explicit.yml
 
 # Explicit
 
