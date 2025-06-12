@@ -38,10 +38,10 @@
         });
       function formatPoem(poem) {
         let txt='';
-        poem.stanzas.forEach((stanza, stanzaIndex) => {
-          stanza.verses.forEach((verse, verseIndex) => {
-            txt += verse.text
-            if (stanzaIndex < poem.stanzas.length - 1 || verseIndex < stanza.verses.length - 1) {;
+        poem.stanzas.forEach((s, stanzaIndex) => {
+          s.stanza.verses.forEach((v, verseIndex) => {
+            txt += v.verse.text
+            if (stanzaIndex < poem.stanzas.length - 1 || verseIndex < s.stanza.verses.length - 1) {;
               txt += '\n';
             }
           });

@@ -63,7 +63,9 @@ class Stanza:
     def to_dict(self):
         # Return a dictionary representation of the stanza, c
         return {
-            "verses": [v.to_dict() for v in self.verses]
+            "stanza": {
+                "verses": [v.to_dict() for v in self.verses]
+            }
         }
 
 
@@ -78,5 +80,7 @@ class Verse:
 
     def to_dict(self):
         return {
-            "text":self.words
+            "verse": {
+                "text":self.words
+            }
         }
