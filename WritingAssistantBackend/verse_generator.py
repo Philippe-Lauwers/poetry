@@ -73,7 +73,6 @@ class VerseGenerator:
         src_lengths_init = src_lengths
         memory_bank_init = memory_bank
         enc_states_init = enc_states
-
         for n_batch in range(self.n_batches_decoder):
             #initialize decoder with encoder states
             self.model.decoder.init_state(src_init, memory_bank_init, enc_states_init)
@@ -119,23 +118,19 @@ class VerseGenerator:
                 else:
                     attn = None
                 log_probs = self.model.generator(dec_out.squeeze(0))
-
                 if step == 0 and rhymePrior is not None:
                     decode_strategy.advance(log_probs, attn, prior=rhymePrior_batch)
                 elif nmfPrior is not None:
                     decode_strategy.advance(log_probs, attn, prior=nmfPrior_batch)
                 else:
                     decode_strategy.advance(log_probs, attn)
-
                 any_finished = decode_strategy.is_finished.any()
                 if any_finished:
                     decode_strategy.update_finished()
 
                     if decode_strategy.done:
                         break
-                        
                 select_indices = decode_strategy.select_indices
-
                 if any_finished:
                     if isinstance(memory_bank, tuple):
                         memory_bank = tuple(x.index_select(1, select_indices)
@@ -149,7 +144,6 @@ class VerseGenerator:
                     #if any finished need to update nmfprior
                     if nmfPrior is not None:
                         nmfPrior_batch = nmfPrior.repeat(len(select_indices), 1)
-                    
 
                     self.model.decoder.map_state(
                         lambda state, dim: state.index_select(dim, select_indices))
@@ -164,4 +158,5 @@ class VerseGenerator:
             wsent.reverse()
             allSents.append(wsent)
         allScores = list(results['scores'])
+
         return allSents, allScores

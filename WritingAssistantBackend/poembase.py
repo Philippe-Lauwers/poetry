@@ -15,6 +15,8 @@ import codecs
 import warnings
 from functools import reduce
 import copy
+
+import poem
 from poemutils import count_syllables, hmean
 from pprint import pprint
 import onmt
@@ -24,12 +26,13 @@ import json
 import warnings
 
 from verse_generator import VerseGenerator
+from poem import Poem, Stanza, Verse # container to store the output in a hierarchy of Poem>>Stanza>>Verse objects
 
 warnings.filterwarnings("ignore")
 
 class PoemBase:
 
-    def __init__(self, form, config):
+    def __init__(self, config):
 
         self.structureDict = {'sonnet':
                               ('a','b','b','a', '',
@@ -48,8 +51,6 @@ class PoemBase:
                                'g', 'a', 'h', 'c'),
                           }
 
-        self.form = form
-
         self.initializeConfig(config)
         self.loadRhymeDictionary()
         self.loadNMFData()
@@ -59,7 +60,7 @@ class PoemBase:
         self.loadVocabulary()
 
         self.ngramModel = kenlm.Model(self.NGRAM_FILE)
-        
+
         if not os.path.exists('log'):
             os.makedirs('log')
         logfile = 'log/poem_' + datetime.now().strftime("%Y%m%d")
@@ -108,14 +109,29 @@ class PoemBase:
         self.i2w = self.generator.vocab.itos
         self.w2i = self.generator.vocab.stoi
 
-    def write(self, constraints=('rhyme'), nmfDim=False):
+
+    def write(self, constraints=('rhyme'), form='sonnet', nmfDim=False):
+        self.form = form
         self.blacklist_words = set()
         self.blacklist = []
         self.previous_sent = None
+
+        self.poemContainer = Poem()
+        self.poemContainer.form = form
+        self.poemContainer.nmfDim = nmfDim
+
         if constraints == ('rhyme'):
             self.writeRhyme(nmfDim)
 
+        print(self.poemContainer.to_dict())
+
+        return (self.poemContainer.to_dict())
+
     def writeRhyme(self, nmfDim):
+        # Flag to indicate whether a new stanza should be added,
+        # set to true when a ' ' is encountered in the rhyme structure
+        addNewStanza = False
+
         rhymeStructure = self.getRhymeStructure()
         if nmfDim == 'random':
             nmfDim = random.randint(0,self.W.shape[1] - 1)
@@ -137,6 +153,15 @@ class PoemBase:
                     print('err', e)
                     continue
                 else:
+                    # adds the generated text to the poemContainer
+                    if not self.poemContainer.stanzas or addNewStanza:
+                        # If there is no stanza yet
+                        #   or a ' ' was encountered in the rhyme structure before generating the verse
+                        # -> add a new stanza to the poemContainer
+                        self.poemContainer.addStanza()
+                        addNewStanza = False
+                    self.poemContainer.stanzas[-1].addVerse(' '.join(words))
+                    # writes the generated verse to stdout and log
                     sys.stdout.write(' '.join(words) + '\n')
                     self.log.write(' '.join(words) + '\n')
                     try:
@@ -151,6 +176,8 @@ class PoemBase:
                         print('err blacklist index', e2)
                     self.previous_sent = words
             else:
+                # Writes an empty line for a ' ' in the rhyme structure
+                addNewStanza = True
                 sys.stdout.write('\n')
                 self.log.write('\n')
         self.signature()
@@ -176,7 +203,6 @@ class PoemBase:
         allEncDecScores = []
 
         allCandidates, allProbScores = self.generator.generateCandidates(previous=previous,rhymePrior=rhymePrior, nmfPrior=nmfPrior)
-
         ngramScores = []
         for ncand, candidate in enumerate(allCandidates):
             try:
@@ -272,3 +298,12 @@ class PoemBase:
         NMFTop = np.max(np.max(self.W[:,dimList], axis=0))
         NMFScore = self.computeNMFScore(words, dimList)
         return NMFScore / NMFTop
+
+    # For retaining an instance of PoemBase in cache (for each server process)
+    _poembase_instance = None
+    def get_poembase(self, form,config):
+        #returns a PoemBase object, creating one if necessary
+        global _poembase_instance
+        if _poembase_instance is None:
+            _poembase_instance = PoemBase(form, config)
+        return self

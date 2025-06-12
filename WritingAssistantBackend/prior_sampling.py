@@ -200,7 +200,6 @@ class PriorSampling(DecodeStrategy):
                 to 1.)
             attn (FloatTensor): Shaped ``(1, B, inp_seq_len)``.
         """
-
         self.ensure_min_length(log_probs)
         if self.block_ngram_repeat:
             self.block_ngram_repeats(log_probs)
@@ -214,7 +213,6 @@ class PriorSampling(DecodeStrategy):
             default_probs_log[default_probs_log == float('-inf')] = -1e20
             vector_entropies = -torch.sum(default_probs * default_probs_log, 1, keepdim=True)
             log_probs = torch.where(vector_entropies < self.entropy_threshold, default_log_probs, prior_log_probs)
-            
         topk_ids, self.topk_scores = sample_with_temperature_default_logprob(
             log_probs, default_log_probs, self.sampling_temp, self.keep_topk)
         self.is_finished = topk_ids.eq(self.eos)
