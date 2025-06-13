@@ -7,4 +7,5 @@ channels:
   - https://repo.anaconda.com/pkgs/msys2
 dependencies:
   - flask
+  - flask-cors
   - jinja2

@@ -123,8 +123,6 @@ class PoemBase:
         if constraints == ('rhyme'):
             self.writeRhyme(nmfDim)
 
-        print(self.poemContainer.to_dict())
-
         return (self.poemContainer.to_dict())
 
     def writeRhyme(self, nmfDim):

@@ -1,3 +1,7 @@
 # ignore all files in data/ except NOTE
-data/*
-!data/NOTE
+WritingAssistantBackend/data/*
+WritingAssistantBackend/setupBackend/logs/*
+!WritingAssistantBackend/data/NOTE
+WritingAssistantBackend/StartFlask.bat
+
+WritingAssistantInterface/setupFrontend/logs/*

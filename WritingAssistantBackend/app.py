@@ -1,9 +1,12 @@
 from flask import Flask, request, jsonify, render_template
+from flask_cors import CORS
 from torch.distributed import rendezvous
-
 from poem_from_cache import get_poem
 
 app = Flask(__name__)
+# Allow requests coming from your frontend at localhost:5050
+CORS(app, resources={r"/write": {"origins": "http://localhost:5000"}})  # allow client → backend
+
 
 
 @app.route('/write', methods=['GET','POST'])
@@ -31,4 +34,4 @@ def index():
 
 if __name__ == '__main__':
 #    app.run(debug=False)
-    app.run(debug=True, use_reloader=True)
+    app.run(port=5050, debug=True, use_reloader=True)

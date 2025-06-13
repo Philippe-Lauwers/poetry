@@ -1,0 +1,11 @@
+blinker
+click
+colorama
+Flask
+flask-cors
+importlib_metadata
+itsdangerous
+Jinja2
+MarkupSafe
+Werkzeug
+zipp

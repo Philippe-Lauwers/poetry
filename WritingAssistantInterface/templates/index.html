@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Poem Generator</title>
+  </head>
+  <body>
+    <h1>Write a Poem</h1>
+    <form id="poemForm">
+      <label>
+        Language:
+        <input name="lang" value="EN">
+      </label>
+      <label>
+        Form:
+        <input name="form" value="sonnet">
+      </label>
+      <label>
+        NMF Dimension:
+        <input name="nmfDim" value="random">
+      </label>
+      <button type="submit">Generate</button>
+    </form>
+
+    <h2>Your Poem</h2>
+    <pre id="output" style="white-space: pre-wrap; border: 1px solid #ccc; padding: 1em;"></pre>
+
+    <script>
+      const form = document.getElementById('poemForm');
+      form.addEventListener('submit', async e => {
+        e.preventDefault();
+        const data = Object.fromEntries(new FormData(form).entries());
+
+        // 1) Log the submission on your frontend Python
+        await fetch('/log', {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify(data)
+        });
+
+        // 2) Request generation (proxied to backend)
+        const gen = await fetch('/generate', {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify(data)
+        });
+        const json = await gen.json();
+
+        // 3) Display
+        document.getElementById('output').textContent =
+          json.poem ? formatPoem(json.poem) : 'Error';
+      });
+
+      function formatPoem(poem) {
+        let txt='';
+        poem.stanzas.forEach((s, stanzaIndex) => {
+          s.stanza.verses.forEach((v, verseIndex) => {
+            txt += v.verse.text
+            if (stanzaIndex < poem.stanzas.length - 1 || verseIndex < s.stanza.verses.length - 1) {;
+              txt += '\n';
+            }
+          });
+          if (stanzaIndex < poem.stanzas.length - 1) {
+            txt += '\n\n';
+            }
+        });
+        return txt;
+      }
+    </script>
+  </body>
+</html>
