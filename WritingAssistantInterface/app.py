@@ -1,13 +1,20 @@
-from flask import Flask, send_from_directory, request, jsonify
+from flask import Flask, render_template, request, jsonify
 import requests
+import os
 
-app = Flask(__name__, template_folder='templates')
+BASE = os.path.dirname(os.path.abspath(__file__))
 
-BACKEND_URL = 'http://localhost:5050'   # your LM server
+app = Flask(
+  __name__,
+  static_folder=os.path.join(BASE, 'static'),
+  template_folder=os.path.join(BASE, 'templates'),
+)
+
+BACKEND_URL = 'http://localhost:5050'
 
 @app.route('/')
 def home():
-    return send_from_directory('templates', 'index.html')
+    return render_template('index.html')
 
 @app.route('/generate', methods=['POST'])
 def generate():

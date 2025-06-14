@@ -1,0 +1,41 @@
+/* =============== 1.  GENERAL RESET FOR THE SANDBOX =============== */
+#sandbox {
+    background: #ffffff; /* white “canvas” */
+    padding: 1rem;
+    box-sizing: border-box; /* keep padding inside the width */
+}
+
+/* =============== 2.  STANZA LAYOUT (50 % OF WINDOW WIDTH) =============== */
+.stanza-wrapper {
+    width: 50%; /* half the viewport width            */
+    max-width: 100%; /* never overflow the sandbox          */
+    margin-bottom: 0.90rem; /* spacing between stanzas             */
+    box-sizing: border-box;
+}
+
+/* =============== 3.  VERSE WRAPPER & FOCUS HIGHLIGHT =============== */
+.verse-wrapper {
+    /* Layout */
+    display: flex; /* put input (and later buttons) in a row */
+    align-items: center;
+    gap: 0.5rem; /* space reserved for future buttons     */
+    position: relative;
+}
+
+/* =============== 4.  THE INPUT FIELD ITSELF =============== */
+.verse {
+    flex: 1 1 auto; /* ← this makes it grow to fill wrapper */
+    min-width: 0; /* lets long text shrink gracefully      */
+    font-size: 1rem;
+    box-sizing: border-box; /* include padding inside width         */
+    border: none;
+    padding: 0.2rem 0.2rem 0.3rem 0.2rem; /* space inside the input field          */
+    /* Smooth focus highlight */
+    transition: background 0.2s, border 0.2s;
+}
+/* Light-grey highlight when *verse* gets focus */
+.verse:focus {
+    outline: 1px solid #dddddd;
+    background: #f3f3f3;
+    border-radius: 4px; /* rounded corners                       */
+}

@@ -1,0 +1,60 @@
+/* Stylesheet that controls the general layout of the Writing Assistant Interface */
+
+:root {
+    --prussian: #003153; /* Prussian blue color */
+}
+
+/* Overall container uses column direction */
+.container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+/* Top pane (header) */
+.top-pane {
+    background: #f5f5f5;
+    border-bottom: 2px solid var(--prussian);
+    padding: 1rem;
+    flex: 0 0 auto; /* fixed height based on content or padding */
+}
+
+/* Bottom area fills remaining space */
+.bottom-pane {
+    display: flex; /* side-by-side children */
+    flex: 1 1 auto;
+    min-height: 0; /* grow to fill the rest of the height */
+    min-height: 0; /* allow children to scroll if needed */
+}
+
+/* Left pane */
+.left-pane {
+    background: #f5f5f5;
+    border-right: 2px solid var(--prussian);
+    padding: 1rem;
+    width: 30%; /* or flex: 0 0 30%; */
+    overflow: auto; /* scroll if content overflows */
+}
+
+/* Right pane */
+.right-pane {
+    background: #ffffff;
+    padding: 1rem;
+    flex: 1 1 auto; /* take remaining width */
+    overflow: auto;
+}
+
+html, body {
+    height: 100%;
+    margin: 0;
+}
+
+/* kill default body-margin */
+#poemForm, .container {
+    height: 100%;
+}
+
+/* 100 % all the way down   */
+div {
+    margin: 0;
+}

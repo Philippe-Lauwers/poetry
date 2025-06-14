@@ -178,7 +178,7 @@ class PoemBase:
                 addNewStanza = True
                 sys.stdout.write('\n')
                 self.log.write('\n')
-        self.signature()
+        # self.signature()
         self.log.write('\n\n')
         self.log.flush()
 

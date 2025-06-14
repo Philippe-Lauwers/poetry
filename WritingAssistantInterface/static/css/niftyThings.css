@@ -1,0 +1,25 @@
+
+.inline-msg {
+  /* make it cover the wrapper 1:1 */
+  position: absolute;
+  inset: 0;                         /* shorthand for top:0 right:0 bottom:0 left:0 */
+  width: 100%;                      /* not strictly needed because inset:0 does it */
+  height: 100%;                     /* likewise */
+
+  display: flex;                    /* center the text */
+  align-items: center;
+  justify-content: center;
+
+  background: rgba(255, 249, 196, 0.95); /* light yellow */
+  border: 1px solid #ffe58f;
+  border-radius: 4px;
+  color: #664d03;
+  font-size: 0.9em;
+
+  pointer-events: none;             /* clicks still reach the input */
+  opacity: 0;                       /* start hidden */
+  transition: opacity 200ms ease;
+}
+.inline-msg.show {                /* add/remove this class in JS */
+  opacity: 1;
+}
