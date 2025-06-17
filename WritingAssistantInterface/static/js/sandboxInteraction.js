@@ -1,5 +1,5 @@
 import {getRhymeScheme, setRhymeScheme} from './main.js';
-import {BaseNode, Poem, Stanza, VerseWrapper, Verse} from './sandbox.js';
+import {BaseNode, Poem, Stanza, VerseWrapper, Verse} from './sandboxAPI.js';
 import {flashMessage} from './niftyThings.js';
 
 /**

@@ -1,4 +1,4 @@
-import {initSandbox, sandboxClick, verseKeydown, highlightIfEmpty} from './interactionInSandbox.js';
+import {initSandbox, sandboxClick, verseKeydown, highlightIfEmpty} from './sandboxInteraction.js';
 
 export function getRhymeScheme() {
     return _poemDesc.poem.rhymeScheme;
