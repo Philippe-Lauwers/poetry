@@ -1,3 +1,5 @@
+import {receivePoem} from './interactionInSandbox.js';
+
     const form = document.getElementById('poemForm');
     form.addEventListener('submit', async e => {
       e.preventDefault();
@@ -20,6 +22,6 @@
 
       // 3) Display
       document.getElementById('sandbox').textContent =
-        json.poem ? formatPoem(json.poem) : 'Error';
+        json.poem ? receivePoem(json.poem) : 'Error';
     });
 

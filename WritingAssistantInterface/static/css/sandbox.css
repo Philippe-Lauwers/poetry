@@ -3,6 +3,8 @@
     background: #ffffff; /* white “canvas” */
     padding: 1rem;
     box-sizing: border-box; /* keep padding inside the width */
+    flex: 1 1 auto;
+    overflow: auto;
 }
 
 /* =============== 2.  STANZA LAYOUT (50 % OF WINDOW WIDTH) =============== */
@@ -20,6 +22,7 @@
     align-items: center;
     gap: 0.5rem; /* space reserved for future buttons     */
     position: relative;
+
 }
 
 /* =============== 4.  THE INPUT FIELD ITSELF =============== */
@@ -32,10 +35,15 @@
     padding: 0.2rem 0.2rem 0.3rem 0.2rem; /* space inside the input field          */
     /* Smooth focus highlight */
     transition: background 0.2s, border 0.2s;
+    margin: 0.1rem;
+}
+.verseEmpty{
+    outline: 1px solid var(--borderColor);
+    border-radius:4px;
 }
 /* Light-grey highlight when *verse* gets focus */
 .verse:focus {
-    outline: 1px solid #dddddd;
-    background: #f3f3f3;
+    outline: 1px solid var(--borderColor);
+    background: #f5f5f5;
     border-radius: 4px; /* rounded corners                       */
 }

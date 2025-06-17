@@ -1,71 +1,45 @@
 <!doctype html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="utf-8">
     <title>Poem Generator</title>
-  </head>
-  <body>
-    <h1>Write a Poem</h1>
-    <form id="poemForm">
-      <label>
-        Language:
-        <input name="lang" value="EN">
-      </label>
-      <label>
-        Form:
-        <input name="form" value="sonnet">
-      </label>
-      <label>
-        NMF Dimension:
-        <input name="nmfDim" value="random">
-      </label>
-      <button type="submit">Generate</button>
-    </form>
+    <link rel="stylesheet" href="/static/css/layout.css">
+    <link rel="stylesheet" href="/static/css/sandbox.css">
+    <link rel="stylesheet" href="/static/css/niftyThings.css">
+</head>
+<body>
+<form id="poemForm">
+    <div class="container">
+        <div class="top-pane">
+            <h1>Poem factory</h1>
+            <button type="submit">Generate</button>
+        </div>
+        <div class="bottom-pane">
+            <div class="left-pane">
+                <h2>Keyword Pane</h2>
+                <label>
+                    Language:
+                    <input name="lang" value="EN">
+                </label><br/>
+                <label>
+                    Form:
+                    <input name="form" value="shorter">
+                </label><br/>
+                <label>
+                    NMF Dimension:
+                    <input name="nmfDim" value="random">
+                </label>
+            </div>
+            <div class="right-pane" id="sandbox" onLoad="document.getElementById('output').addField();">
 
-    <h2>Your Poem</h2>
-    <pre id="output" style="white-space: pre-wrap; border: 1px solid #ccc; padding: 1em;"></pre>
+            </div>
+        </div>
+    </div>
+</form>
 
-    <script>
-      const form = document.getElementById('poemForm');
-      form.addEventListener('submit', async e => {
-        e.preventDefault();
-        const data = Object.fromEntries(new FormData(form).entries());
-
-        // 1) Log the submission on your frontend Python
-        await fetch('/log', {
-          method: 'POST',
-          headers: {'Content-Type':'application/json'},
-          body: JSON.stringify(data)
-        });
-
-        // 2) Request generation (proxied to backend)
-        const gen = await fetch('/generate', {
-          method: 'POST',
-          headers: {'Content-Type':'application/json'},
-          body: JSON.stringify(data)
-        });
-        const json = await gen.json();
-
-        // 3) Display
-        document.getElementById('output').textContent =
-          json.poem ? formatPoem(json.poem) : 'Error';
-      });
-
-      function formatPoem(poem) {
-        let txt='';
-        poem.stanzas.forEach((s, stanzaIndex) => {
-          s.stanza.verses.forEach((v, verseIndex) => {
-            txt += v.verse.text
-            if (stanzaIndex < poem.stanzas.length - 1 || verseIndex < s.stanza.verses.length - 1) {;
-              txt += '\n';
-            }
-          });
-          if (stanzaIndex < poem.stanzas.length - 1) {
-            txt += '\n\n';
-            }
-        });
-        return txt;
-      }
-    </script>
-  </body>
+<script type = "module" defer src="{{ url_for('static', filename='js/main.js') }}"></script>
+<script type = "module" src="{{ url_for('static',filename='js/linkUserInteractionToBackend.js') }}"></script>
+<script type = "module" src="{{ url_for('static',filename='js/sandbox.js') }}"></script>
+<script type = "module" src="{{ url_for('static',filename='js/niftyThings.js') }}"></script>
+</body>
 </html>

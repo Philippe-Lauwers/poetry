@@ -1,7 +1,7 @@
 /* Stylesheet that controls the general layout of the Writing Assistant Interface */
 
 :root {
-    --prussian: #003153; /* Prussian blue color */
+    --borderColor: #003153; /* borderColor blue color */
 }
 
 /* Overall container uses column direction */
@@ -9,14 +9,20 @@
     display: flex;
     flex-direction: column;
     height: 100%;
+    background: #e6f4ff;
 }
 
 /* Top pane (header) */
 .top-pane {
     background: #f5f5f5;
-    border-bottom: 2px solid var(--prussian);
     padding: 1rem;
     flex: 0 0 auto; /* fixed height based on content or padding */
+
+    /* appearance of this pane */
+    margin: 0.4rem 0.4rem 0.2rem 0.4rem;
+    /* border-bottom: 2px solid var(--borderColor); */
+    border: 1px solid var(--borderColor);
+    border-radius: 4px;
 }
 
 /* Bottom area fills remaining space */
@@ -29,19 +35,31 @@
 
 /* Left pane */
 .left-pane {
-    background: #f5f5f5;
-    border-right: 2px solid var(--prussian);
+    background: #ffffff;
     padding: 1rem;
     width: 30%; /* or flex: 0 0 30%; */
     overflow: auto; /* scroll if content overflows */
+
+    /* appearance of this pane */
+    margin: 0.2rem 0.2rem 0.2rem 0.4rem;
+    /* border-right: 2px solid var(--borderColor); */
+    border: 1px solid var(--borderColor);
+    border-radius: 4px;
 }
 
-/* Right pane */
+/* Right pane, handled by #sandbox in sandbox.css
 .right-pane {
     background: #ffffff;
     padding: 1rem;
-    flex: 1 1 auto; /* take remaining width */
+    flex: 1 1 auto;
     overflow: auto;
+} */
+#sandbox {
+    /* appearance of this pane */
+    margin: 0.2rem 0.4rem 0.2rem 0.2rem;
+    /* border-right: 2px solid var(--borderColor); */
+    border: 1px solid var(--borderColor);
+    border-radius: 4px;
 }
 
 html, body {
@@ -57,4 +75,8 @@ html, body {
 /* 100 % all the way down   */
 div {
     margin: 0;
+}
+
+input {
+    caret-color: var(--borderColor);
 }
