@@ -1,4 +1,4 @@
-from poembase import PoemBase
+from .poembase import PoemBase
 
 #Mapping of language codes to configuration files
 LANGUAGE_CONFIG = {

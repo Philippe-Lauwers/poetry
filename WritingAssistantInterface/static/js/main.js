@@ -3,11 +3,9 @@ import {initSandbox, sandboxClick, verseKeydown, highlightIfEmpty} from './sandb
 export function getRhymeScheme() {
     return _poemDesc.poem.rhymeScheme;
 }
-
 export function setRhymeScheme(s) {
     _poemDesc.poem.rhymeScheme = s;
 }
-
 // for now hard-coded, will be replaced by a more dynamic approach later
 function readRhymeScheme(form) {
     switch (form) {

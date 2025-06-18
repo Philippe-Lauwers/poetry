@@ -1,4 +1,4 @@
-import {receivePoem} from './interactionInSandbox.js';
+import {receivePoem} from './sandboxInteraction.js';
 
     const form = document.getElementById('poemForm');
     form.addEventListener('submit', async e => {

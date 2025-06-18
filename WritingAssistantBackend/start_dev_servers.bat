@@ -2,6 +2,9 @@
 REM — Base folder where this script lives
 set "BASEDIR=%~dp0"
 
+REM Ensure Poetry creates in-project venvs from now on
+poetry config virtualenvs.in-project true
+
 REM before starting backand server:
 REM poetry env use "[full path to]\python310\python.exe"
 REM >poetry add https://download.pytorch.org/whl/cu118/torch-2.6.0%2Bcu118-cp310-cp310-win_amd64.whl

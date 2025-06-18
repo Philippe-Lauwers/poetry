@@ -44,3 +44,5 @@ dependencies:
   - xz=5.6.4
   - zlib=1.2.13
   - scipy
+  - python-dotenv=1.1.0
+  - psycopg2-binary=2.9.10

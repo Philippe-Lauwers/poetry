@@ -20,6 +20,7 @@ dependencies:
   - hyperframe=6.1.0
   - idna=3.7
   - intel-openmp=2023.1.0
+  - krb5=1.20.1
   - libblas=3.9.0
   - libcblas=3.9.0
   - libffi=3.4.4
@@ -28,6 +29,7 @@ dependencies:
   - liblapack=3.9.0
   - liblzma=5.6.4
   - liblzma-devel=5.6.4
+  - libpq=17.4
   - libsqlite=3.45.3
   - libxml2=2.12.7
   - libzlib=1.2.13
@@ -45,10 +47,13 @@ dependencies:
   - numpy-base=2.0.1
   - openssl=3.1.0
   - pip=25.0.1
+  - psycopg2=2.9.9
+  - psycopg2-binary=2.9.9
   - pthreads-win32=2.9.1
   - pycparser=2.22
   - pysocks=1.7.1
   - python=3.10.16
+  - python-dotenv=1.1.0
   - python_abi=3.10
   - requests=2.32.3
   - scipy=1.15.2

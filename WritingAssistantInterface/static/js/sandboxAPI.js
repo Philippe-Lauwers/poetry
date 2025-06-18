@@ -2,7 +2,6 @@
  *  Tiny DOM-tree OO wrapper for a poem editor
  *  Classes: BaseNode → Poem → Stanza → VerseWrapper → Verse
  * ========================================================================== */
-import {getRhymeScheme} from './main.js';
 
 export class BaseNode {
     /** All node instances are stored here so that we can jump

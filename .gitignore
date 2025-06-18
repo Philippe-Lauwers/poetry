@@ -1,7 +1,28 @@
 # ignore all files in data/ except NOTE
+
+#Datafiles, logs
 WritingAssistantBackend/data/*
-WritingAssistantBackend/setupBackend/logs/*
 !WritingAssistantBackend/data/NOTE
+
+
 WritingAssistantBackend/StartFlask.bat
 
-WritingAssistantInterface/setupFrontend/logs/*
+WritingAssistantBackend/setupBackend/logs/*
+WritingAssistantInterface/setupInterface/logs/*
+
+# Python bytecode
+__pycache__/
+*.py[cod]
+
+# Alembic migrations cache (if any)
+WritingAssistantBackend/migrations/*
+!WritingAssistantBackend/migrations/versions/
+!WritingAssistantBackend/migrations/versions/*.py
+
+
+# Python bytecode
+__pycache__/
+*.pu[cod]
+
+# Local DB file
+*.db

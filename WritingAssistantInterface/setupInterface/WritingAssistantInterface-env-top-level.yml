@@ -8,4 +8,6 @@ channels:
 dependencies:
   - flask
   - flask-cors
-  - jinja2
+  - jinja2p
+  - python-dotenv
+  - psycopg2-binary

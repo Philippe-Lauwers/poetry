@@ -1,4 +1,4 @@
-import {BaseNode} from './sandbox.js';
+import {BaseNode} from './sandboxAPI.js';
 
 /** FUNCTIONALITY TO MAKE THE INTERFACE MORE PLEASANT */
 

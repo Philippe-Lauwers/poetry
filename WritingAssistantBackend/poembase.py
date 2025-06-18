@@ -16,8 +16,7 @@ import warnings
 from functools import reduce
 import copy
 
-import poem
-from poemutils import count_syllables, hmean
+from .poemutils import count_syllables, hmean
 from pprint import pprint
 import onmt
 import argparse
@@ -25,8 +24,8 @@ import torch
 import json
 import warnings
 
-from verse_generator import VerseGenerator
-from poem import Poem, Stanza, Verse # container to store the output in a hierarchy of Poem>>Stanza>>Verse objects
+from .verse_generator import VerseGenerator
+from .poem import Poem, Stanza, Verse # container to store the output in a hierarchy of Poem>>Stanza>>Verse objects
 
 warnings.filterwarnings("ignore")
 
