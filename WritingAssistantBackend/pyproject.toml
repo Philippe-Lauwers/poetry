@@ -21,6 +21,10 @@ dependencies = [
     "psycopg2-binary (>=2.9.10,<3.0.0)"
 ]
 
+[tool.poetry]
+packages = [
+  { include = "WritingAssistantBackend" }
+]
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]

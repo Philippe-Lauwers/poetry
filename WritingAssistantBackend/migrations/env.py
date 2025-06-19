@@ -1,3 +1,8 @@
+import os, sys
+# add the parent of the project folder so WritingAssistantBackend/ is importable
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+
+
 import logging
 from logging.config import fileConfig
 
@@ -22,6 +27,12 @@ def get_engine():
         # this works with Flask-SQLAlchemy>=3
         return current_app.extensions['migrate'].db.engine
 
+from flask import Flask
+app = Flask(__name__)
+from WritingAssistantBackend.app import app
+app.app_context().push()
+# … init code …
+
 
 def get_engine_url():
     try:
@@ -34,10 +45,12 @@ def get_engine_url():
 # add your model's MetaData object here
 # for 'autogenerate' support
 from WritingAssistantBackend.app import db
-import WritingAssistantBackend.dbModel   # ensure your models are registered
-vertarget_metadata = db.metadata
+import WritingAssistantBackend.dbModel  # ensure the models are registered
+
+target_metadata = db.metadata
 config.set_main_option('sqlalchemy.url', get_engine_url())
 target_db = current_app.extensions['migrate'].db
+
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
