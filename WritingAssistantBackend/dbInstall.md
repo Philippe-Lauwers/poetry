@@ -2,36 +2,45 @@ For this project we will be using SQLite.
 We follow this procedure to install/create the database
 
 ### **Create the database**
+
 #### adding packages
+
 * python-dotenv 1.1.0
 * psycopg2-binary 2.9.10
 * re-create environments with the scripts in the setup folder OR
 * update .toml and poetry.lock for both environments
-  * poetry add Flask Flask-SQLAlchemy Flask-Migrate python-dotenv psycopg2-binary
-  * poetry install --no-root
+    * poetry add Flask Flask-SQLAlchemy Flask-Migrate python-dotenv psycopg2-binary
+    * poetry install --no-root
+
 #### .env
+
 Create a .env file in the poetry folder:
 DATABASE_URL=sqlite:///poetry.db
+
 #### Create the database using flask-migrate
+
 Add the following to the .env file:
 FLASK_APP=app.py
 FLASK_ENV=development
 
-Now go to the WritingAssistantBackend folder and initialize the migrations folder with '**_poetry run flask --app app.py db init_**'
- (creates the migrations folder) and generate an initial schema with 
-'**_poetry run flask --app app.py db migrate -m "Initial schema"_**' and '**_poetry run flask db upgrade_**'
-to create poetry.db in the subfolder '**_instance_**'.
+Now, from your project root (where `pyproject.toml` lives), initialize and apply your initial migration:
 
-### Adding tables
-* Create a models.py file and import it in app.py (after initialisation of the database)
-* Generate a new migration with '**_poetry run flask --app app.py db migrate -m Add "table1, table2, ..."_**' (note: adding a column to a table = add column1 to table1)
-* Verify the auto-generated script in the new script in migrations/versions
-* Apply changes to the database with '**_poetry run flask --app app.py db upgrade_**'
+* Create the migrations folder and generate an initial schema (note: normally this is not needed as the migrations
+  folder and database versions are included in git:
+    * '"'**_poetry run alembic init migrations_**'"'
+* Generate an update script for the initial database from dbModel.py with
+    * 'poetry run alembic revision --autogenerate -m "Initial schema"'
+* Create the .db in the subfolder '**_instance_**' file with
+    * 'poetry run alembic upgrade head*'
 
-Use
-* **_poetry run flask --app app.py db migrate -m "Your message"_**
-* **_poetry run flask --app app.py db upgrade_**
-for each update cycle
+### Altering the model
+
+* Generate an update script with
+    * 'poetry run alembic revision --autogenerate -m "My changes"'
+      * examples: "Add [table], add [column] to [table]'
+* Upgrade the database with
+    * 'poetry run alembic upgrade head*'
+
 
 
 
