@@ -1,4 +1,4 @@
-from datetime import datetime # needed for timestamps
+from datetime import datetime, timezone  # needed for timestamps
 # point to the app.py file and import the db variable from there
 # circular import with app.py -> use .extensions instead
 from sqlalchemy.sql.schema import UniqueConstraint
@@ -27,13 +27,40 @@ class ZIP(db.Model):
 
 class Users(db.Model):
     __tablename__ = 'users'
+    __table_args__ = (db.PrimaryKeyConstraint('id', name='pk_users'),)
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(100), nullable=False)
 
 
+class ConfigurationCategories(db.Model):
+    __tablename__ = 'configurationCategories'
+    __table_args__ = (db.PrimaryKeyConstraint('id', name='pk_configurationCategories'),)
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    configurationCategory = db.Column(db.String(100), nullable=False)
+
+
+class ConfigurationParameters(db.Model):
+    __tablename__ = 'configurationParameters'
+    __table_args__ = (db.PrimaryKeyConstraint('id', name='pk_configurationParameters'),
+                      db.UniqueConstraint('poemLanguage_id', 'configurationCategory_id', 'parameter',
+                                          name='uq_actions_poemLanguage_category_parameter'),)
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    poemLanguage_id = db.Column(db.Integer, db.ForeignKey('poemLanguages.id',
+                                                          name='fk_configurationParameters_poemLanguage_id'),
+                                nullable=False)
+    configurationCategory_id = db.Column(db.Integer, db.ForeignKey('configurationCategories.id',
+                                                                   name='fk_configurationParameters_category_id'),
+                                         nullable=False)
+    parameter = db.Column(db.String(100), nullable=False)
+    value = db.Column(db.String(100), nullable=False)
+
+
 class PoemLanguages(db.Model):
     __tablename__ = 'poemLanguages'
+    __table_args__ = (db.PrimaryKeyConstraint('id', name='pk_poemLanguages'),)
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     language = db.Column(db.String(5), nullable=False)
@@ -42,6 +69,7 @@ class PoemLanguages(db.Model):
 # For defining the different types of poems. Rhymeschems are used to group the rhymescheme elements
 class RhymeSchemes(db.Model):
     __tablename__ = 'rhymeSchemes'
+    __table_args__ = (db.PrimaryKeyConstraint('id', name='pk_rhymeSchemes'),)
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     rhymeScheme = db.Column(db.String(50), nullable=False)
@@ -50,9 +78,14 @@ class RhymeSchemes(db.Model):
 # The elements in a rhymeScheme
 class RhymeSchemeElements(db.Model):
     __tablename__ = 'rhymeSchemeElements'
+    __table_args__ = (db.PrimaryKeyConstraint('id', name='pk_rhymeSchemeElements'),)
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    rhymeScheme_id = db.Column(db.Integer, db.ForeignKey('rhymeSchemes.id'), nullable=False)
+    rhymeScheme_id = db.Column(db.Integer, db.ForeignKey('rhymeSchemes.id',
+                                                         name='fk_rhymeSchemeElements_rhymeScheme_id'), nullable=False)
+    poemLanguage_id = db.Column(db.Integer, db.ForeignKey('poemLanguages.id',
+                                                          name='fk_rhymeSchemeElements_poemLanguage_id'),
+                                nullable=False)
     order = db.Column(db.Integer, nullable=False)
     rhymeSchemeElement = db.Column(db.String(1), nullable=False)
     rhyme = synonym('rhymeSchemeElement')
@@ -61,6 +94,7 @@ class RhymeSchemeElements(db.Model):
 # For defining the different themes for poems (will be loaded with the nmf data)
 class Themes(db.Model):
     __tablename__ = 'themes'
+    __table_args__ = (db.PrimaryKeyConstraint('id', name='pk_themes'),)
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     nmfDim = db.Column(db.Integer, nullable=False)
@@ -69,54 +103,72 @@ class Themes(db.Model):
 # Each theme has three describing words
 class ThemeDescriptors(db.Model):
     __tablename__ = 'themeDescriptors'
+    __table_args__ = (db.PrimaryKeyConstraint('id', name='pk_themeDescriptors'),)
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    theme_id = db.Column(db.Integer, db.ForeignKey('themes.id'), nullable=False)
+    theme_id = db.Column(db.Integer, db.ForeignKey('themes.id', name='fk_theme_descriptors_theme_id'), nullable=False)
+    poemLanguage_id = db.Column(db.Integer, db.ForeignKey('poemLanguages.id',
+                                                          name='fk_theme_descriptors_pomeLangugage_id'), nullable=False)
     order = db.Column(db.Integer, nullable=False)
     descriptor = db.Column(db.String(100), nullable=False)
 
 
+class ActionTypes(db.Model):
+    __tablename__ = 'actionTypes'
+    __table_args__ = (db.PrimaryKeyConstraint('id', name='pk_actionTypes'),)
+
+    __table_args__ = (db.UniqueConstraint('actionType', name='uq_actions_action'),)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    actionType = db.Column(db.String(100), nullable=False)
+
+
 class Actions(db.Model):
     __tablename__ = 'actions'
-    __table_args__ = (db.UniqueConstraint('action', name='uq_actions_action'),)
+
+    __table_args__ = (db.PrimaryKeyConstraint('id', name='pk_actions'),)
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    action = db.Column(db.String(100), nullable=False)
+    actionType_id = db.Column(db.String(100), db.ForeignKey('actionTypes.id', name='fk_actions_action_type'),
+                              nullable=False)
     timestamp = db.Column(db.DateTime,
                           nullable=False,
-                          default=datetime.utcnow,
+                          default=lambda: datetime.now(timezone.utc),
                           server_default=db.func.now())
-    UniqueConstraint('action')
 
 
 class Poems(db.Model):
     __tablename__ = 'poems'
+    __table_args__ = (db.PrimaryKeyConstraint('id', name='pk_poems'),)
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    poemLanguage_id = db.Column(db.Integer, db.ForeignKey('poemLanguages.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', name='fk_poems_user_id'), nullable=False)
+    poemLanguage_id = db.Column(db.Integer, db.ForeignKey('poemLanguages.id', name='fk_poems_poemLanguage_id'),
+                                nullable=False)
     language = synonym('poemLanguage_id')
-    theme = db.Column(db.Integer, db.ForeignKey('themes.id'), nullable=False)
-    action = db.Column(db.Integer, db.ForeignKey('actions.id'), nullable=False)
+    theme_id = db.Column(db.Integer, db.ForeignKey('themes.id', name='fk_poems_theme_id'), nullable=False)
+    action_id = db.Column(db.Integer, db.ForeignKey('actions.id', name='fk_poems_action_id'), nullable=False)
     status = db.Column(db.Integer, nullable=False)
     title = db.Column(db.String(1000), nullable=False)
 
 
 class Stanzas(db.Model):
     __tablename__ = 'stanzas'
+    __table_args__ = (db.PrimaryKeyConstraint('id', name='pk_stanzas'),)
+
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    poem_id = db.Column(db.Integer, db.ForeignKey('poems.id'), nullable=False)
-    action = db.Column(db.Integer, db.ForeignKey('actions.id'), nullable=False)
+    poem_id = db.Column(db.Integer, db.ForeignKey('poems.id', name='fk_stanzas_poem_id'), nullable=False)
+    action_id = db.Column(db.Integer, db.ForeignKey('actions.id', name='fk_stanzas_action_id'), nullable=False)
 
     order = db.Column(db.Integer, nullable=False)
 
 
 class Verses(db.Model):
     __tablename__ = 'verses'
+    __table_args__ = (db.PrimaryKeyConstraint('id', name='pk_verses'),)
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    stanza_id = db.Column(db.Integer, db.ForeignKey('stanzas.id'), nullable=False)
+    stanza_id = db.Column(db.Integer, db.ForeignKey('stanzas.id', name='fk_verses_stanza_id'), nullable=False)
+    action_id = db.Column(db.Integer, db.ForeignKey('actions.id', name='fk_verses_action_id'), nullable=False)
     order = db.Column(db.Integer, nullable=False)
-    action = db.Column(db.Integer, db.ForeignKey('actions.id'), nullable=False)
 
     status = db.Column(db.Integer, nullable=False)
     verse = db.Column(db.String(1000), nullable=False)
@@ -124,6 +176,7 @@ class Verses(db.Model):
 
 class Keywords(db.Model):
     __table_name__ = 'keywords'
+    __table_args__ = (db.PrimaryKeyConstraint('id', name='pk_keywords'),)
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    poem_id = db.Column(db.Integer, db.ForeignKey('poems.id'), nullable=False)
+    poem_id = db.Column(db.Integer, db.ForeignKey('poems.id', name='fk_keywords_poem_id'), nullable=False)
     keyword = db.Column(db.String(100), nullable=False)
