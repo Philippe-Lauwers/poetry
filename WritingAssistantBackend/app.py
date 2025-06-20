@@ -10,49 +10,34 @@ from .poem_from_cache import get_poem
 # from flask_migrate import Migrate
 from .extensions import db, migrate
 
-
-app = Flask(__name__)
-# Allow requests coming from your frontend at localhost:5050
-CORS(app, resources={r"/write": {"origins": "http://localhost:5000"}})  # allow client → backend
-
-# Handle to database
+# Read .env
 load_dotenv()  # reads .env and populates os.environ
-# This line tells SQLAlchemy where to find the  database:
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
-print("Using DATABASE_URL:", app.config['SQLALCHEMY_DATABASE_URI'])
-db.init_app(app)
-# Pass app and db to Migrate
-migrate.init_app(app, db)
-
-from .dbModel import Users, PoemLanguages, RhymeSchemes, RhymeSchemeElements, Themes, ThemeDescriptors, Actions, Poems, \
-    Stanzas, Verses
 
 
-@app.route('/write', methods=['GET', 'POST'])
-def write_poem():
-    # This endpoint writes a poem
-    # - retrieving the parameters
-    lang = request.args.get('lang', default='EN', type=str)
-    form = request.args.get('form', default='sonnet', type=str)
-    nmfDim = request.args.get('nmfDim', default='random', type=str)
-    try:
-        nmfDim = int(nmfDim)
-    except ValueError:
-        pass
+# creates a handle to the app with the values in .env unless otherwise specified
+def create_app(config_object=None):
+    app = Flask(__name__)
+    # 1) Load your config
 
-    print(f"Writing poem in {lang} with form {form} and nmfDim {nmfDim}")
+    app.config.from_object(config_object)
+    app.config.update(
+        SECRET_KEY=os.getenv('SECRET_KEY', 'you-will-want-to-change-this'),
+        SQLALCHEMY_DATABASE_URI=os.getenv('SQLALCHEMY_DATABASE_URI'),
+        SQLALCHEMY_TRACK_MODIFICATIONS=False,
+        DEBUG=os.getenv('FLASK_DEBUG', 'false').lower() in ('1', 'true', 'yes'),
+        # …any other env-driven settings…
+    )
+    # app.config['SQLALCHEMY_ECHO'] = True  # optionally see SQL logs
+    # 2) Initialize extensions
+    db.init_app(app)
+    migrate.init_app(app, db)
 
-    # - create the poem object (or get it from cache)
-    poem = get_poem(lang=lang)
-    text = poem.write(form=form, nmfDim=nmfDim)
-    return jsonify({'poem': text})
+    # 3) load routing from routes.py
+    from .routes import main_bp
+    app.register_blueprint(main_bp)
+
+    return app
 
 
-@app.route('/test')
-def index():
-    return render_template('testBackend.html')
-
-
-if __name__ == '__main__':
-    #    app.run(debug=False)
-    app.run(port=5050, debug=True, use_reloader=True)
+from .dbModel import *
+app = create_app()

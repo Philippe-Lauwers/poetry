@@ -1,36 +1,30 @@
 from flask import Flask, render_template, request, jsonify
 import requests
 import os
-# for database connetivity
 from dotenv import load_dotenv
-from flask_sqlalchemy import SQLAlchemy
+
+# for database connetivity
+# from flask_sqlalchemy import SQLAlchemy
+
+load_dotenv()
 
 BASE = os.path.dirname(os.path.abspath(__file__))
+BACKEND_URL = os.getenv("BACKEND_URL", "http://127.0.0.1:5050")
 
 app = Flask(
-  __name__,
-  static_folder=os.path.join(BASE, 'static'),
-  template_folder=os.path.join(BASE, 'templates'),
+    __name__,
+    static_folder=os.path.join(BASE, 'static'),
+    template_folder=os.path.join(BASE, 'templates'),
 )
+app.config['SECRET_KEY'] = os.getenv("SECRET_KEY", "abcdefghijklmnopqrstuvwxyz012345")
 
+from routes import main_bp
 
-@app.route('/')
-def home():
-    return render_template('index.html')
-
-@app.route('/generate', methods=['POST'])
-def generate():
-    # proxy form data to your backend /write
-    params = request.json
-    resp = requests.get(f"{BACKEND_URL}/write", params=params)
-    return jsonify(resp.json())
-
-@app.route('/log', methods=['POST'])
-def log():
-    data = request.json
-    # for now just print to console
-    print("FORM SUBMITTED:", data)
-    return '', 204
+app.register_blueprint(main_bp)
 
 if __name__ == '__main__':
-    app.run(port=5000, debug=True, use_reloader=False)
+    # Read INTERFACE_PORT from the environment, default to 5000
+    port = int(os.getenv("INTERFACE_PORT", 5000))
+    # (Optionally) allow binding to another host via INTERFACE_HOST
+    host = os.getenv("INTERFACE_HOST", "127.0.0.1")
+    app.run(host=host, port=port, debug=True, use_reloader=False)

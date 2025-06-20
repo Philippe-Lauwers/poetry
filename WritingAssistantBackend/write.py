@@ -1,12 +1,13 @@
-import sylvia
-#import time
-#start_time = time.time()
+from .sylvia import Poem
+
+# import time
+# start_time = time.time()
 
 
 # p = sylvia.Poem()
 # p.write()
 
-p = sylvia.Poem()
+p = Poem()
 p.write(nmfDim='random')
 
 # p = sylvia.Poem()
