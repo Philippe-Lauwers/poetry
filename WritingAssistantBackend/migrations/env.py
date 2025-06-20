@@ -14,12 +14,14 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..',
 # access to the values within the .ini file in use.
 config = context.config
 
+print("Alembic is loading INI from:", config.config_file_name)
+
 # Interpret the alembic .ini for logging.
 fileConfig(context.config.config_file_name)
 
 # add your model's MetaData object here
 # for 'autogenerate' support
-from manage import app
+from WritingAssistantBackend.app import app
 from WritingAssistantBackend.app import db
 import WritingAssistantBackend.dbModel  # ensure the models are registered
 
@@ -29,6 +31,8 @@ context.config.set_main_option(
     app.config['SQLALCHEMY_DATABASE_URI']
 )
 target_metadata = db.metadata
+# right after you set target_metadata
+print(">>> TARGET METADATA TABLES:", list(target_metadata.tables.keys()))
 
 
 def run_migrations_offline():
@@ -48,6 +52,7 @@ def run_migrations_offline():
         url=url,
         target_metadata=target_metadata,
         literal_binds=True,
+        render_as_batch=True,
         dialect_opts={"paramstyle": "named"},
     )
 
@@ -72,6 +77,7 @@ def run_migrations_online():
         context.configure(
             connection=connection,
             target_metadata=target_metadata,
+            render_as_batch=True,
         )
 
         with context.begin_transaction():
