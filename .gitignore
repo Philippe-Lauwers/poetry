@@ -3,15 +3,20 @@
 #Datafiles, logs
 WritingAssistantBackend/data/*
 !WritingAssistantBackend/data/NOTE
-
+!WritingAssistantBackend/data/actionTypes.csv
 
 WritingAssistantBackend/StartFlask.bat
+WritingAssistantBackend/.env
+WritingAssistantInterface/.env
+WritingAssistantBackend/.flaskenv
+WritingAssistantInterface/.flaskenv
 
 WritingAssistantBackend/setupBackend/logs/*
 WritingAssistantInterface/setupInterface/logs/*
 
 # Python bytecode
 __pycache__/
+**/__pycache__/
 *.py[cod]
 
 # Alembic migrations cache (if any)
@@ -26,3 +31,5 @@ __pycache__/
 
 # Local DB file
 *.db
+
+start_dev_servers.bat
