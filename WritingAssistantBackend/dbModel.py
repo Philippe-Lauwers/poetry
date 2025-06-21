@@ -112,7 +112,7 @@ class ThemeDescriptors(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     theme_id = db.Column(db.Integer, db.ForeignKey('themes.id', name='fk_themeDescriptors_themes_id'), nullable=False)
     order = db.Column(db.Integer, nullable=False)
-    descriptor = db.Column(db.String(100), nullable=False)
+    themeDescriptor = db.Column(db.String(100), nullable=False)
 
 
 class ActionTypes(db.Model):
@@ -121,6 +121,7 @@ class ActionTypes(db.Model):
                       db.UniqueConstraint('actionType', name='uq_actions_action'),)
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     actionType = db.Column(db.String(100), nullable=False)
+    actionTypeDescription = db.Column(db.String(1000), nullable=False)
 
 
 class Actions(db.Model):

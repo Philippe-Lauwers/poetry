@@ -1,0 +1,17 @@
+actionType;actionTypeDescription
+PM_GEN;Automatic creation of an (entire) poem
+PM_WRT;The poem has been (partially) written by the user
+PM_ALT;The poem has been changed
+PM_DEL;The poem has been deleted
+ST_GEN;The stanza has been added to the poem during automated poem generation
+ST_WRT;The stanza has been added as result of user interaction
+ST_ALT;The stanza has been changed
+ST_DEL;The stanza has been deleted
+VRS_GEN;The verse has been generated automatically
+VRS_WRT;The verse has been (partially) written by the user
+VRS_ALT;The verse has been changed
+VRS_DEL;The verse has been deleted
+KW_GEN;The keyword was suggested by the computer
+KW_WRT;The keyword was provied by the user
+KW_ALT;The keyword has been changed
+KW_DEL;The keyword has been deleted

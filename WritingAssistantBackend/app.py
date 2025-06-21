@@ -19,14 +19,17 @@ def create_app(config_object=None):
     app = Flask(__name__)
     # 1) Load your config
 
+    db_file = os.path.join(app.root_path, os.getenv('DATABASE_FILENAME', 'poetry.db')).replace('\\', '/')
+
     app.config.from_object(config_object)
     app.config.update(
         SECRET_KEY=os.getenv('SECRET_KEY', 'you-will-want-to-change-this'),
-        SQLALCHEMY_DATABASE_URI=os.getenv('SQLALCHEMY_DATABASE_URI'),
+        SQLALCHEMY_DATABASE_URI=f"sqlite:///{db_file}",
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
         DEBUG=os.getenv('FLASK_DEBUG', 'false').lower() in ('1', 'true', 'yes'),
         # …any other env-driven settings…
     )
+
     # app.config['SQLALCHEMY_ECHO'] = True  # optionally see SQL logs
     # 2) Initialize extensions
     db.init_app(app)

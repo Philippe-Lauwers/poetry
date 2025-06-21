@@ -7,7 +7,7 @@ from WritingAssistantBackend.extensions import db
 from flask_migrate import Migrate
 
 # 1) Load your backend’s .env (adjust path if your .env lives elsewhere)
-load_dotenv(os.path.join(os.path.dirname(__file__), "WritingAssistantBackend", ".env"))
+load_dotenv(os.path.join(os.path.dirname(__file__), "WritingAssistantBackend", ".flaskenv"))
 
 # 2) Create the app via your factory
 app = create_app()
