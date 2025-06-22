@@ -1,10 +1,8 @@
-from datetime import datetime, timezone  # needed for timestamps
 # point to the app.py file and import the db variable from there
 # circular import with app.py -> use .extensions instead
-
 from .extensions import db
 from sqlalchemy.orm import synonym  # to allow use of synonyms for Columns
-import sqlite3
+from datetime import datetime, timezone  # needed for timestamps
 
 """
  NOTE:
@@ -23,7 +21,7 @@ class ZIP(db.Model):
 """
 
 
-class Users(db.Model):
+class User(db.Model):
     __tablename__ = 'users'
     __table_args__ = (db.PrimaryKeyConstraint('id', name='pk_users'),)
 
@@ -31,7 +29,7 @@ class Users(db.Model):
     name = db.Column(db.String(100), nullable=False)
 
 
-class ConfigurationCategories(db.Model):
+class ConfigurationCategory(db.Model):
     __tablename__ = 'configurationCategories'
     __table_args__ = (db.PrimaryKeyConstraint('id', name='pk_configurationCategories'),)
 
@@ -39,7 +37,7 @@ class ConfigurationCategories(db.Model):
     configurationCategory = db.Column(db.String(100), nullable=False)
 
 
-class ConfigurationParameters(db.Model):
+class ConfigurationParameter(db.Model):
     __tablename__ = 'configurationParameters'
     __table_args__ = (db.PrimaryKeyConstraint('id', name='pk_configurationParameters'),
                       db.UniqueConstraint('poemLanguage_id', 'configurationCategory_id', 'parameter',
@@ -56,7 +54,7 @@ class ConfigurationParameters(db.Model):
     value = db.Column(db.String(100), nullable=False)
 
 
-class PoemLanguages(db.Model):
+class PoemLanguage(db.Model):
     __tablename__ = 'poemLanguages'
     __table_args__ = (db.PrimaryKeyConstraint('id', name='pk_poemLanguages'),)
 
@@ -64,8 +62,8 @@ class PoemLanguages(db.Model):
     language = db.Column(db.String(5), nullable=False)
 
 
-# For defining the different types of poems. Rhymeschems are used to group the rhymescheme elements
-class RhymeSchemes(db.Model):
+# For defining the different types of poems. Rhymeschemes are used to group the rhymescheme elements
+class RhymeScheme(db.Model):
     __tablename__ = 'rhymeSchemes'
     __table_args__ = (db.PrimaryKeyConstraint('id', name='pk_rhymeSchemes'),)
 
@@ -74,7 +72,7 @@ class RhymeSchemes(db.Model):
 
 
 # The elements in a rhymeScheme
-class RhymeSchemeElements(db.Model):
+class RhymeSchemeElement(db.Model):
     __tablename__ = 'rhymeSchemeElements'
     __table_args__ = (db.PrimaryKeyConstraint('id', name='pk_rhymeSchemeElements'),
                       db.UniqueConstraint('rhymeScheme_id', 'poemLanguage_id', 'order',
@@ -93,7 +91,7 @@ class RhymeSchemeElements(db.Model):
     # For defining the different themes for poems (will be loaded with the nmf data)
 
 
-class Themes(db.Model):
+class Theme(db.Model):
     __tablename__ = 'themes'
     __table_args__ = (db.PrimaryKeyConstraint('id', name='pk_themes'),
                       db.UniqueConstraint('poemLanguage_id', 'nmfDim', name='uq_themes_poemLanguage_nmfDim'),)
@@ -105,7 +103,7 @@ class Themes(db.Model):
 
 
 # Each theme has three describing words
-class ThemeDescriptors(db.Model):
+class ThemeDescriptor(db.Model):
     __tablename__ = 'themeDescriptors'
     __table_args__ = (db.PrimaryKeyConstraint('id', name='pk_themeDescriptors'),)
 
@@ -115,29 +113,70 @@ class ThemeDescriptors(db.Model):
     themeDescriptor = db.Column(db.String(100), nullable=False)
 
 
-class ActionTypes(db.Model):
+class ActionTargetType(db.Model):
+    __tablename__ = 'actionTargetTypes'
+    __table_args__ = (db.PrimaryKeyConstraint('id', name='pk_actionTargetTypes'),
+                      db.UniqueConstraint('actionTargetType', name='uq_actiontargettpyes_actiontargettype'),)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    actionTargetType = db.Column(db.String(100), nullable=False)
+    actionTargetTypeDescription = db.Column(db.String(1000), nullable=False)
+
+
+class ActionTarget(db.Model):
+    __tablename__ = 'actionTargets'
+    __table_args__ = (db.PrimaryKeyConstraint('id', name='pk_actionTargets'),)
+
+    id = db.Column(db.Integer, primary_key=True)
+    action_id = db.Column(
+        db.Integer,
+        db.ForeignKey('actions.id', name='fk_actionTargets_actions_id'),
+        nullable=False
+    )
+    actionTargetType_id = db.Column(
+        db.Integer,
+        db.ForeignKey('actionTargetTypes.id', name='fk_actionTargets_actionTargetTypes_id'),
+        nullable=False
+    )
+    target_id = db.Column(db.Integer, nullable=False)
+
+    # ORM relationships:
+    action = db.relationship("Action", back_populates="targets")
+    target_type = db.relationship("ActionTargetType")
+
+
+class ActionType(db.Model):
     __tablename__ = 'actionTypes'
     __table_args__ = (db.PrimaryKeyConstraint('id', name='pk_actionTypes'),
-                      db.UniqueConstraint('actionType', name='uq_actions_action'),)
+                      db.UniqueConstraint('actionType', name='uq_actiontypes_actiontype'),)
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     actionType = db.Column(db.String(100), nullable=False)
     actionTypeDescription = db.Column(db.String(1000), nullable=False)
 
 
-class Actions(db.Model):
+class Action(db.Model):
     __tablename__ = 'actions'
-
     __table_args__ = (db.PrimaryKeyConstraint('id', name='pk_actions'),)
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    actionType_id = db.Column(db.String(100), db.ForeignKey('actionTypes.id', name='fk_actions_actionTypes_id'),
-                              nullable=False)
-    timestamp = db.Column(db.DateTime,
-                          nullable=False,
-                          default=lambda: datetime.now(timezone.utc),
-                          server_default=db.func.now())
+
+    id = db.Column(db.Integer, primary_key=True)
+    actionType_id = db.Column(
+        db.Integer,
+        db.ForeignKey('actionTypes.id', name='fk_actions_actionTypes_id'),
+        nullable=False
+    )
+    timestamp = db.Column(
+        db.DateTime(timezone=True),
+        nullable=False,
+        default=lambda: datetime.now(timezone.utc),
+        server_default=db.func.now()
+    )
+    targets = db.relationship(
+        "ActionTarget",
+        back_populates="action",
+        cascade="all, delete-orphan"
+    )
 
 
-class Poems(db.Model):
+class Poem(db.Model):
     __tablename__ = 'poems'
     __table_args__ = (db.PrimaryKeyConstraint('id', name='pk_poems'),)
 
@@ -147,36 +186,31 @@ class Poems(db.Model):
                                 nullable=False)
     language = synonym('poemLanguage_id')
     theme_id = db.Column(db.Integer, db.ForeignKey('themes.id', name='fk_poems_themes_id'), nullable=False)
-    action_id = db.Column(db.Integer, db.ForeignKey('actions.id', name='fk_poems_actions_id'), nullable=False)
     status = db.Column(db.Integer, nullable=False)
-    title = db.Column(db.String(1000), nullable=False)
+    title = db.Column(db.String(1000), nullable=True)
 
 
-class Stanzas(db.Model):
+class Stanza(db.Model):
     __tablename__ = 'stanzas'
     __table_args__ = (db.PrimaryKeyConstraint('id', name='pk_stanzas'),)
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     poem_id = db.Column(db.Integer, db.ForeignKey('poems.id', name='fk_stanzas_poems_id'), nullable=False)
-    action_id = db.Column(db.Integer, db.ForeignKey('actions.id', name='fk_stanzas_actions_id'), nullable=False)
-
     order = db.Column(db.Integer, nullable=False)
 
 
-class Verses(db.Model):
+class Verse(db.Model):
     __tablename__ = 'verses'
     __table_args__ = (db.PrimaryKeyConstraint('id', name='pk_verses'),)
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     stanza_id = db.Column(db.Integer, db.ForeignKey('stanzas.id', name='fk_verses_stanzas_id'), nullable=False)
-    action_id = db.Column(db.Integer, db.ForeignKey('actions.id', name='fk_verses_actions_id'), nullable=False)
     order = db.Column(db.Integer, nullable=False)
-
     status = db.Column(db.Integer, nullable=False)
     verse = db.Column(db.String(1000), nullable=False)
 
 
-class Keywords(db.Model):
+class Keyword(db.Model):
     __tablename__ = 'keywords'
     __table_args__ = (db.PrimaryKeyConstraint('id', name='pk_keywords'),)
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)

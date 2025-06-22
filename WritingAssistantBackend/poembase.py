@@ -25,7 +25,7 @@ import json
 import warnings
 
 from .verse_generator import VerseGenerator
-from .poem import Poem, Stanza, Verse # container to store the output in a hierarchy of Poem>>Stanza>>Verse objects
+from .poem_container import Poem as PoemContainer, Stanza, Verse # container to store the output in a hierarchy of Poem>>Stanza>>Verse objects
 
 warnings.filterwarnings("ignore")
 
@@ -60,11 +60,16 @@ class PoemBase:
 
         self.ngramModel = kenlm.Model(self.NGRAM_FILE)
 
+        self._poemContainer = PoemContainer()
+
         if not os.path.exists('log'):
             os.makedirs('log')
         logfile = 'log/poem_' + datetime.now().strftime("%Y%m%d")
         self.log = open(logfile, 'a')
 
+    @property
+    def container(self):
+        return self._poemContainer
 
     def initializeConfig(self, config):
 
@@ -115,14 +120,11 @@ class PoemBase:
         self.blacklist = []
         self.previous_sent = None
 
-        self.poemContainer = Poem()
-        self.poemContainer.form = form
-        self.poemContainer.nmfDim = nmfDim
+        self._poemContainer.form = form
+        self._poemContainer.nmfDim = nmfDim
 
         if constraints == ('rhyme'):
             self.writeRhyme(nmfDim)
-
-        return (self.poemContainer.to_dict())
 
     def writeRhyme(self, nmfDim):
         # Flag to indicate whether a new stanza should be added,
@@ -150,14 +152,14 @@ class PoemBase:
                     print('err', e)
                     continue
                 else:
-                    # adds the generated text to the poemContainer
-                    if not self.poemContainer.stanzas or addNewStanza:
+                    # adds the generated text to the _poemContainer
+                    if not self._poemContainer.stanzas or addNewStanza:
                         # If there is no stanza yet
                         #   or a ' ' was encountered in the rhyme structure before generating the verse
-                        # -> add a new stanza to the poemContainer
-                        self.poemContainer.addStanza()
+                        # -> add a new stanza to the _poemContainer
+                        self._poemContainer.addStanza()
                         addNewStanza = False
-                    self.poemContainer.stanzas[-1].addVerse(' '.join(words))
+                    self._poemContainer.stanzas[-1].addVerse(verseText=' '.join(words))
                     # writes the generated verse to stdout and log
                     sys.stdout.write(' '.join(words) + '\n')
                     self.log.write(' '.join(words) + '\n')

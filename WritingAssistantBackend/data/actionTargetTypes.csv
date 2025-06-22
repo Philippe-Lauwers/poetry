@@ -1,7 +1,7 @@
 actionTargetType;actionTargetTypeDescription
 poem;For actions targetting the entire poem
 stanza;For actions targetting a stanza
-verse;For actions targetting a vers
+verse;For actions targetting a verse
 keyword;For actions targetting a keyword
 pr_poem;For actions that target versioning on poem level
 pr_stanza;For actions that target versioning on stanza level

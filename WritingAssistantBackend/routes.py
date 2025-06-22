@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify, render_template
-from .poem_from_cache import get_poem
+from .poembase_from_cache import get_poem
+from .poem_repository import PoemRepository
 
 main_bp = Blueprint('main', __name__)
 
@@ -20,8 +21,9 @@ def write_poem():
 
     # - create the poem object (or get it from cache)
     poem = get_poem(lang=lang)
-    text = poem.write(form=form, nmfDim=nmfDim)
-    return jsonify({'poem': text})
+    poem.write(form=form, nmfDim=nmfDim)
+    PoemRepository.save(poem.container)
+    return jsonify({'poem': poem.container.to_dict()})
 
 
 @main_bp.route('/test')

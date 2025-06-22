@@ -3,7 +3,7 @@
 #Datafiles, logs
 WritingAssistantBackend/data/*
 !WritingAssistantBackend/data/NOTE
-!WritingAssistantBackend/data/actionTypes.csv
+!WritingAssistantBackend/data/action*.csv
 
 WritingAssistantBackend/StartFlask.bat
 WritingAssistantBackend/.env
@@ -33,3 +33,5 @@ __pycache__/
 *.db
 
 start_dev_servers.bat
+start_frontend_server.bat
+start_backend_server.bat

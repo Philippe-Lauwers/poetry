@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 import os
 from dotenv import load_dotenv
-from .poem_from_cache import get_poem
+from .poembase_from_cache import get_poem
 # For database connectivity
 # from flask import Flask (see above, just to remind it is needed for the app in general
 # circular import with dbModel.py -> use .extensions instead
