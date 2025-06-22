@@ -10,10 +10,10 @@ import os
 from WritingAssistantBackend.app import create_app
 from WritingAssistantBackend.extensions import db
 from WritingAssistantBackend.dbModel import (
-    Users,
-    PoemLanguages,
-    RhymeSchemes,
-    RhymeSchemeElements,
+    User,
+    PoemLanguage,
+    RhymeScheme,
+    RhymeSchemeElement,
 )
 
 # 1) Build the app and enable SQL echo
@@ -26,9 +26,9 @@ language_dict = {"fr": "fr-fr", "en": "en-gb"}
 with app.app_context():
     # ---- 1. Create a user ----
     print("-> Creating admin user")
-    admin = db.session.query(Users).filter_by(name="admin").first()
+    admin = db.session.query(User).filter_by(name="admin").first()
     if not admin:
-        admin = Users(name="admin")
+        admin = User(name="admin")
         db.session.add(admin)
         db.session.commit()
         db.session.expunge(admin)
@@ -37,9 +37,9 @@ with app.app_context():
     print("-> Creating poem languages")
     poem_language_ids = {}
     for code, iso in language_dict.items():
-        pl = PoemLanguages.query.filter_by(language=iso).first()
+        pl = PoemLanguage.query.filter_by(language=iso).first()
         if not pl:
-            pl = PoemLanguages(language=iso)  # adjust to your actual column names
+            pl = PoemLanguage(language=iso)  # adjust to your actual column names
             db.session.add(pl)
             db.session.flush()
         poem_language_ids[iso] = pl.id
@@ -57,18 +57,18 @@ with app.app_context():
     print("-> Creating rhyme schemes")
     for scheme_name, elements in rhyme_schemes.items():
         print(f"-> Inserting scheme {scheme_name!r}")
-        rs = RhymeSchemes.query.filter_by(rhymeScheme=scheme_name).first()
+        rs = RhymeScheme.query.filter_by(rhymeScheme=scheme_name).first()
         if not rs:
-            rs = RhymeSchemes(rhymeScheme=scheme_name)
+            rs = RhymeScheme(rhymeScheme=scheme_name)
             db.session.add(rs)
             db.session.flush()
 
         for order, elm in enumerate(elements, start=1):
             for iso, pl_id in poem_language_ids.items():
-                rse = db.session.query(RhymeSchemeElements).filter_by(rhymeScheme_id=rs.id, poemLanguage_id=pl_id,
+                rse = db.session.query(RhymeSchemeElement).filter_by(rhymeScheme_id=rs.id, poemLanguage_id=pl_id,
                                                                       order=order).first()
                 if not rse:
-                    rse = RhymeSchemeElements(
+                    rse = RhymeSchemeElement(
                         rhymeScheme_id=rs.id,
                         poemLanguage_id=pl_id,
                         order=order,
@@ -84,7 +84,7 @@ with app.app_context():
     import os
     import json
     import pickle
-    from WritingAssistantBackend.dbModel import Themes, ThemeDescriptors
+    from WritingAssistantBackend.dbModel import Theme, ThemeDescriptor
 
     print("-> Creating theme data (=nmf data)")
     # Container dictionary to store configuration data
@@ -135,15 +135,15 @@ with app.app_context():
     try:
         for nmfDim in nmfDescData_dict.keys():
             for lang in nmfDescData_dict[nmfDim].keys():
-                th = db.session.query(Themes).filter_by(nmfDim=nmfDim, poemLanguage_id=lang).first()
+                th = db.session.query(Theme).filter_by(nmfDim=nmfDim, poemLanguage_id=lang).first()
                 if not th:
-                    th = Themes(nmfDim=nmfDim, poemLanguage_id=lang)
+                    th = Theme(nmfDim=nmfDim, poemLanguage_id=lang)
                     db.session.add(th)
                     db.session.flush()
                 for order, (desc) in enumerate(nmfDescData_dict[nmfDim][lang], start=1):
-                    thDesc = db.session.query(ThemeDescriptors).filter_by(theme_id=th.id, order=order).first()
+                    thDesc = db.session.query(ThemeDescriptor).filter_by(theme_id=th.id, order=order).first()
                     if not thDesc:
-                        thDesc = ThemeDescriptors(theme_id=th.id, themeDescriptor=desc, order=order)
+                        thDesc = ThemeDescriptor(theme_id=th.id, themeDescriptor=desc, order=order)
                         db.session.add(thDesc)
         db.session.commit()
         db.session.expunge(th)
@@ -160,7 +160,7 @@ with app.app_context():
 
     # Import parameter files
     print("-> Creating parameter data")
-    from WritingAssistantBackend.dbModel import ConfigurationCategories, ConfigurationParameters
+    from WritingAssistantBackend.dbModel import ConfigurationCategory, ConfigurationParameter
 
     # Fetch config files
     directory = os.fsencode('config')
@@ -174,17 +174,17 @@ with app.app_context():
                     configData = json.load(json_config_file)
                     language_id = poem_language_ids[language_dict[configData['general']['language']]]
                     for ckey, configCat in configData.items():
-                        cat = db.session.query(ConfigurationCategories).filter_by(configurationCategory=ckey).first()
+                        cat = db.session.query(ConfigurationCategory).filter_by(configurationCategory=ckey).first()
                         if not cat:
-                            cat = ConfigurationCategories(configurationCategory=ckey)
+                            cat = ConfigurationCategory(configurationCategory=ckey)
                             db.session.add(cat)
                             db.session.flush()
                         for pkey, param in configCat.items():
-                            par = db.session.query(ConfigurationParameters).filter_by(poemLanguage_id=language_id,
+                            par = db.session.query(ConfigurationParameter).filter_by(poemLanguage_id=language_id,
                                                                                       configurationCategory_id=cat.id,
                                                                                       parameter=pkey).first()
                             if not par:
-                                par = ConfigurationParameters(poemLanguage_id=language_id,
+                                par = ConfigurationParameter(poemLanguage_id=language_id,
                                                               configurationCategory_id=cat.id,
                                                               parameter=pkey,
                                                               value=param)
@@ -203,7 +203,8 @@ with app.app_context():
 
     # Add actionTypes
     import csv
-    from WritingAssistantBackend.dbModel import ActionTypes
+    from WritingAssistantBackend.dbModel import ActionType
+    from WritingAssistantBackend.dbModel import ActionTargetType
 
     print("-> Creating action types")
     # Fetch config files
@@ -212,15 +213,25 @@ with app.app_context():
     try:
         for file in os.listdir(directory):
             filename = os.fsdecode(file)
-            if filename.endswith('.csv'):  # there will be only one csv file in the directory
+            if filename=='actionTypes.csv':
                 with open(os.path.join('data', filename), mode='r') as file:
                     csvFile = csv.DictReader(file, delimiter=';')
                     for row in csvFile:
-                        AT = db.session.query(ActionTypes).filter_by(actionType=row['actionType'].strip()).first()
+                        AT = db.session.query(ActionType).filter_by(actionType=row['actionType'].strip()).first()
                         if not AT:
-                            AT = ActionTypes(actionType=row['actionType'].strip(),
+                            AT = ActionType(actionType=row['actionType'].strip(),
                                              actionTypeDescription=row['actionTypeDescription'].strip())
                             db.session.add(AT)
+            elif filename == 'actionTargetTypes.csv':
+                with open(os.path.join('data', filename), mode='r') as file:
+                    csvFile = csv.DictReader(file, delimiter=';')
+                    for row in csvFile:
+                        AT = db.session.query(ActionTargetType).filter_by(actionTargetType=row['actionTargetType'].strip()).first()
+                        if not AT:
+                            AT = ActionTargetType(actionTargetType=row['actionTargetType'].strip(),
+                                            actionTargetTypeDescription=row['actionTargetTypeDescription'].strip())
+                            db.session.add(AT)
+
         db.session.commit()
 
     except IntegrityError as IErr:
