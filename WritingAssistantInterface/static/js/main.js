@@ -1,15 +1,18 @@
-import {initSandbox, sandboxClick, verseKeydown, highlightIfEmpty} from './sandboxInteraction.js';
+import {sandboxClick, verseKeydown, highlightIfEmpty} from "./sandboxInteraction.js";
+import {Poem} from "./sandboxAPI/1_Poem.js";
 
 export function getRhymeScheme() {
     return _poemDesc.poem.rhymeScheme;
 }
+
 export function setRhymeScheme(s) {
     _poemDesc.poem.rhymeScheme = s;
 }
+
 // for now hard-coded, will be replaced by a more dynamic approach later
 function readRhymeScheme(form) {
     switch (form) {
-        case 'sonnet':
+        case "sonnet":
             return {
                 "poem": {
                     "rhymeScheme": {
@@ -54,7 +57,7 @@ function readRhymeScheme(form) {
                 }
             }
             break;
-        case 'short':
+        case "short":
             return {
                 "poem": {
                     "rhymeScheme": {
@@ -79,27 +82,22 @@ function readRhymeScheme(form) {
                 }
             }
             break;
-        case 'shorter':
+        case "shorter":
             return {
                 "poem": {
                     "rhymeScheme": {
-                        "name": "short",
+                        "name": "shorter",
                         "elements": [{"verse": {"id": "1", "txt": "a"}}, {
                             "verse": {
                                 "id": "2",
                                 "txt": "b"
                             }
-                        }, {"verse": {"id": "3", "txt": "b"}}, {"verse": {"id": "4", "txt": "a"}}, {
-                            "verse": {
-                                "id": "5",
-                                "txt": ""
-                            }
-                        }]
+                        }, {"verse": {"id": "3", "txt": "b"}}, {"verse": {"id": "4", "txt": "a"}}]
                     }
                 }
             }
             break;
-        case 'free verse':
+        case "free verse":
             return {"poem": {"rhymeScheme": {"name": "free verse", "elements": []}}}
             break;
         default:
@@ -107,10 +105,11 @@ function readRhymeScheme(form) {
     }
 }
 
-let _poemDesc = readRhymeScheme('short');
+let _poemDesc = readRhymeScheme("sonnet");
 
-window.addEventListener('DOMContentLoaded', () => {
-    const sandbox = initSandbox('#sandbox', {
+window.addEventListener("DOMContentLoaded", () => {
+    const sandbox = new Poem({
+        selector: "#sandbox",
         events: {                       // ← correct key
             click: e => sandboxClick(e)           // or e => sandboxClick(e)
         }
@@ -119,12 +118,13 @@ window.addEventListener('DOMContentLoaded', () => {
         .addVerseWrapper()
         .addVerse({
             value: "",                        // initial text
-            inputEvents: {
+            events: {
                 keydown: e => verseKeydown(e, e.target),
                 change: e => highlightIfEmpty(e, e.target)
             }
-        });
-});
+        })
+})
+;
 
 /**
  * Example of a poem object with only the rhyme scheme:

@@ -12,7 +12,7 @@
     <div class="container">
         <div class="top-pane">
             <h1>Poem factory</h1>
-            <button type="submit">Generate</button>
+            <button type="submit" formaction="/generate" formmethod="post">Generate</button>
         </div>
         <div class="bottom-pane">
             <div class="left-pane">
@@ -30,7 +30,7 @@
                     <input name="nmfDim" value="random">
                 </label>
             </div>
-            <div class="right-pane" id="sandbox" onLoad="document.getElementById('output').addField();">
+            <div class="right-pane" id="sandbox">
 
             </div>
         </div>
@@ -39,7 +39,7 @@
 
 <script type = "module" defer src="{{ url_for('static', filename='js/main.js') }}"></script>
 <script type = "module" src="{{ url_for('static',filename='js/linkUserInteractionToBackend.js') }}"></script>
-<script type = "module" src="{{ url_for('static',filename='js/sandboxAPI.js') }}"></script>
+<script type = "module" src="{{ url_for('static',filename='js/API.js') }}"></script>
 <script type = "module" src="{{ url_for('static',filename='js/sandboxInteraction.js') }}"></script>
 <script type = "module" src="{{ url_for('static',filename='js/niftyThings.js') }}"></script>
 </body>

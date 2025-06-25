@@ -1,4 +1,4 @@
-import {BaseNode} from './sandboxAPI.js';
+import {BaseNode} from './API.js';
 
 /** FUNCTIONALITY TO MAKE THE INTERFACE MORE PLEASANT */
 
@@ -9,7 +9,7 @@ import {BaseNode} from './sandboxAPI.js';
  * @param {string}      text     – message to display
  * @param {number}      ms       – how long before it fades out
  */
-export function flashMessage(host, text, ms = 1500) {
+export function flashMessage(host, text, ms = 1750) {
     // Accept either a wrapper or a plain DOM element
     const el = host instanceof BaseNode ? host.el : host;
 

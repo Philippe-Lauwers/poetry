@@ -43,6 +43,8 @@ class PoemBase:
                                'c','d','c','d'),
                               'shorter':
                               ('a','b','a','b'),
+                              'ultrashort':
+                              ('a','a'),
                               'pantoum':
                               ('a', 'b', 'c', 'd', '',
                                'b','e','d','f','',
@@ -59,8 +61,6 @@ class PoemBase:
         self.loadVocabulary()
 
         self.ngramModel = kenlm.Model(self.NGRAM_FILE)
-
-        self._poemContainer = PoemContainer()
 
         if not os.path.exists('log'):
             os.makedirs('log')
@@ -120,6 +120,7 @@ class PoemBase:
         self.blacklist = []
         self.previous_sent = None
 
+        self._poemContainer = PoemContainer()
         self._poemContainer.form = form
         self._poemContainer.nmfDim = nmfDim
 

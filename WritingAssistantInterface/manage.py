@@ -4,8 +4,9 @@ import os
 from dotenv import load_dotenv
 
 # 1) Load environment variables from .flaskenv in this folder
+
 here = os.path.dirname(__file__)
-load_dotenv(os.path.join(here, '.flaskenv'))
+load_dotenv(os.path.join(here,'WritingAssistantInterface, '.flaskenv'))
 
 # 2) Import your Flask app object (defined at module level in app.py)
 from app import app

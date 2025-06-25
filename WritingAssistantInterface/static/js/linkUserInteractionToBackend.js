@@ -21,7 +21,6 @@ import {receivePoem} from './sandboxInteraction.js';
       const json = await gen.json();
 
       // 3) Display
-      document.getElementById('sandbox').textContent =
-        json.poem ? receivePoem(json.poem) : 'Error';
+      json.poem ? receivePoem(json.poem) : 'Error';
     });
 

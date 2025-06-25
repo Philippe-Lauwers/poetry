@@ -1,5 +1,9 @@
 import {getRhymeScheme, setRhymeScheme} from './main.js';
-import {BaseNode, Poem, Stanza, VerseWrapper, Verse} from './sandboxAPI.js';
+import {BaseNode} from './API.js';
+import {Poem} from './sandboxAPI/1_Poem.js';
+import {Stanza} from './sandboxAPI/2_Stanza.js';
+import {VerseWrapper} from './sandboxAPI/3_VerseWrapper.js';
+import {Verse} from './sandboxAPI/4_Verse.js';
 import {flashMessage} from './niftyThings.js';
 
 /**
@@ -7,21 +11,10 @@ import {flashMessage} from './niftyThings.js';
 let sandbox = null;
 
 /**
- * Initialise (once) and return the Poem that wraps #sandbox.
- * Call this exactly once in your boot-strap code (e.g. main.js).
- */
-export function initSandbox(selector = '#sandbox', opts = {}) {
-    if (!sandbox) {
-        sandbox = Poem.init(selector, opts);
-    }
-    return sandbox;
-}
-
-/**
  * Read-only accessor for any code that merely needs to *use*
  * the existing poem.  Will be `null` until initSandbox() runs.
  */
-export const getSandbox = () => sandbox;
+export const getSandbox = () => Poem.instance;
 
 
 /**
@@ -99,7 +92,7 @@ function verseAccept(e) {
         }
         // nonempty: spawn a fresh field in the (new or same) stanza
         if (rhymeScheme.elements.length == 0 ||
-            locateInRhymeScheme(poem, verse) < rhymeScheme.elements.length - 2) {
+            locateInRhymeScheme(poem, verse) < rhymeScheme.elements.length - 1) {
             // compare with rhymeScheme.elements.length - 2
             // -1 because we compare indexes with a length
             // -1 because there will be no stanza separator at the end of the rhyme scheme
@@ -108,7 +101,7 @@ function verseAccept(e) {
                 stanza = poem.addStanza()
             }
             const newVerse = stanza.addVerse({
-                inputEvents: {
+                events: {
                     keydown: verseKeydown,
                     change: highlightIfEmpty
                 }
@@ -171,12 +164,15 @@ function moveFocus(e, direction) {
     return true;
 }
 
-let cntChanges = 0
+/**
+ * Method to highlight an emtpy field if
+ * @param e target of an event, called at the change event of a field
+ */
 export function highlightIfEmpty(e) {
     if (e.target.value.trim() === '') {
         e.target.classList.add('verseEmpty');
     } else {
-             e.target.classList.remove('verseEmpty');
+        e.target.classList.remove('verseEmpty');
     }
 }
 
@@ -195,7 +191,7 @@ export function allowNewStanza(poem, verse, rhymeScheme = getRhymeScheme()) {
     if (RSverses.length === 0) {
         if (verse.value.trim() === '') {
             const wrapper = verse.parent;
-            return wrapper.prevSibling ? true : false;
+            return !!wrapper.prevSibling;
         } else { //if (input.value.trim() !== ''
             return false;
         }
@@ -223,8 +219,8 @@ export function allowNewStanza(poem, verse, rhymeScheme = getRhymeScheme()) {
 
 /**
  *  Walks through the current input and determines the corresponding line number in the rhyme scheme.
- * @param container
- * @param input the input element that currently has the focus
+ * @param poem
+ * @param verse the input element that currently has the focus
  * @return lineNr the index of the current line in the rhyme scheme
  * */
 export function locateInRhymeScheme(poem, verse) {
@@ -249,6 +245,7 @@ export function locateInRhymeScheme(poem, verse) {
 /**
  * places the focus on the first empty field if there is one and adapts the css class
  * @param poem
+ * @param rhymeScheme
  * @return [no return]*/
 function focusToEmptyField(poem, rhymeScheme) {
     const elems = rhymeScheme.elements;
@@ -264,6 +261,7 @@ function focusToEmptyField(poem, rhymeScheme) {
         }
     }
 }
+
 /**
  * Walks through the current input to look for the first empty field
  * @param poem
@@ -281,24 +279,36 @@ function firstEmptyVerse(poem) {
     return null;
 }
 
-/** This function is called when the poem is received from the backend.
+/** This function is called when the poem is received from the backend, it is only accessible when
+ * the sandbox is empty (i.e., there is a stanza>>versewrapper>>verse but the verse is empty
  * It creates stanzas and verse fields according to the poem object
  * @param poem
  * @returns null
  */
 export function receivePoem(poem) {
-    let txt = '';
+    //let txt = '';
+    const sandbox = getSandbox();
+    let myVerse = firstEmptyVerse(sandbox);
+    let myStanza;
     poem.stanzas.forEach((s, stanzaIndex) => {
+        if (myStanza) { // if we have a stanza in this function, we need to add another for this iteration
+            myStanza = sandbox.addStanza({id: s.stanza.id});
+        } else { // first iteration -> grab the first stanza on the screen
+            myStanza = myVerse.stanza;
+            myStanza.id = Stanza.formatID({id: s.stanza.id, prefix: "s-"});
+        }
         s.stanza.verses.forEach((v, verseIndex) => {
-            txt += v.verse.text
-            if (stanzaIndex < poem.stanzas.length - 1 || verseIndex < s.stanza.verses.length - 1) {
-                ;
-                txt += '\n';
+            let {text, id} = v.verse;
+            if (myVerse.value === "") {
+                // We are in the empty initial field
+                myVerse.id = Verse.formatID({id: id, prefix: "v-"});
+                myVerse.value = text;
+                myVerse.parent.id = VerseWrapper.formatID({id: id, prefix: "vw-"});
+            } else {
+                //let buttons = myVerse.parent.buttons;
+                const newVerse = myStanza.addVerse({id: id, value: text, events:myVerse.events, buttons:myVerse.buttons});
+                myVerse = newVerse
             }
         });
-        if (stanzaIndex < poem.stanzas.length - 1) {
-            txt += '\n\n';
-        }
     });
-    alert(txt);
 }
