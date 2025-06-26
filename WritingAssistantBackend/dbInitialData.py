@@ -22,6 +22,7 @@ app = create_app()
 app.config["SQLALCHEMY_ECHO"] = True
 
 language_dict = {"fr": "fr-fr", "en": "en-gb"}
+languageLabel_dict = {"fr":"français","en":"English"}
 
 with app.app_context():
     # ---- 1. Create a user ----
@@ -39,7 +40,7 @@ with app.app_context():
     for code, iso in language_dict.items():
         pl = PoemLanguage.query.filter_by(language=iso).first()
         if not pl:
-            pl = PoemLanguage(language=iso)  # adjust to your actual column names
+            pl = PoemLanguage(language=iso, label=languageLabel_dict[code])  # adjust to your actual column names
             db.session.add(pl)
             db.session.flush()
         poem_language_ids[iso] = pl.id
@@ -51,20 +52,26 @@ with app.app_context():
         "sonnet": ("a", "b", "b", "a", "", "c", "d", "d", "c", "", "e", "f", "e", "", "f", "e", "f"),
         "short": ("a", "b", "a", "b", "", "c", "d", "c", "d"),
         "shorter": ("a", "b", "a", "b"),
-        "pantoum": ("a", "b", "c", "d", "", "b", "e", "d", "f", "", "e", "g", "f", "h", "", "g", "a", "h", "c")
+        "pantoum": ("a", "b", "c", "d", "", "b", "e", "d", "f", "", "e", "g", "f", "h", "", "g", "a", "h", "c"),
+        "limerick": ("a","a","b","b","a"),
+        "free verse": ()
         # add the rest...
     }
+    rhyme_scheme_persistance = {"free verse":1}
     print("-> Creating rhyme schemes")
     for scheme_name, elements in rhyme_schemes.items():
         print(f"-> Inserting scheme {scheme_name!r}")
         rs = RhymeScheme.query.filter_by(rhymeScheme=scheme_name).first()
         if not rs:
-            rs = RhymeScheme(rhymeScheme=scheme_name)
+            if scheme_name in rhyme_scheme_persistance:
+                rs = RhymeScheme(rhymeScheme=scheme_name, persistent=True)
+            else:
+                rs = RhymeScheme(rhymeScheme=scheme_name)
             db.session.add(rs)
             db.session.flush()
 
-        for order, elm in enumerate(elements, start=1):
-            for iso, pl_id in poem_language_ids.items():
+        for iso, pl_id in poem_language_ids.items():
+            for order, elm in enumerate(elements, start=1):
                 rse = db.session.query(RhymeSchemeElement).filter_by(rhymeScheme_id=rs.id, poemLanguage_id=pl_id,
                                                                       order=order).first()
                 if not rse:

@@ -60,6 +60,7 @@ class PoemLanguage(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     language = db.Column(db.String(5), nullable=False)
+    label = db.Column(db.String(100), nullable=False)
 
 
 # For defining the different types of poems. Rhymeschemes are used to group the rhymescheme elements
@@ -68,6 +69,7 @@ class RhymeScheme(db.Model):
     __table_args__ = (db.PrimaryKeyConstraint('id', name='pk_rhymeSchemes'),)
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    persistent = db.Column(db.Boolean, nullable=False, default=False)
     rhymeScheme = db.Column(db.String(50), nullable=False)
 
 

@@ -26,6 +26,7 @@ import warnings
 
 from .verse_generator import VerseGenerator
 from .poem_container import Poem as PoemContainer, Stanza, Verse # container to store the output in a hierarchy of Poem>>Stanza>>Verse objects
+from .poembase_config import PoemBaseConfig
 
 warnings.filterwarnings("ignore")
 
@@ -120,6 +121,7 @@ class PoemBase:
         self.blacklist = []
         self.previous_sent = None
 
+        # Stores a representation of the poem
         self._poemContainer = PoemContainer()
         self._poemContainer.form = form
         self._poemContainer.nmfDim = nmfDim
