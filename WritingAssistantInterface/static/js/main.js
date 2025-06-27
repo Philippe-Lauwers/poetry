@@ -1,5 +1,7 @@
 import {sandboxClick, verseKeydown, highlightIfEmpty} from "./sandboxInteraction.js";
+import {loadParambox} from "./paramboxInteraction.js";
 import {Poem} from "./sandboxAPI/1_Poem.js";
+import {Parambox} from "./paramboxAPI/1_Parambox.js";
 
 export function getRhymeScheme() {
     return _poemDesc.poem.rhymeScheme;
@@ -122,122 +124,7 @@ window.addEventListener("DOMContentLoaded", () => {
                 keydown: e => verseKeydown(e, e.target),
                 change: e => highlightIfEmpty(e, e.target)
             }
-        })
-})
-;
-
-/**
- * Example of a poem object with only the rhyme scheme:
- * {
- *   "poem":{
- *     "rhymeScheme":{
- *       "name":"sonnet",
- *       "elements":[
- *         {
- *           "line":{
- *             "id":"1",
- *             "txt":"a"
- *           }
- *         },
- *         {
- *           "line":{
- *             "id":"2",
- *             "txt":"b"
- *           }
- *         },
- *         {
- *           "line":{
- *             "id":"3",
- *             "txt":"b"
- *           }
- *         },
- *         {
- *           "line":{
- *             "id":"4",
- *             "txt":"a"
- *           }
- *         },
- *         {
- *           "line":{
- *             "id":"5",
- *             "txt":""
- *           }
- *         },
- *         {
- *           "line":{
- *             "id":"6",
- *             "txt":"c"
- *           }
- *         },
- *         {
- *           "line":{
- *             "id":"7",
- *             "txt":"d"
- *           }
- *         },
- *         {
- *           "line":{
- *             "id":"8",
- *             "txt":"d"
- *           }
- *         },
- *         {
- *           "line":{
- *             "id":"9",
- *             "txt":"c"
- *           }
- *         },
- *         {
- *           "line":{
- *             "id":"10",
- *             "txt":""
- *           }
- *         },
- *         {
- *           "line":{
- *             "id":"11",
- *             "txt":"e"
- *           }
- *         },
- *         {
- *           "line":{
- *             "id":"12",
- *             "txt":"f"
- *           }
- *         },
- *         {
- *           "line":{
- *             "id":"13",
- *             "txt":"e"
- *           }
- *         },
- *         {
- *           "line":{
- *             "id":"14",
- *             "txt":""
- *           }
- *         },
- *         {
- *           "line":{
- *             "id":"15",
- *             "txt":"f"
- *           }
- *         },
- *         {
- *           "line":{
- *             "id":"16",
- *             "txt":"e"
- *           }
- *         },
- *         {
- *           "line":{
- *             "id":"17",
- *             "txt":"f"
- *           }
- *         }
- *       ]
- *     }
- *   }
- * }
- */
-
+        });
+    const parambox = new Parambox({selector: "#parambox"})
+    //loadParambox()
+});

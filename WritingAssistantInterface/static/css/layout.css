@@ -22,12 +22,13 @@
     margin: 0.4rem 0.4rem 0.2rem 0.4rem;
     /* border-bottom: 2px solid var(--borderColor); */
     border: 1px solid var(--borderColor);
-    border-radius: 4px;
+    border-radius: 6px;
 }
 
 /* Bottom area fills remaining space */
 .bottom-pane {
-    display: flex; /* side-by-side children */
+    padding-bottom: 0.4rem;
+    display: flex;
     flex: 1 1 auto;
     min-height: 0; /* grow to fill the rest of the height */
     min-height: 0; /* allow children to scroll if needed */
@@ -37,29 +38,53 @@
 .left-pane {
     background: #ffffff;
     padding: 1rem;
-    width: 30%; /* or flex: 0 0 30%; */
+    flex: 0 0 20%;
     overflow: auto; /* scroll if content overflows */
 
     /* appearance of this pane */
     margin: 0.2rem 0.2rem 0.2rem 0.4rem;
     /* border-right: 2px solid var(--borderColor); */
     border: 1px solid var(--borderColor);
-    border-radius: 4px;
+    border-radius: 6px;
 }
 
-/* Right pane, handled by #sandbox in sandbox.css
 .right-pane {
-    background: #ffffff;
-    padding: 1rem;
-    flex: 1 1 auto;
-    overflow: auto;
-} */
-#sandbox {
-    /* appearance of this pane */
+    display: flex;
+    flex: 1 1 auto; /* fixed height based on content or padding */
+    flex-direction: column;/* side-by-side children */
+    /* appearanc */
     margin: 0.2rem 0.4rem 0.2rem 0.2rem;
-    /* border-right: 2px solid var(--borderColor); */
     border: 1px solid var(--borderColor);
-    border-radius: 4px;
+    border-radius: 6px;
+}
+
+#parambox {
+    background: #fafafa;
+    padding: 1rem;
+    margin: 0.1rem 0.1rem 0rem 0.1rem;
+
+    display: flex;
+    gap: 1rem;
+    flex: 0 0 auto; /* fixed height based on content or padding */
+    flex-direction: row;
+}
+#parambox select {
+    flex: 1 1 0;
+    min-width: 100px;
+    max-width: 200px;
+}
+#parambox label {
+    font-weight: 600;
+    color: var(--borderColor);
+}
+
+#sandbox {
+    margin: 0rem 0.1rem 0.1rem 0.1rem;
+    flex: 1 1 auto;
+    min-height: 0; /* grow to fill the rest of the height */
+    min-height: 0; /* allow children to scroll if needed */
+    /* appearance of this pane */
+
 }
 
 html, body {

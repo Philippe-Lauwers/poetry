@@ -21,7 +21,10 @@ main_bp = Blueprint(
 
 @main_bp.route('/')
 def home():
-    return render_template('index.html')
+    resp = requests.get(f"{BACKEND_URL}/webLists")
+    weblists = resp.json()['weblists']
+
+    return render_template('index.html',weblists=weblists)
 
 @main_bp.route('/generate', methods=['POST'])
 def generate():
@@ -29,6 +32,7 @@ def generate():
     params = request.json
     resp = requests.get(f"{BACKEND_URL}/write", params=params)
     return jsonify(resp.json())
+
 
 @main_bp.route('/log', methods=['POST'])
 def log():

@@ -12,35 +12,40 @@
     <div class="container">
         <div class="top-pane">
             <h1>Poem factory</h1>
-            <button type="submit" formaction="/generate" formmethod="post">Generate</button>
         </div>
         <div class="bottom-pane">
             <div class="left-pane">
                 <h2>Keyword Pane</h2>
                 <label>
-                    Language:
-                    <input name="lang" value="EN">
-                </label><br/>
-                <label>
-                    Form:
-                    <input name="form" value="shorter">
-                </label><br/>
-                <label>
                     NMF Dimension:
                     <input name="nmfDim" value="random">
                 </label>
             </div>
-            <div class="right-pane" id="sandbox">
-
+            <div class="right-pane">
+                <div id="parambox">
+                    {% for list_name, list_data in weblists.items() %}
+                        <label for="{{ list_name }}">{{ list_data.label }}</label>
+                        <select id="{{ list_name }}" name="{{ list_name }}">
+                            {% for opt in list_data.options %}
+                                <option id="{{ list_name }}_{{ opt.id }}" value="{{ opt.id }}" {% if opt.default %}selected{% endif %}>
+                                    {{ opt.label }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    {% endfor %}
+                    <button type="submit" formaction="/generate" formmethod="post">Generate</button>
+                </div>
+                <div id="sandbox"></div>
             </div>
         </div>
     </div>
 </form>
 
-<script type = "module" defer src="{{ url_for('static', filename='js/main.js') }}"></script>
-<script type = "module" src="{{ url_for('static',filename='js/linkUserInteractionToBackend.js') }}"></script>
-<script type = "module" src="{{ url_for('static',filename='js/API.js') }}"></script>
-<script type = "module" src="{{ url_for('static',filename='js/sandboxInteraction.js') }}"></script>
-<script type = "module" src="{{ url_for('static',filename='js/niftyThings.js') }}"></script>
+<script type="module" defer src="{{ url_for('static', filename='js/main.js') }}"></script>
+<script type="module" src="{{ url_for('static',filename='js/linkUserInteractionToBackend.js') }}"></script>
+<script type="module" src="{{ url_for('static',filename='js/API.js') }}"></script>
+<script type="module" src="{{ url_for('static',filename='js/sandboxInteraction.js') }}"></script>
+<script type="module" src="{{ url_for('static',filename='js/paramboxInteraction.js') }}"></script>
+<script type="module" src="{{ url_for('static',filename='js/niftyThings.js') }}"></script>
 </body>
 </html>

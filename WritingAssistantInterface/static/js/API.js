@@ -9,7 +9,8 @@ export class BaseNode {
      * @param  {string}  [opts.tag="div"]            – tag name to create if none found
      * @param  {string}  [opts.id]                   – id to apply if creating
      * @param  {string}  [opts.type]                 – type, applies only to input elements
-     * @param  {string}  [opts.className]            – className to apply if creating     * @param  {Object<string,Function>} [opts.events] – event listeners to attach
+     * @param  {string}  [opts.className]            – className to apply if creating
+     * @param  {Object<string,Function>} [opts.events] – event listeners to attach
      * @param  {Object<string,Function>} [opts.buttons] – buttons to attach*/
     constructor({
                     selector = null,
@@ -22,7 +23,6 @@ export class BaseNode {
                     buttons = {}
                 } = {}) {
         let el;
-
         // 1) if the function was passed an HTMLElement, use the HTMLElement
         if (selector instanceof HTMLElement) {
             el = selector;
@@ -30,6 +30,9 @@ export class BaseNode {
         // 2) else if the function was passed a string, try to query it
         else if (typeof selector === "string") {
             el = document.querySelector(selector);
+            if(!el) {
+               el = document.getElementById(selector);
+            }
         }
         // 3) if nothing was found, create a new DOM-element
         if (!el) {
@@ -52,7 +55,7 @@ export class BaseNode {
             if (typeof fn === "function") el.addButton({btn, fn});
         });
 
-        // 5) store the (new) elment and register for weak look-ups
+        // 5) store the (new) element and register for weak look-ups
         if (!(el instanceof HTMLElement)) {
             throw new TypeError("BaseNode expects an HTMLElement or valid selector");
         }
@@ -200,12 +203,12 @@ export class BaseNode {
             .filter(Boolean);                 // remove nulls for un-registered nodes
     }
     /**
-     * @return BaseNode: fhe first child of a BaseNode instance, if it exists */
+     * @return BaseNode: the first child of a BaseNode instance, if it exists */
     get firstChild() {
         return BaseNode.#registry.get(this.el.firstElementChild) || null;
     }
     /**
-     * @return BaseNode: fhe last child of a BaseNode instance, if it exists  */
+     * @return BaseNode: the last child of a BaseNode instance, if it exists  */
     get lastChild() {
         return BaseNode.#registry.get(this.el.lastElementChild) || null;
     }

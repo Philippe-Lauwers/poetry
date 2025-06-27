@@ -26,13 +26,13 @@ import warnings
 
 from .verse_generator import VerseGenerator
 from .poem_container import Poem as PoemContainer, Stanza, Verse # container to store the output in a hierarchy of Poem>>Stanza>>Verse objects
-from .poembase_config import PoemBaseConfig
+from .poembase_config import PoembaseConfig
 
 warnings.filterwarnings("ignore")
 
 class PoemBase:
 
-    def __init__(self, config):
+    def __init__(self, lang):
 
         self.structureDict = {'sonnet':
                               ('a','b','b','a', '',
@@ -53,7 +53,7 @@ class PoemBase:
                                'g', 'a', 'h', 'c'),
                           }
 
-        self.initializeConfig(config)
+        self.initializeConfig(lang)
         self.loadRhymeDictionary()
         self.loadNMFData()
 
@@ -72,27 +72,27 @@ class PoemBase:
     def container(self):
         return self._poemContainer
 
-    def initializeConfig(self, config):
+    def initializeConfig(self, lang):
 
-        with open(config) as json_config_file:
-            configData = json.load(json_config_file)
+        """with open(config) as json_config_file:
+            configData = json.load(json_config_file)"""
         
         location = os.path.join(
-            configData['general']['data_directory'],
-            configData['general']['language']
+            PoembaseConfig.getParameter(category='general', parameterName='data_directory', language=lang),
+            PoembaseConfig.getParameter(category='general', parameterName='language', language=lang)
         )
             
-        self.NMF_FILE = os.path.join(location, configData['nmf']['matrix_file'])
-        self.NMF_DESCRIPTION_FILE = os.path.join(location, configData['nmf']['description_file'])
-        self.RHYME_FREQ_FILE = os.path.join(location, configData['rhyme']['freq_file'])
-        self.RHYME_DICT_FILE = os.path.join(location, configData['rhyme']['rhyme_dict_file'])
-        self.RHYME_INV_DICT_FILE = os.path.join(location, configData['rhyme']['rhyme_inv_dict_file'])
-        self.MODEL_FILE = os.path.join(location, configData['model']['parameter_file'])
-        self.NGRAM_FILE = os.path.join(location, configData['model']['ngram_file'])
+        self.NMF_FILE = os.path.join(location, PoembaseConfig.getParameter(category='nmf', parameterName='matrix_file', language=lang))
+        self.NMF_DESCRIPTION_FILE = os.path.join(location, PoembaseConfig.getParameter(category='nmf', parameterName='description_file', language=lang))
+        self.RHYME_FREQ_FILE = os.path.join(location, PoembaseConfig.getParameter(category='rhyme', parameterName='freq_file', language=lang))
+        self.RHYME_DICT_FILE = os.path.join(location, PoembaseConfig.getParameter(category='rhyme', parameterName='rhyme_dict_file', language=lang))
+        self.RHYME_INV_DICT_FILE = os.path.join(location, PoembaseConfig.getParameter(category='rhyme', parameterName='rhyme_inv_dict_file', language=lang))
+        self.MODEL_FILE = os.path.join(location, PoembaseConfig.getParameter(category='model', parameterName='parameter_file', language=lang))
+        self.NGRAM_FILE = os.path.join(location, PoembaseConfig.getParameter(category='model', parameterName='ngram_file', language=lang))
         
-        self.name = configData['general']['name']
-        self.length = configData['poem']['length']
-        self.entropy_threshold = configData['poem']['entropy_threshold']
+        self.name = PoembaseConfig.getParameter(category='general', parameterName='name', language=lang)
+        self.length = float(PoembaseConfig.getParameter(category='poem', parameterName='length', language=lang))
+        self.entropy_threshold = float(PoembaseConfig.getParameter(category='poem', parameterName='entropy_threshold', language=lang))
 
     def loadNMFData(self):
         self.W = np.load(self.NMF_FILE)
