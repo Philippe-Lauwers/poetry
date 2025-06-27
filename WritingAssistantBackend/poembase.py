@@ -52,6 +52,7 @@ class PoemBase:
                                'e', 'g', 'f', 'h', '',
                                'g', 'a', 'h', 'c'),
                           }
+        self.lang = lang # store the language for this instance of the PoemBase class
 
         self.initializeConfig(lang)
         self.loadRhymeDictionary()
@@ -240,7 +241,9 @@ class PoemBase:
     def getRhymeStructure(self, cutoff=10):
         chosenList = []
         mapDict = {}
-        structure = self.structureDict[self.form]
+        """
+        structure = self.structureDict[self.form]"""
+        structure = PoembaseConfig.RhymeSchemes.getElements(form=self.form,lang=self.lang)
         for el in set(structure):
             freq = -1
             while True:

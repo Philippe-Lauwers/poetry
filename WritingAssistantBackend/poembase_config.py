@@ -12,13 +12,12 @@ class PoembaseConfig:
         return {"lang": {
                     "label": "Select a language for your poem",
                     "options": cls.PoemLanguages.getList()},
-                "rhymeScheme": {
+                "form": {
                     "label": "Select a rhyme scheme for your poem",
                     "options": cls.RhymeSchemes.getList()}}
 
     @staticmethod
     def getParameter (language: int, category:str, parameterName:str):
-        print(language, category, parameterName)
         parameter = (db.session.query(ConfigurationParameter).
                      join(ConfigurationCategory, ConfigurationParameter.configurationCategory_id == ConfigurationCategory.id).
                      filter(ConfigurationParameter.poemLanguage_id == language).
@@ -49,7 +48,7 @@ class PoembaseConfig:
                     l_out.update({"default":True})
                 output.append(l_out)
             return output
-    # Class for handlign the rhyme schemes
+    # Class for handling the rhyme schemes
     class RhymeSchemes:
 
         # Returns a list of available rhyme schemes
@@ -65,3 +64,16 @@ class PoembaseConfig:
                     rs_out.update({"persistent":True})
                 output.append(rs_out)
             return output
+
+        @staticmethod
+        def getElements(lang, form):
+            elem_out = []
+            elements = (db.session.query(RhymeSchemeElement.rhymeSchemeElement).
+                        filter(RhymeSchemeElement.poemLanguage_id == lang).
+                        filter(RhymeSchemeElement.rhymeScheme_id == form).
+                        order_by(RhymeSchemeElement.rhymeScheme_id.asc()).
+                        all())
+            for e in elements:
+                elem_out.append(e.rhymeSchemeElement)
+            return tuple(elem_out)
+
