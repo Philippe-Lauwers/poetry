@@ -23,17 +23,23 @@
             </div>
             <div class="right-pane">
                 <div id="parambox">
-                    {% for list_name, list_data in weblists.items() %}
-                        <label for="{{ list_name }}">{{ list_data.label }}</label>
-                        <select id="{{ list_name }}" name="{{ list_name }}">
-                            {% for opt in list_data.options %}
-                                <option id="{{ list_name }}_{{ opt.id }}" value="{{ opt.id }}" {% if opt.default %}selected{% endif %}>
-                                    {{ opt.label }}
-                                </option>
-                            {% endfor %}
-                        </select>
+                    {# index.html #}
+                    {% for section in weblists %}
+                        {# each `section` is a dict like {"lang": { … }} or {"form": { … }} #}
+                        {% for list_name, list_data in section.items() %}
+                            <label for="{{ list_name }}">{{ list_data.label }}</label>
+                            <select id="{{ list_name }}" name="{{ list_name }}">
+                                {% for opt in list_data.options %}
+                                    <option id="{{ list_name }}_{{ opt.id }}"
+                                            value="{{ opt.id }}"
+                                            {% if opt.default %}selected{% endif %}>
+                                        {{ opt.label }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        {% endfor %}
                     {% endfor %}
-                    <button type="submit" formaction="/generate" formmethod="post">Generate</button>
+                    <button type="submit" formaction="/generate" formmethod="post" id="btn_generate">Generate</button>
                 </div>
                 <div id="sandbox"></div>
             </div>
@@ -47,5 +53,6 @@
 <script type="module" src="{{ url_for('static',filename='js/sandboxInteraction.js') }}"></script>
 <script type="module" src="{{ url_for('static',filename='js/paramboxInteraction.js') }}"></script>
 <script type="module" src="{{ url_for('static',filename='js/niftyThings.js') }}"></script>
+<script>const rhymeSchemes = {{ weblists_form | tojson }};</script>
 </body>
 </html>

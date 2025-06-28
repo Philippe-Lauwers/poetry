@@ -1,5 +1,6 @@
 import {sandboxClick, verseKeydown, highlightIfEmpty} from "./sandboxInteraction.js";
 import {loadParambox} from "./paramboxInteraction.js";
+import {Submit} from "./submitHandler.js";
 import {Poem} from "./sandboxAPI/1_Poem.js";
 import {Parambox} from "./paramboxAPI/1_Parambox.js";
 
@@ -125,6 +126,9 @@ window.addEventListener("DOMContentLoaded", () => {
                 change: e => highlightIfEmpty(e, e.target)
             }
         });
-    const parambox = new Parambox({selector: "#parambox"})
-    //loadParambox()
+    const parambox = new Parambox({selector: "#parambox"});
+    loadParambox();
+
+    // add submit-handler
+    document.getElementById("poemForm").addEventListener("submit", e => Submit.handler(e, e.target));
 });

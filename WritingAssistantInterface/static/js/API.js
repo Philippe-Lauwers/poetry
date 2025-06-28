@@ -84,6 +84,12 @@ export class BaseNode {
         return node ?? new BaseNode(childEl);     // fallback generic wrapper
     }
 
+    remove() {
+        console.log("removing", this);
+        this.el.remove();
+        BaseNode.#registry.delete(this.el);
+    }
+
 
     /** === HANDLING BUTTONS === */
     /**

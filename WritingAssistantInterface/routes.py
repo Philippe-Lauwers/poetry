@@ -24,7 +24,14 @@ def home():
     resp = requests.get(f"{BACKEND_URL}/webLists")
     weblists = resp.json()['weblists']
 
-    return render_template('index.html',weblists=weblists)
+    # Look for the 'form' section of the json input
+    weblists_form = None
+    for section in weblists:
+        if 'form' in section.keys(): # section will only have one key anyway
+            weblists_form = section['form']
+            break
+
+    return render_template('index.html',weblists=weblists, weblists_form=weblists_form)
 
 @main_bp.route('/generate', methods=['POST'])
 def generate():

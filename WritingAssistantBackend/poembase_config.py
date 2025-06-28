@@ -7,14 +7,14 @@ from .dbModel import Poem as PoemModel, PoemLanguage, RhymeScheme, RhymeSchemeEl
 class PoembaseConfig:
 
     # Returns the data for populating drop-downs in the interface
-    @classmethod
-    def webLists(cls):
-        return {"lang": {
-                    "label": "Select a language for your poem",
-                    "options": cls.PoemLanguages.getList()},
-                "form": {
-                    "label": "Select a rhyme scheme for your poem",
-                    "options": cls.RhymeSchemes.getList()}}
+    @staticmethod
+    def webLists():
+        return [{"lang": {
+            "label": "Select a language for your poem",
+            "options": PoembaseConfig.PoemLanguages.getList()}},
+            {"form": {
+                "label": "Select a rhyme scheme for your poem",
+                "options": PoembaseConfig.RhymeSchemes.getList()}}]
 
     @staticmethod
     def getParameter (language: int, category:str, parameterName:str):
@@ -50,7 +50,6 @@ class PoembaseConfig:
             return output
     # Class for handling the rhyme schemes
     class RhymeSchemes:
-
         # Returns a list of available rhyme schemes
         @staticmethod
         def getList():
@@ -64,6 +63,10 @@ class PoembaseConfig:
                     rs_out.update({"persistent":True})
                 output.append(rs_out)
             return output
+
+        @staticmethod
+        def getPersistent():
+            return {"persistent": [{"id": s} for s in RhymeSchemes.persistentSchemes]}
 
         @staticmethod
         def getElements(lang, form):
