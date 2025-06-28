@@ -21,6 +21,10 @@ from onmt.model_builder import build_encoder, build_decoder, build_embeddings
 def load_test_model_with_projection_layer(opt, model_path=None):
     if model_path is None:
         model_path = opt.models[0]
+
+
+    if not hasattr(torch.optim.SGD, "defaults"):
+        torch.optim.SGD.defaults = {}
     checkpoint = torch.load(model_path,
                             map_location=lambda storage, loc: storage, weights_only=False)
 
