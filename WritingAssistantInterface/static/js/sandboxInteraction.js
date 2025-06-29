@@ -182,7 +182,6 @@ function moveFocus(e, direction) {
  */
 let _paramboxActive = true;
 export function highlightIfEmpty(e) {
-    console.log("val",e.target.value.trim())
     if (e.target.value.trim() === '') {
         e.target.classList.add('verseEmpty');
     } else {

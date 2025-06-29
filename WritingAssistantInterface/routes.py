@@ -46,7 +46,6 @@ def poemForm():
     form = request.args.get('form', default='1', type=str)
     params = {'lang':lang,'form':form}
     resp = requests.get(f"{BACKEND_URL}/poemForm", params=params)
-    print(resp.json())
     return jsonify(resp.json())
 
 @main_bp.route('/log', methods=['POST'])

@@ -15,7 +15,7 @@ def parameterLists():
 def poemForm():
     lang = request.args.get('lang', default='1', type=str)
     form = request.args.get('form', default='sonnet', type=str)
-    return jsonify({'rhymeScheme': PoembaseConfig.poemForms.webElements(lang=lang, form=form)})
+    return jsonify({'rhymeScheme': PoembaseConfig.Poemforms.webElements(lang=lang, form=form)})
 
 @main_bp.route('/write', methods=['GET', 'POST'])
 def write_poem():

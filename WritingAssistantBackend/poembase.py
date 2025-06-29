@@ -225,7 +225,7 @@ class PoemBase:
         mapDict = {}
 
 
-        structure = PoembaseConfig.poemForms.getElements(form=self.form,lang=self.lang)
+        structure = PoembaseConfig.Poemforms.getElements(form=self.form, lang=self.lang)
         for el in set(structure):
             freq = -1
             while True:
