@@ -52,30 +52,10 @@
     display: flex;
     flex: 1 1 auto; /* fixed height based on content or padding */
     flex-direction: column;/* side-by-side children */
-    /* appearanc */
+    /* appearance */
     margin: 0.2rem 0.4rem 0.2rem 0.2rem;
     border: 1px solid var(--borderColor);
     border-radius: 6px;
-}
-
-#parambox {
-    background: #fafafa;
-    padding: 1rem;
-    margin: 0.1rem 0.1rem 0rem 0.1rem;
-
-    display: flex;
-    gap: 1rem;
-    flex: 0 0 auto; /* fixed height based on content or padding */
-    flex-direction: row;
-}
-#parambox select {
-    flex: 1 1 0;
-    min-width: 100px;
-    max-width: 200px;
-}
-#parambox label {
-    font-weight: 600;
-    color: var(--borderColor);
 }
 
 #sandbox {

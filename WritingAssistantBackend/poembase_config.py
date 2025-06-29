@@ -65,18 +65,26 @@ class PoembaseConfig:
             return output
 
         @staticmethod
-        def getPersistent():
-            return {"persistent": [{"id": s} for s in RhymeSchemes.persistentSchemes]}
-
+        def queryElements(lang,form):
+            return (db.session.query(RhymeSchemeElement.id, RhymeSchemeElement.rhymeSchemeElement).
+                        filter(RhymeSchemeElement.poemLanguage_id == lang).
+                        filter(RhymeSchemeElement.rhymeScheme_id == form).
+                        order_by(RhymeSchemeElement.order.asc()).
+                        all())
         @staticmethod
         def getElements(lang, form):
             elem_out = []
-            elements = (db.session.query(RhymeSchemeElement.rhymeSchemeElement).
-                        filter(RhymeSchemeElement.poemLanguage_id == lang).
-                        filter(RhymeSchemeElement.rhymeScheme_id == form).
-                        order_by(RhymeSchemeElement.rhymeScheme_id.asc()).
-                        all())
+            elements = PoembaseConfig.RhymeSchemes.queryElements(lang=lang,form=form)
             for e in elements:
                 elem_out.append(e.rhymeSchemeElement)
             return tuple(elem_out)
+        @staticmethod
+        def webElements(lang,form):
+            elements = PoembaseConfig.RhymeSchemes.queryElements(lang=lang,form=form)
+            outputList = []
+            for e in elements:
+                outputList.append({'verse':{'id':e.id,'txt':e.rhymeSchemeElement}})
+            output = {'id':form,'elements':outputList}
+            return output
+
 

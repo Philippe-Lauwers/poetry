@@ -30,7 +30,7 @@ export class Stanza extends BaseNode {
     /**
      * Function that returns the first field of the stanza
      */
-    firstField() {
+    firstVerse() {
         return this.firstChild.firstChild;
     }
 

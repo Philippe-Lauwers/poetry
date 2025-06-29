@@ -2,6 +2,7 @@ import {BaseNode} from './API.js';
 import {Parambox} from './paramboxAPI/1_Parambox.js';
 import {Select} from './paramboxAPI/2_Select.js';
 import {Option} from './paramboxAPI/3_Option.js';
+import {retrieveRhymeScheme} from "./linkUserInteractionToBackend.js";
 
 export const getParambox = () => Parambox.instance;
 
@@ -20,6 +21,11 @@ export function loadParambox() {
     });
 }
 
+/**
+ * Called after a submit that fetches an entire poem
+ * @param e
+ * @param submitter
+ */
 export function desactivateParambox(e=null,submitter=null) {
     const parambox = getParambox();
     let hasPersistentOption;
@@ -29,7 +35,7 @@ export function desactivateParambox(e=null,submitter=null) {
             for (let opt of sel.children) {
                 if (opt.persistence) {
                     hasPersistentOption = true;
-                } else {
+                } else if (opt.el.value !== sel.el.value) {
                     opt.el.disabled = true;
                 }
             }
@@ -38,12 +44,36 @@ export function desactivateParambox(e=null,submitter=null) {
             sel.el.disabled = true;
         } else {
             for (let opt of sel.children) {
-                console.log(opt)
                 if (!opt.persistence && sel.el.value !== opt.el.value) {
                     opt.remove();
                 }
             }
         }
-        submitter.disabled = true;
+        if (submitter) {
+            submitter.disabled = true;
+            submitter.textContent = "Loading";
+        } else {
+            document.getElementById("btn_generate").disabled = true;
+        }
     }
+}
+
+/**
+ * Is called when the form is loaded (with lang and rhymescheme the initial values)
+ * and when the user chooses another rhymescheme
+ * @param lang
+ * @param rhymeScheme
+ */
+let _poemDesc
+export async function receiveRhymeScheme() {
+    try {
+    const json = await retrieveRhymeScheme();
+    _poemDesc = json.rhymeScheme ? json : null;
+    // …do something with _poemDesc…
+  } catch (err) {
+    console.error('Failed to get rhyme scheme:', err);
+  }
+}
+export function getRhymeScheme() {
+    return _poemDesc !== undefined ?_poemDesc.rhymeScheme: null;
 }

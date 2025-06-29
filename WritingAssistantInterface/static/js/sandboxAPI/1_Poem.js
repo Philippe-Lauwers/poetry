@@ -47,8 +47,8 @@ export class Poem extends BaseNode {
     /**
      *  Function that returns the first field of the poem
      */
-    firstField() {
-        return this.firstStanza().firstField();
+    firstVerse() {
+        return this.firstStanza().firstVerse();
     }
 
     /**

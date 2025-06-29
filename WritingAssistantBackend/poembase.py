@@ -34,24 +34,6 @@ class PoemBase:
 
     def __init__(self, lang):
 
-        self.structureDict = {'sonnet':
-                              ('a','b','b','a', '',
-                               'c','d','d','c', '',
-                               'e','f','e', '',
-                               'f', 'e', 'f'),
-                              'short':
-                              ('a','b','a','b', '',
-                               'c','d','c','d'),
-                              'shorter':
-                              ('a','b','a','b'),
-                              'ultrashort':
-                              ('a','a'),
-                              'pantoum':
-                              ('a', 'b', 'c', 'd', '',
-                               'b','e','d','f','',
-                               'e', 'g', 'f', 'h', '',
-                               'g', 'a', 'h', 'c'),
-                          }
         self.lang = lang # store the language for this instance of the PoemBase class
 
         self.initializeConfig(lang)
@@ -241,8 +223,8 @@ class PoemBase:
     def getRhymeStructure(self, cutoff=10):
         chosenList = []
         mapDict = {}
-        """
-        structure = self.structureDict[self.form]"""
+
+
         structure = PoembaseConfig.RhymeSchemes.getElements(form=self.form,lang=self.lang)
         for el in set(structure):
             freq = -1

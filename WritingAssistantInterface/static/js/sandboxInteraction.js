@@ -1,4 +1,4 @@
-import {getRhymeScheme, setRhymeScheme} from './main.js';
+import {desactivateParambox, getRhymeScheme} from './paramboxInteraction.js';
 import {BaseNode} from './API.js';
 import {Poem} from './sandboxAPI/1_Poem.js';
 import {Stanza} from './sandboxAPI/2_Stanza.js';
@@ -55,10 +55,23 @@ export function verseKeydown(e) {
             actionCaught = moveFocus(e, 1)
             break;
         default:
+            highlightIfEmpty(e);
             break;
     }
     if (actionCaught) {
         e.preventDefault();
+    }
+}
+export function verseKeyup(e) {
+    let actionCaught = false;
+    switch (e.key) {
+        case 'Enter':
+        case 'Tab':
+        case 'ArrowUp':
+        case 'ArrowDown':
+        default:
+            highlightIfEmpty(e);
+            break;
     }
 }
 
@@ -73,7 +86,6 @@ function verseAccept(e) {
     let stanza = poem.findStanzaOf(verse);
     const wrapper = verse.parent;                  // VerseWrapper instance
     const rhymeScheme = getRhymeScheme();
-
     if (!verse || !poem || !stanza) return true;        // safety
 
     if (verse.value.trim()) {
@@ -168,11 +180,19 @@ function moveFocus(e, direction) {
  * Method to highlight an emtpy field if
  * @param e target of an event, called at the change event of a field
  */
+let _paramboxActive = true;
 export function highlightIfEmpty(e) {
+    console.log("val",e.target.value.trim())
     if (e.target.value.trim() === '') {
         e.target.classList.add('verseEmpty');
     } else {
         e.target.classList.remove('verseEmpty');
+        if (_paramboxActive) {
+            // If parambox is active, deactivate it and remember it is deactivated
+            // when the user has written some initial text
+            desactivateParambox()
+            _paramboxActive = false;
+        }
     }
 }
 
@@ -311,4 +331,5 @@ export function receivePoem(poem) {
             }
         });
     });
+    document.getElementById("btn_generate").textContent = "Your draft is ready";
 }

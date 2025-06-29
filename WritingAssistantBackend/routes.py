@@ -1,4 +1,6 @@
 from flask import Blueprint, request, jsonify, render_template
+
+from .dbModel import RhymeScheme
 from .poembase_from_cache import get_poem
 from .poembase_config import PoembaseConfig
 from .poem_repository import PoemRepository
@@ -7,8 +9,13 @@ main_bp = Blueprint('main', __name__)
 
 @main_bp.route('/webLists', methods=['GET'])
 def parameterLists():
-    return jsonify({"weblists":PoembaseConfig.webLists()})
+    return jsonify({'weblists':PoembaseConfig.webLists()})
 
+@main_bp.route('/rhymeScheme', methods=['GET'])
+def rhymeScheme():
+    lang = request.args.get('lang', default='1', type=str)
+    form = request.args.get('form', default='sonnet', type=str)
+    return jsonify({'rhymeScheme': PoembaseConfig.RhymeSchemes.webElements(lang=lang, form=form)})
 
 @main_bp.route('/write', methods=['GET', 'POST'])
 def write_poem():

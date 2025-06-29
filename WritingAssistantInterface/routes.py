@@ -40,6 +40,14 @@ def generate():
     resp = requests.get(f"{BACKEND_URL}/write", params=params)
     return jsonify(resp.json())
 
+@main_bp.route('/rhymeScheme', methods=['GET'])
+def rhymeScheme():
+    lang = request.args.get('lang', default='1', type=str)
+    form = request.args.get('form', default='1', type=str)
+    params = {'lang':lang,'form':form}
+    resp = requests.get(f"{BACKEND_URL}/rhymeScheme", params=params)
+    print(resp.json())
+    return jsonify(resp.json())
 
 @main_bp.route('/log', methods=['POST'])
 def log():

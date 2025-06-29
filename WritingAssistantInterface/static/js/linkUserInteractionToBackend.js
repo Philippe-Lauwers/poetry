@@ -1,4 +1,5 @@
 import {receivePoem} from './sandboxInteraction.js';
+import {receiveRhymeScheme} from './paramboxInteraction.js'
 
     const form = document.getElementById('poemForm');
     form.addEventListener('submit', async e => {
@@ -24,3 +25,19 @@ import {receivePoem} from './sandboxInteraction.js';
       json.poem ? receivePoem(json.poem) : 'Error';
     });
 
+    const formFld = document.getElementById('form');
+    formFld.addEventListener('change', async e => {
+        receiveRhymeScheme();
+    });
+    export async function retrieveRhymeScheme() {
+        const langFld = document.getElementById('lang').value;
+        const formFld = document.getElementById('form').value;
+        const rs  = await fetch(`/rhymeScheme?`
+                                + `lang=${encodeURIComponent(langFld)}`
+                                + `&form=${encodeURIComponent(formFld)}`, {
+                                method: 'GET',
+                                });
+        const json =  await rs.json();
+
+        return json.rhymeScheme ? json: null;
+    }

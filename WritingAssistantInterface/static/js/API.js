@@ -85,7 +85,6 @@ export class BaseNode {
     }
 
     remove() {
-        console.log("removing", this);
         this.el.remove();
         BaseNode.#registry.delete(this.el);
     }
