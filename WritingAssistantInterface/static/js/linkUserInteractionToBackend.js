@@ -32,7 +32,7 @@ import {receiveRhymeScheme} from './paramboxInteraction.js'
     export async function retrieveRhymeScheme() {
         const langFld = document.getElementById('lang').value;
         const formFld = document.getElementById('form').value;
-        const rs  = await fetch(`/rhymeScheme?`
+        const rs  = await fetch(`/poemForm?`
                                 + `lang=${encodeURIComponent(langFld)}`
                                 + `&form=${encodeURIComponent(formFld)}`, {
                                 method: 'GET',

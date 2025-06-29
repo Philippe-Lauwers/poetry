@@ -14,7 +14,7 @@ class PoembaseConfig:
             "options": PoembaseConfig.PoemLanguages.getList()}},
             {"form": {
                 "label": "Select a rhyme scheme for your poem",
-                "options": PoembaseConfig.RhymeSchemes.getList()}}]
+                "options": PoembaseConfig.poemForms.getList()}}]
 
     @staticmethod
     def getParameter (language: int, category:str, parameterName:str):
@@ -49,7 +49,7 @@ class PoembaseConfig:
                 output.append(l_out)
             return output
     # Class for handling the rhyme schemes
-    class RhymeSchemes:
+    class poemForms:
         # Returns a list of available rhyme schemes
         @staticmethod
         def getList():
@@ -80,7 +80,7 @@ class PoembaseConfig:
             return tuple(elem_out)
         @staticmethod
         def webElements(lang,form):
-            elements = PoembaseConfig.RhymeSchemes.queryElements(lang=lang,form=form)
+            elements = PoembaseConfig.poemForms.queryElements(lang=lang,form=form)
             outputList = []
             for e in elements:
                 outputList.append({'verse':{'id':e.id,'txt':e.rhymeSchemeElement}})

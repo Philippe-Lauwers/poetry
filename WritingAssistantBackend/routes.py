@@ -11,11 +11,11 @@ main_bp = Blueprint('main', __name__)
 def parameterLists():
     return jsonify({'weblists':PoembaseConfig.webLists()})
 
-@main_bp.route('/rhymeScheme', methods=['GET'])
-def rhymeScheme():
+@main_bp.route('/poemForm', methods=['GET'])
+def poemForm():
     lang = request.args.get('lang', default='1', type=str)
     form = request.args.get('form', default='sonnet', type=str)
-    return jsonify({'rhymeScheme': PoembaseConfig.RhymeSchemes.webElements(lang=lang, form=form)})
+    return jsonify({'rhymeScheme': PoembaseConfig.poemForms.webElements(lang=lang, form=form)})
 
 @main_bp.route('/write', methods=['GET', 'POST'])
 def write_poem():
