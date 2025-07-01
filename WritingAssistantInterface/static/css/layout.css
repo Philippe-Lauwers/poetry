@@ -85,3 +85,17 @@ div {
 input {
     caret-color: var(--borderColor);
 }
+.btn {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: none;
+
+}
+.btn:disabled {
+    background-position: -58px 0;
+}
+.btn:hover,
+.btn:focus {
+    background-position: -29px 0;
+}

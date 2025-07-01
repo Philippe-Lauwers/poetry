@@ -16,7 +16,6 @@ let sandbox = null;
  */
 export const getSandbox = () => Poem.instance;
 
-
 /**
  * Click handler for the sandbox.
  * @param {MouseEvent} e *
@@ -32,7 +31,7 @@ export function sandboxClick(e) {
     if (target === rootEl) {
         const stanza = poem.lastChild;
         const wrapper = stanza?.lastChild;
-        const verse = wrapper?.lastChild;
+        const verse = wrapper?.firstChild; // anything appearing after the verse in the wrapper is a button
         verse?.el.focus();
     }
 }

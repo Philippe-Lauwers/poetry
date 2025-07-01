@@ -13,18 +13,21 @@ export class Stanza extends BaseNode {
         super({
             id: finalID, tag: "div", className: "stanza-wrapper", events, buttons
         }); // Now `this.el` is set and registered.
-    }
+   }
 
     /**
      * Add a new verseWrapper and return the verseWrapper wrapper */
     addVerseWrapper({id = null, events = {}, buttons = {}} = {}) {
-        return this.append(new VerseWrapper({id:id, buttons:buttons}));
+        const vw = new VerseWrapper({id:id, buttons:buttons})
+        return this.append(vw);
     }
     /**
      * Add a new Verse ( = create new verseWrapper and append a new verse) */
     addVerse({id = null, value= "", events = {} , buttons = {}} = {}) {
-        const vw = this.append(new VerseWrapper({ id:id, buttons: buttons}));
-        return vw.append(new Verse({id: id, value: value, events: events}));
+        const vw = new VerseWrapper({ id:id, buttons: buttons});
+        const v = vw.addVerse({id: id, value: value, events: events});
+        this.append(vw);
+        return v;
     }
 
     /**

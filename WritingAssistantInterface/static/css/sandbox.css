@@ -47,3 +47,32 @@
     background: #f5f5f5;
     border-radius: 4px; /* rounded corners                       */
 }
+
+/* SOLVED IN layout.css (it is used in all panes)
+.btn {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: none;
+
+}
+*/
+
+[id^="btn-gen-v-"] {
+
+    background-image: url('../img/btn_GenerateVerse.svg');
+    background-repeat: no-repeat;
+    background-position: 0 0;
+    background-size: 86px 28px;
+}
+
+/* hover/focus shifts to the second square */
+[id^="btn-gen-v-"]:hover,
+[id^="btn-gen-v-"]:focus {
+    background-position: -29px 0;
+}
+
+/* disabled shows the third */
+[id^="btn_gen-v-"]:disabled {
+    background-position: -58px 0;
+}

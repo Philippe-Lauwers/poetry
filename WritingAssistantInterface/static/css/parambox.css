@@ -20,6 +20,7 @@
     color: var(--borderColor);
 }
 
+/* SOLVED IN layout.css (it is used in all panes)
 .btn {
     width: 28px;
     height: 28px;
@@ -27,6 +28,7 @@
     border: none;
 
 }
+*/
 
 #btn_generatePoem {
     background-image: url('../img/btn_GeneratePoem.svg');
@@ -37,14 +39,11 @@
 
 /* hover/focus shifts to the second square */
 #btn_generatePoem:hover,
-#btn_generatePoem:focus,
-.btn:hover,
-.btn:focus {
+#btn_generatePoem:focus {
     background-position: -29px 0;
 }
 
 /* disabled shows the third */
-#btn_generatePoem:disabled,
-.btn:disabled {
+#btn_generatePoem:disabled {
     background-position: -58px 0;
 }

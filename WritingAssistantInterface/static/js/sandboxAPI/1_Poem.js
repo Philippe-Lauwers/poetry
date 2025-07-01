@@ -23,7 +23,8 @@ export class Poem extends BaseNode {
 
     /** Add a new stanza and return the Stanza wrapper */
     addStanza({id = null, events = {}, buttons = {}} = {}) {
-        return this.append(new Stanza({id:id, events:events, buttons: buttons}));
+        const s = new Stanza({id:id, events:events, buttons: buttons})
+        return this.append(s);
     }
 
     /**

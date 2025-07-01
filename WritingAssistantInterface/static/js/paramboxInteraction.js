@@ -52,7 +52,7 @@ export function desactivateParambox(e=null,submitter=null) {
         if (submitter) {
             submitter.disabled = true;
         } else {
-            document.getElementById("btn_generate").disabled = true;
+            document.getElementById("btn_generatePoem").disabled = true;
         }
     }
 }

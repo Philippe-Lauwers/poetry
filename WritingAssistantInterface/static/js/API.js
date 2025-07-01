@@ -149,17 +149,10 @@ export class BaseNode {
         if (className) btn.classList.add(className);
         if (id) btn.id = id;
 
-        btn.src = imgSrc;
-        /*const img = document.createElement("img");
-        img.src = imgSrc;
-        img.alt = alt;
-        btn.appendChild(img);*/
-
         if (typeof onClick === "function") {
             btn.addEventListener("click", onClick);
         }
 
-        //btn.src = imgSrc;
         btn.title = alt ? alt : null;
         btn.formAction = formaction ? formaction : null;
         btn.formMethod = formmethod ? formmethod : null;

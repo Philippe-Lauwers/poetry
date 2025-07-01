@@ -11,16 +11,25 @@ window.addEventListener("DOMContentLoaded", () => {
             click: e => sandboxClick(e)           // or e => sandboxClick(e)
         }
     });
-    sandbox.addStanza()
-        .addVerseWrapper()
+    let v = sandbox.addStanza()
         .addVerse({
-            value: "",                        // initial text
+            value: "",// initial text
             events: {
                 keydown: e => verseKeydown(e, e.target),
                 keyup: e => verseKeyup(e, e.target),
-                change: e => highlightIfEmpty(e, e.target)
+                change: e => highlightIfEmpty(e, e.target)},
+            buttons: {
+                btn_generatePoem: {
+                    id: "btn-gen-v-",
+                    type: "submit",
+                    formaction: "/generateVerse",
+                    formmethod: "post",
+                    className: "btn",
+                    alt: "Request a new verse"
+                }
             }
         });
+    v.el.focus();
     // add submit-handler
     document.getElementById("poemForm").addEventListener("submit", e => Submit.handler(e, e.target));
 });
@@ -38,5 +47,6 @@ const parambox = new Parambox({
         }
     }
 });
+
 loadParambox();
 if (getRhymeScheme() == null) receiveRhymeScheme();
