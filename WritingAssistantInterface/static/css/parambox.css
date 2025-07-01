@@ -8,12 +8,43 @@
     flex: 0 0 auto; /* fixed height based on content or padding */
     flex-direction: row;
 }
+
 #parambox select {
     flex: 1 1 0;
     min-width: 100px;
     max-width: 200px;
 }
+
 #parambox label {
     font-weight: 600;
     color: var(--borderColor);
+}
+
+.btn {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: none;
+
+}
+
+#btn_generatePoem {
+    background-image: url('../img/btn_GeneratePoem.svg');
+    background-repeat: no-repeat;
+    background-position: 0 0;
+    background-size: 86px 28px;
+}
+
+/* hover/focus shifts to the second square */
+#btn_generatePoem:hover,
+#btn_generatePoem:focus,
+.btn:hover,
+.btn:focus {
+    background-position: -29px 0;
+}
+
+/* disabled shows the third */
+#btn_generatePoem:disabled,
+.btn:disabled {
+    background-position: -58px 0;
 }

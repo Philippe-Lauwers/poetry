@@ -330,5 +330,4 @@ export function receivePoem(poem) {
             }
         });
     });
-    document.getElementById("btn_generate").textContent = "Your draft is ready";
 }

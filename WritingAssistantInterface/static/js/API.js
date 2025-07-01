@@ -42,25 +42,33 @@ export class BaseNode {
             if (className) el.className = className;
             if (value) el.value = value;
         }
+        // 4) register the DOM-element
+        this.el = el;
+        BaseNode.#registry.set(el, this);
 
-        // 4) attach any given event listeners
+        // 5) attach any given event listeners
         this._events = events;
         Object.entries(events).forEach(([ev, fn]) => {
             if (typeof fn === "function") el.addEventListener(ev, fn);
         });
 
-        // 4) attach any given buttons
+        // 6) attach any given buttons
         this._buttons = buttons;
-        Object.entries(buttons).forEach(([btn, fn]) => {
-            if (typeof fn === "function") el.addButton({btn, fn});
+        this._buttonMap = new Map();
+        Object.entries(buttons).forEach(([key,val]) => {
+            let cfg;
+            if (typeof val === "function") {
+                cfg = {id:key, onClick:val};
+            } else if (val && typeof val === "object") {
+                cfg = val
+            }
+            this.addButton(cfg)
         });
 
-        // 5) store the (new) element and register for weak look-ups
+        //7) store the (new) element and register for weak look-ups
         if (!(el instanceof HTMLElement)) {
             throw new TypeError("BaseNode expects an HTMLElement or valid selector");
         }
-        this.el = el;
-        BaseNode.#registry.set(el, this);
     }
 
     /**
@@ -100,7 +108,7 @@ export class BaseNode {
 
         // Track by id if supplied; otherwise by DOM reference
         const key = cfg.id ?? btn;
-        this.buttons.set(key, btn);
+        this._buttonMap.set(key, btn);
 
         this.el.appendChild(btn);
         return btn;
@@ -110,14 +118,10 @@ export class BaseNode {
      * Returns true if something was removed.
      */
     removeButton(btnOrId) {
-        const key = this.buttons.has(btnOrId) ? btnOrId :         // id lookup
-            [...this.buttons.entries()]
-                .find(([, el]) => el === btnOrId)?.[0];     // ref lookup
-        if (!key) return false;
-
-        const btn = this.buttons.get(key);
+        const btn = this._buttonMap.get(btnOrId);
+        if (!btn) return false;
         btn.remove();
-        this.buttons.delete(key);
+        this._buttonMap.delete(btnOrId);
         return true;
     }
     /**
@@ -132,23 +136,34 @@ export class BaseNode {
         const {
             imgSrc,
             alt = "",
+            type = null,
+            formaction = null,
+            formmethod = null,
             onClick = null,
-            id = null          // optional stable id
+            id = null,
+            className = null// optional stable id
         } = cfg;
 
         const btn = document.createElement("button");
-        btn.type = "button";
-        btn.classList.add("field-btn");
-        if (id) btn.dataset.id = id;
+        btn.type = type?type:"button";
+        if (className) btn.classList.add(className);
+        if (id) btn.id = id;
 
-        const img = document.createElement("img");
+        btn.src = imgSrc;
+        /*const img = document.createElement("img");
         img.src = imgSrc;
         img.alt = alt;
-        btn.appendChild(img);
+        btn.appendChild(img);*/
 
         if (typeof onClick === "function") {
             btn.addEventListener("click", onClick);
         }
+
+        //btn.src = imgSrc;
+        btn.title = alt ? alt : null;
+        btn.formAction = formaction ? formaction : null;
+        btn.formMethod = formmethod ? formmethod : null;
+
         return btn;
     }
 

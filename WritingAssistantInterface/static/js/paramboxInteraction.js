@@ -51,7 +51,6 @@ export function desactivateParambox(e=null,submitter=null) {
         }
         if (submitter) {
             submitter.disabled = true;
-            submitter.textContent = "Loading";
         } else {
             document.getElementById("btn_generate").disabled = true;
         }

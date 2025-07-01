@@ -33,7 +33,7 @@ def home():
 
     return render_template('index.html',weblists=weblists, weblists_form=weblists_form)
 
-@main_bp.route('/generate', methods=['POST'])
+@main_bp.route('/generatePoem', methods=['POST'])
 def generate():
     # proxy form data to your backend /write
     params = request.json

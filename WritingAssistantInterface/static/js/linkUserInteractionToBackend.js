@@ -14,7 +14,7 @@ import {receiveRhymeScheme} from './paramboxInteraction.js'
       });
 
       // 2) Request generation (proxied to backend)
-      const gen = await fetch('/generate', {
+      const gen = await fetch('/generatePoem', {
         method: 'POST',
         headers: {'Content-Type':'application/json'},
         body: JSON.stringify(data)

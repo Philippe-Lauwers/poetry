@@ -24,6 +24,19 @@ window.addEventListener("DOMContentLoaded", () => {
     // add submit-handler
     document.getElementById("poemForm").addEventListener("submit", e => Submit.handler(e, e.target));
 });
-const parambox = new Parambox({selector: "#parambox"});
+const parambox = new Parambox({
+    selector: "#parambox",
+    buttons: {
+        btn_generatePoem: {
+            id: "btn_generatePoem",
+            type: "submit",
+            formaction: "/generatePoem",
+            formmethod: "post",
+            //imgSrc: "static/img/btn_GeneratePoem.svg",
+            className: "btn",
+            alt: "Generate a draft"
+        }
+    }
+});
 loadParambox();
 if (getRhymeScheme() == null) receiveRhymeScheme();
