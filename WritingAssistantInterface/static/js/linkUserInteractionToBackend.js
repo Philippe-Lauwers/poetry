@@ -5,6 +5,7 @@ const form = document.getElementById('poemForm');
 form.addEventListener('submit', async e => {
         e.preventDefault();
         const data = Object.fromEntries(new FormData(form).entries());
+        console.log(data);
 
         // 1) Log the submission on your frontend Python
         await fetch('/log', {
@@ -14,9 +15,10 @@ form.addEventListener('submit', async e => {
         });
 
         let reqRoute = ""
+        const s_id = e.submitter.id.substring(0,e.submitter.id.lastIndexOf("-"))
         if (e.submitter.id === "btn_generatePoem") {
             reqRoute = "/generatePoem";
-        } else if (e.submitter.id === "btn_genVrs") {
+        } else if (s_id === "btn-gen-v") {
             reqRoute = "/generateVerse";
         }
         // 2) Route request

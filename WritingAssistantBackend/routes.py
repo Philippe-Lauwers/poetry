@@ -1,9 +1,11 @@
 from flask import Blueprint, request, jsonify, render_template
 
-from .dbModel import RhymeScheme
 from .poembase_from_cache import get_poem
 from .poembase_config import PoembaseConfig
 from .poem_repository import PoemRepository
+
+import builtins
+import re
 
 main_bp = Blueprint('main', __name__)
 
@@ -17,24 +19,41 @@ def poemForm():
     form = request.args.get('form', default='sonnet', type=str)
     return jsonify({'rhymeScheme': PoembaseConfig.Poemforms.webElements(lang=lang, form=form)})
 
+def convInt(value):
+    try:
+        return int(value)
+    except ValueError:
+        return value
 @main_bp.route('/generatePoem', methods=['GET', 'POST'])
 def write_poem():
     # This endpoint writes a poem
     # - retrieving the parameters
-    lang = request.args.get('lang', default='1', type=str)
-    form = request.args.get('form', default='sonnet', type=str)
-    nmfDim = request.args.get('nmfDim', default='random', type=str)
-    try:
-        nmfDim = int(nmfDim)
-    except ValueError:
-        pass
-    print(f"Writing poem in {lang} with form {form} and nmfDim {nmfDim}")
+    data = request.get_json(force=True) or {}
+
+    # extract your fields (with fallbacks)
+    lang = data.get('lang', '1')
+    pform = data.get('form', '1')
+    nmfDim = convInt(data.get('nmfDim', 'random'))
+    print(f"Writing poem in {lang} with form {pform} and nmfDim {nmfDim}")
     # - create the poem object (or get it from cache)
     poem = get_poem(lang=lang)
-    poem.write(form=form, nmfDim=nmfDim)
+    poem.write(form=pform, nmfDim=nmfDim)
     PoemRepository.save(poem.container)
     return jsonify({'poem': poem.container.to_dict()})
 
+@main_bp.route('/generateVerse', methods=['GET','POST'])
+def write_verse():
+    # This endpoint generates suggestions for a verse
+    # - retrieving the parameters
+    data = request.get_json(force=True) or {}
+
+    # extract your fields (with fallbacks)
+    lang = data.get('lang', '1')
+    pform = data.get('form', '1')
+    nmfDim = convInt(data.get('nmfDim', 'random'))
+    verses = {k:v for (k,v) in data.items() if k.startswith('v-')}
+
+    pass
 
 @main_bp.route('/test')
 def index():

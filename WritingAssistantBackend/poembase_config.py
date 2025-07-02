@@ -44,8 +44,9 @@ class PoembaseConfig:
             output = []
             for l in languages:
                 l_out = {"id":l.id, "label":l.label}
-                if l.id == dflt.language_id:
-                    l_out.update({"default":True})
+                if dflt is not None:
+                    if l.id == dflt.language_id:
+                        l_out.update({"default":True})
                 output.append(l_out)
             return output
     # Class for handling the rhyme schemes

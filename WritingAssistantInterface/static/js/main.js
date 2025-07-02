@@ -29,9 +29,9 @@ window.addEventListener("DOMContentLoaded", () => {
                 }
             }
         });
-    v.el.focus();
     // add submit-handler
     document.getElementById("poemForm").addEventListener("submit", e => Submit.handler(e, e.target));
+    if (v.el.isConnected) setTimeout(function () {v.el.focus();},100);
 });
 const parambox = new Parambox({
     selector: "#parambox",

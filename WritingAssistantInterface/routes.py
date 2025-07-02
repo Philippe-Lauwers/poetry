@@ -34,17 +34,21 @@ def home():
     return render_template('index.html',weblists=weblists, weblists_form=weblists_form)
 
 @main_bp.route('/generatePoem', methods=['POST'])
-def genePoem():
+def genPoem():
     # proxy form data to your backend /write
-    params = request.json
-    resp = requests.get(f"{BACKEND_URL}/generatePoem", params=params)
+    params = request.get_json(force=True)
+    resp = requests.post(f"{BACKEND_URL}/generatePoem",
+        json=params,               # <— send JSON, not form-data
+        headers={'Content-Type': 'application/json'})
     return jsonify(resp.json())
 
 @main_bp.route('/generateVerse', methods=['POST'])
 def genVerse():
     # proxy form data to your backend /write
-    params = request.json
-    resp = requests.get(f"{BACKEND_URL}/generateVerse", params=params)
+    params = request.get_json(force=True)
+    resp = requests.post(f"{BACKEND_URL}/generateVerse",
+        json=params,               # <— send JSON, not form-data
+        headers={'Content-Type': 'application/json'})
     return jsonify(resp.json())
 
 @main_bp.route('/poemForm', methods=['GET'])

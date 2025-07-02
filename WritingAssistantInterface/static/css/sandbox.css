@@ -73,6 +73,6 @@
 }
 
 /* disabled shows the third */
-[id^="btn_gen-v-"]:disabled {
+[id^="btn-gen-v-"]:disabled {
     background-position: -58px 0;
 }

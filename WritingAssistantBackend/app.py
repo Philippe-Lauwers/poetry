@@ -42,5 +42,7 @@ def create_app(config_object=None):
     return app
 
 
-from .dbModel import *
+from .dbModel import ActionTargetType, ActionTarget, ActionType, Action, ConfigurationCategory, ConfigurationParameter, \
+    Keyword, PoemLanguage, Poem, RhymeScheme, RhymeSchemeElement, Stanza, Theme, ThemeDescriptor, User, Verse
+
 app = create_app()
