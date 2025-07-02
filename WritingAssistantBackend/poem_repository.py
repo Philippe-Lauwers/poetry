@@ -34,10 +34,12 @@ class BaseRepository:
 class PoemRepository(BaseRepository):
     @staticmethod
     def save(poem, isNew=True):
+        pass
         try:
             # create the poem record
             orm_poem = PoemModel(user_id=1,
                                  poemLanguage_id=poem.language,
+                                 rhymeScheme_id=poem.form,
                                  theme_id=poem.nmfDim,
                                  status=1)
             db.session.add(orm_poem)

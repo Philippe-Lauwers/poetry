@@ -186,6 +186,8 @@ class Poem(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id', name='fk_poems_user_id'), nullable=False)
     poemLanguage_id = db.Column(db.Integer, db.ForeignKey('poemLanguages.id', name='fk_poems_poemLanguages_id'),
                                 nullable=False)
+    rhymeScheme_id = db.Column(db.Integer, db.ForeignKey('rhymeSchemes.id', name='fk_poems_rhymeSchemes_id'),
+                               nullable=False)
     language = synonym('poemLanguage_id')
     theme_id = db.Column(db.Integer, db.ForeignKey('themes.id', name='fk_poems_themes_id'), nullable=False)
     status = db.Column(db.Integer, nullable=False)
