@@ -5,7 +5,6 @@ const form = document.getElementById('poemForm');
 form.addEventListener('submit', async e => {
         e.preventDefault();
         const data = Object.fromEntries(new FormData(form).entries());
-        console.log(data);
 
         // 1) Log the submission on your frontend Python
         await fetch('/log', {

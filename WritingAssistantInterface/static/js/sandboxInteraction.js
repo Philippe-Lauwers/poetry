@@ -70,6 +70,7 @@ export function verseKeyup(e) {
         case 'ArrowDown':
         default:
             highlightIfEmpty(e);
+            disableGenBtn(e);
             break;
     }
 }
@@ -117,6 +118,19 @@ function verseAccept(e) {
                     change: highlightIfEmpty
                 }
             });
+            // When we create a new verse, we move the "generate verse" button from the current to the new verse
+            // and match the id with the button next to it
+            let btn = e.target.nextSibling;
+            while (btn) {
+                if (btn.id.startsWith("btn-gen-v")) {
+                    btn.id = "btn-gen-".concat(newVerse.id.replace("-tmp",""));
+                    btn.disabled = false;
+                    newVerse.parent.el.appendChild(btn);
+                    break;
+                }
+                btn = btn.nextSibling;
+            }
+
             newVerse.el.focus();
         } else { // there is a rhyme scheme and the number of fields matches the rhyme scheme
             focusToEmptyField(poem, rhymeScheme);
@@ -190,6 +204,39 @@ export function highlightIfEmpty(e) {
             // when the user has written some initial text
             desactivateParambox()
             _paramboxActive = false;
+        }
+    }
+}
+
+/**
+ * Disables the generate verse button when the input field next to it has a value
+ * @param e
+ */
+export function disableGenBtn(e) {
+    console.log(e.target);
+    const poem = getSandbox();
+    let fld;
+    let val;
+    if (e.target.tagName === "INPUT") {
+        fld = e.target
+        val = fld.value
+    } else {
+        fld = poem.firstChild.firstChild.firstChild.el;
+        val = "Clicked a submit button"  // trick the following script into believing the field is not empty
+        console.log(fld);
+    }
+    // Activate/desactivate the "generate verse" button according to the content of the verse field
+    if(fld.nextSibling) {
+        if(fld.nextSibling.id.startsWith("btn-gen-v")){
+            fld.nextElementSibling.disabled = (val !== '')
+        }
+    }
+    // If there is only one verse field, activate/desactivate the field according to it's content
+    if (poem.children.length == 1) {
+        if (poem.firstChild.children.length == 1) {
+            if (poem.firstChild.firstChild.firstChild.el === fld) {
+                document.getElementById("btn_generatePoem").disabled = (val !== '')
+            }
         }
     }
 }

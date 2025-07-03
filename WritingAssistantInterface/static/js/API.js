@@ -1,6 +1,7 @@
 // base-node.js
 export class BaseNode {
     static #registry = new WeakMap();
+    static #poemElements = ["Poem","Stanza","VerseWrapper","Verse"]
 
     /**
      * Constructor class: searches for element by id, creates a new one if needed
@@ -69,6 +70,18 @@ export class BaseNode {
         if (!(el instanceof HTMLElement)) {
             throw new TypeError("BaseNode expects an HTMLElement or valid selector");
         }
+
+        //8) create a hidden input to send id's and structure back and forth
+
+        if (BaseNode.#poemElements.includes(this.constructor.name)) {
+            let fld;
+            fld = document.createElement("input")
+            fld.type = "text";
+            fld.name = "struct-".concat(this.id);
+            fld.id = fld.name;
+            //document.getElementById("poemForm").appendChild(fld);
+            document.getElementsByClassName("top-pane")[0].appendChild(fld);
+        }
     }
 
     /**
@@ -89,7 +102,14 @@ export class BaseNode {
         const childEl = node ? node.el : child;
         // Append the childEl to the DOM-element of the current object
         this.el.appendChild(childEl);
-        return node ?? new BaseNode(childEl);     // fallback generic wrapper
+        // determine the child node (or create the new child node) the method will return
+        const returnVal =  node ?? new BaseNode(childEl);     // fallback generic wrapper
+        // Save the new element to the "struct-" field of the parent (for poem elements only)
+        if (BaseNode.#poemElements.includes(this.constructor.name)) {
+            const structFld = document.getElementById(`struct-${this.id}`)
+                structFld.value += (structFld.value ? ",":"") + childEl.id;
+        }
+        return returnVal
     }
 
     remove() {

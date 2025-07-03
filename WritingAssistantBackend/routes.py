@@ -4,9 +4,6 @@ from .poembase_from_cache import get_poem
 from .poembase_config import PoembaseConfig
 from .poem_repository import PoemRepository
 
-import builtins
-import re
-
 main_bp = Blueprint('main', __name__)
 
 @main_bp.route('/webLists', methods=['GET'])

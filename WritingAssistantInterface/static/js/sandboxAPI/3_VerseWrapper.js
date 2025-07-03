@@ -15,21 +15,19 @@ export class VerseWrapper extends BaseNode {
     }
 
     /** Add a new verseWrapper and return the verseWrapper wrapper */
-    addVerse({selector=null,id = null, value = "", events = {}} = {}) {
-        const v = new Verse({id: id, value: value, events: events})
-        if (this.el.firstChild) {
-            for (let b of this.el.children) {
-                const b_id = b.id
-                switch (b.id.substring(b_id.indexOf("-")+1,b_id.lastIndexOf("-"))) {
-                    case "gen-v":
-                        b.id = b.id.concat(v.id.substring(v.id.indexOf("-")+1,v.id.lastIndexOf("-")))
-                }
+    addVerse({selector = null, id = null, value = "", events = {}} = {}) {
+        // append a new verse (necessary to create the fields that store the id's of the poem in a structure
+        const v = this.append(new Verse({id: id, value: value, events: events}))
+        // check if there is a button in front of the verse field, in that case move the button to the back
+        for (let elem of this.el.children) {
+            const elem_id = elem.id
+            switch (elem_id.substring(elem_id.indexOf("-") + 1, elem_id.lastIndexOf("-"))) {
+                case "gen-v":
+                    this.el.insertBefore(v.el, elem)
+                    break;
             }
-            this.el.insertBefore(v.el,this.el.firstChild)
-            return v;
-        } else {
-            return this.append(v);
         }
+        return v;
     }
 
 
