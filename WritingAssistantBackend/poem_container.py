@@ -12,6 +12,10 @@ class BaseContainer():
             self._oldId = self._id
         self._id = idValue
 
+    @property
+    def oldId(self):
+        return self._oldId
+
 
 class Poem(BaseContainer):
     def __init__(self, poem_text: str = None):
@@ -30,6 +34,10 @@ class Poem(BaseContainer):
     def addStanza(self, order=-1, stanzaText: str = None):
         st_order = order if order >= 0 else len(self._stanzas)
         self._stanzas.append(Stanza(stanzaText=stanzaText, order=st_order))
+
+    def receiveUserInput(self, userInput, structure):
+        stanzas = structure["struct-sandbox"].split(',')
+        for s in stanzas: self._stanzas.append(Stanza(id = s, userInput=userInput, structure=structure))
 
     @property
     def form(self):
@@ -69,13 +77,13 @@ class Poem(BaseContainer):
             },
             "stanzas": [s.to_dict() for s in self.stanzas]
         }
-        if self._id is not None: poem["id"] = self._id
-        if self._oldId is not None: poem["oldId"] = self._oldId
+        if self.id is not None: poem["id"] = self._id
+        if self.oldId is not None: poem["oldId"] = self._oldId
         return poem
 
 
 class Stanza(BaseContainer):
-    def __init__(self, order=0, stanzaText: str = None):
+    def __init__(self, order=0, stanzaText: str = None, id = None, structure = None, userInput = None):
         super().__init__()
         self._verses = []
         self._order = order
@@ -86,10 +94,15 @@ class Stanza(BaseContainer):
         if stanzaText:
             for v in stanzaText.splitlines():
                 self.addVerse(verseText=v, order=len(self._verses))
+        # If a structure is defined, it means we have to store user input in the poem container
+        if structure is not None:
+            self.id = id
+            for v in structure[v].split(','):
+                self.addVerse(id = structure[v], verseText=userInput[structure[v]])
 
-    def addVerse(self, order=-1, verseText: str = None):
+    def addVerse(self, order=-1, verseText: str = None, id = None):
         v_order = order if order >= 0 else len(self._verses)
-        self._verses.append(Verse(verseText=verseText, order=v_order))
+        self._verses.append(Verse(id=id, verseText=verseText, order=v_order))
 
     @property
     def verses(self):
@@ -109,16 +122,17 @@ class Stanza(BaseContainer):
             "verses": [v.to_dict() for v in self.verses]
         }
         if self.id is not None: stanza["id"] = self._id
-        if self._oldId is not None: stanza["oldId"] = self._oldId
+        if self.oldId is not None: stanza["oldId"] = self._oldId
         return {"stanza": stanza}
 
 class Verse(BaseContainer):
     words = None
 
-    def __init__(self, order=0, verseText: str = None):
+    def __init__(self, order=0, verseText: str = None, id= None):
         super().__init__()
         self._words = verseText or ""
         self._order = order
+        self.id = id
 
     @property
     def text(self):

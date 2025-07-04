@@ -49,6 +49,10 @@ def write_verse():
     pform = data.get('form', '1')
     nmfDim = convInt(data.get('nmfDim', 'random'))
     verses = {k:v for (k,v) in data.items() if k.startswith('v-')}
+    structure = {k:v for (k,v) in data.items() if k.startswith('struct')}
+
+    poem = get_poem(lang=lang)
+    poem.write(form=pform, nmfDim=nmfDim, structure=structure, userInput=verses)
 
     pass
 

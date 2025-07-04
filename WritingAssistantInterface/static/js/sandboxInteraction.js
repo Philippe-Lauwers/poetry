@@ -1,4 +1,4 @@
-import {desactivateParambox, getRhymeScheme} from './paramboxInteraction.js';
+import {deactivateParambox, getRhymeScheme} from './paramboxInteraction.js';
 import {BaseNode} from './API.js';
 import {Poem} from './sandboxAPI/1_Poem.js';
 import {Stanza} from './sandboxAPI/2_Stanza.js';
@@ -202,7 +202,7 @@ export function highlightIfEmpty(e) {
         if (_paramboxActive) {
             // If parambox is active, deactivate it and remember it is deactivated
             // when the user has written some initial text
-            desactivateParambox()
+            deactivateParambox()
             _paramboxActive = false;
         }
     }
@@ -212,8 +212,7 @@ export function highlightIfEmpty(e) {
  * Disables the generate verse button when the input field next to it has a value
  * @param e
  */
-export function disableGenBtn(e) {
-    console.log(e.target);
+export function disableGenBtn(e, {includeFld = false} = {}) {
     const poem = getSandbox();
     let fld;
     let val;
@@ -222,13 +221,15 @@ export function disableGenBtn(e) {
         val = fld.value
     } else {
         fld = poem.firstChild.firstChild.firstChild.el;
-        val = "Clicked a submit button"  // trick the following script into believing the field is not empty
-        console.log(fld);
+        // trick the following script into believing the field is not empty
+        // because we are generating content for an empty verse but still want the button disabled
+        val = "Clicked a submit button";
     }
     // Activate/desactivate the "generate verse" button according to the content of the verse field
     if(fld.nextSibling) {
         if(fld.nextSibling.id.startsWith("btn-gen-v")){
             fld.nextElementSibling.disabled = (val !== '')
+            if (includeFld) fld.disabled = (val !== '')
         }
     }
     // If there is only one verse field, activate/desactivate the field according to it's content
@@ -308,7 +309,7 @@ export function locateInRhymeScheme(poem, verse) {
 }
 
 /**
- * places the focus on the first empty field if there is one and adapts the css class
+ * Places the focus on the first empty field if there is one and adapts the css class
  * @param poem
  * @param rhymeScheme
  * @return [no return]*/
@@ -344,7 +345,8 @@ function firstEmptyVerse(poem) {
     return null;
 }
 
-/** This function is called when the poem is received from the backend, it is only accessible when
+/**
+ * This function is called when the poem is received from the backend, it is only accessible when
  * the sandbox is empty (i.e., there is a stanza>>versewrapper>>verse but the verse is empty
  * It creates stanzas and verse fields according to the poem object
  * @param poem
@@ -353,21 +355,44 @@ function firstEmptyVerse(poem) {
 export function receivePoem(poem) {
     //let txt = '';
     const sandbox = getSandbox();
+    const structSB = document.getElementById("struct-sandbox");
+    let structParent;
     let myVerse = firstEmptyVerse(sandbox);
+    let myVerseWrapper;
     let myStanza;
+    let myStructFld;
     poem.stanzas.forEach((s, stanzaIndex) => {
-        if (myStanza) { // if we have a stanza in this function, we need to add another for this iteration
+        if (myStanza) { // if we have a handle to a stanza, we need to add another for this iteration
             myStanza = sandbox.addStanza({id: s.stanza.id});
         } else { // first iteration -> grab the first stanza on the screen
             myStanza = myVerse.stanza;
+            myStructFld = document.getElementById(("struct-" + myStanza.id));
             myStanza.id = Stanza.formatID({id: s.stanza.id, prefix: "s-"});
+           // Update struct-sandbox with the new id and re-id the struct-s-... field
+            structSB.value = myStanza.id;
+            myStructFld.id = "struct-"+myStanza.id;
+            myStructFld.name = "struct-"+myStanza.id;
         }
         s.stanza.verses.forEach((v, verseIndex) => {
             let {text, id} = v.verse;
             if (myVerse.value === "") {
-                // We are in the empty initial field
+                // first iteration, We are in the empty initial field
+                myVerseWrapper = myVerse.parent;
+                myStructFld = document.getElementById(("struct-" + myVerseWrapper.id));
+                myVerseWrapper.id = VerseWrapper.formatID({id: id, prefix: "vw-"});
+                structParent = document.getElementById("struct-" + myStanza.id);
+                structParent.value = myVerseWrapper.id;
+                myStructFld.id = "struct-"+myVerseWrapper.id;
+                myStructFld.name = "struct-"+myVerseWrapper.id;
+
+                structParent = document.getElementById("struct-" + myVerseWrapper.id);
+                myStructFld.value = document.getElementById(("struct-" + myVerse.id));
                 myVerse.id = Verse.formatID({id: id, prefix: "v-"});
                 myVerse.value = text;
+                structParent.value = myVerse.id;
+                myStructFld.id = "struct-"+myVerse.id;
+                myStructFld.name = "struct-"+myVerse.id;
+
                 myVerse.parent.id = VerseWrapper.formatID({id: id, prefix: "vw-"});
             } else {
                 //let buttons = myVerse.parent.buttons;

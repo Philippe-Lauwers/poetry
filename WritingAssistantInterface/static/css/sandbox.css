@@ -41,12 +41,19 @@
     outline: 1px solid var(--borderColor);
     border-radius:4px;
 }
-/* Light-grey highlight when *verse* gets focus */
+/* Light-grey highlight + border when *verse* gets focus */
 .verse:focus {
     outline: 1px solid var(--borderColor);
     background: #f5f5f5;
     border-radius: 4px; /* rounded corners                       */
 }
+/* Light-grey highlight when *verse* gets disabled */
+.verse:disabled {
+    outline: 1px solid #b4b4b4;
+    background: #f5f5f5;
+    border-radius: 4px; /* rounded corners                       */
+}
+
 
 /* SOLVED IN layout.css (it is used in all panes)
 .btn {

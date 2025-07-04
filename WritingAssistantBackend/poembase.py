@@ -97,8 +97,7 @@ class PoemBase:
         self.i2w = self.generator.vocab.itos
         self.w2i = self.generator.vocab.stoi
 
-
-    def write(self, constraints=('rhyme'), form='sonnet', nmfDim=False):
+    def write(self, constraints=('rhyme'), form='sonnet', nmfDim=False, userInput=None, structure=None):
         self.form = form
         self.blacklist_words = set()
         self.blacklist = []
@@ -108,6 +107,8 @@ class PoemBase:
         self._poemContainer = PoemContainer()
         self._poemContainer.form = form
         self._poemContainer.nmfDim = nmfDim
+        if userInput is not None and structure is not None:
+            self._poemContainer.receiveUserInput(userInput, structure)
 
         if constraints == ('rhyme'):
             self.writeRhyme(nmfDim)

@@ -26,7 +26,7 @@ export function loadParambox() {
  * @param e
  * @param submitter
  */
-export function desactivateParambox(e=null,submitter=null) {
+export function deactivateParambox(e=null, submitter=null) {
     const parambox = getParambox();
     let hasPersistentOption;
     // loop through selects
