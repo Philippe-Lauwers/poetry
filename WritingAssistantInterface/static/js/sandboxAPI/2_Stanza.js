@@ -36,6 +36,12 @@ export class Stanza extends BaseNode {
     firstVerse() {
         return this.firstChild.firstChild;
     }
+    /**
+     * Function that returns the last field of the stanza
+     */
+    lastVerse() {
+        return this.lastChild.lastChild;
+    }
 
     /**
      * === HELPER METHODS/FUNCTIONS === */

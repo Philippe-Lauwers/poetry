@@ -19,8 +19,8 @@ window.addEventListener("DOMContentLoaded", () => {
                 keyup: e => verseKeyup(e, e.target),
                 change: e => highlightIfEmpty(e, e.target)},
             buttons: {
-                btn_generatePoem: {
-                    id: "btn-gen-v-",
+                btn_generateVerse: {
+                    id: "btn-gen-v-1",
                     type: "submit",
                     formaction: "/generateVerse",
                     formmethod: "post",
@@ -30,8 +30,13 @@ window.addEventListener("DOMContentLoaded", () => {
             }
         });
     // add submit-handler
-    document.getElementById("poemForm").addEventListener("submit", e => Submit.handler(e, e.target));
-    if (v.el.isConnected) setTimeout(function () {v.el.focus();},100);
+    const form = document.getElementById("poemForm")
+    form.addEventListener("submit", e => {
+            document.getElementById("lang").disabled = false;},
+        {capture: true}
+    );
+        form.addEventListener("submit", e => Submit.handler(e, e.target));
+    if (v.el.isConnected) setTimeout(function () {v.el.focus();},0);
 });
 const parambox = new Parambox({
     selector: "#parambox",

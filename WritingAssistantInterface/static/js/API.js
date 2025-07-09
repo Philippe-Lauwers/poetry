@@ -18,6 +18,7 @@ export class BaseNode {
                     tag = "div",
                     type = "",
                     id = "",
+                    name = "",
                     value = "",
                     className = "",
                     events = {},
@@ -39,6 +40,7 @@ export class BaseNode {
         if (!el) {
             el = document.createElement(tag);
             if (id) el.id = id;
+            if (name) el.setAttribute("name",name);
             if (type) el.type = type;
             if (className) el.className = className;
             if (value) el.value = value;
@@ -134,6 +136,26 @@ export class BaseNode {
         return btn;
     }
     /**
+     * Move a button from one parent to another.
+     * @param btnOrId , the button to move, either as a DOM reference or by its id
+     * @param oldParent
+     * @param newParent
+     */
+    moveButton(btnOrId, oldParent, newParent) {
+        const btn = btnOrId instanceof String?document.getElementById(btnOrId):btnOrId;
+        let oldId = btn.id
+        let btnNum = btn.id.match(/\d+/);
+        let newNum = newParent.id.match(/\d+/);
+        btn.id = (btnNum && newNum)?btn.id.replace(btnNum[0],newNum[0]):btn.id;
+        btn.name = btn.id;
+        btn.disabled = false;
+        newParent.el.appendChild(btn);
+
+        // Re-map the button
+        this._buttonMap.delete(oldId);
+        this._buttonMap.set(btn.id, btn);
+    }
+    /**
      * Remove a button by (1) its id or (2) its DOM reference.
      * Returns true if something was removed.
      */
@@ -147,14 +169,13 @@ export class BaseNode {
     /**
      * The actual building of a button DOM-element
      * @param cfg   configuration of the buttons
-     *   @param imgSrc     for image buttons
      *   @param alt = "",
      *   @param onClick = null,
      *   @param id
+     * @return dom-element of type button
      *   */
     #buildButton(cfg) {
         const {
-            imgSrc,
             alt = "",
             type = null,
             formaction = null,
@@ -167,7 +188,10 @@ export class BaseNode {
         const btn = document.createElement("button");
         btn.type = type?type:"button";
         if (className) btn.classList.add(className);
-        if (id) btn.id = id;
+        if (id) {
+            btn.id = id;
+            btn.name = id;
+        }
 
         if (typeof onClick === "function") {
             btn.addEventListener("click", onClick);
@@ -209,6 +233,27 @@ export class BaseNode {
     }
     set id(id) {
         this.el.id = id ?? "";
+    }
+
+    /**
+     * Getter and setter for element name (to be used for buttons and inputs)
+     */
+    get name() {
+        return this.el.getAttribute("name") ?? "";
+    }
+    set name(newName) {
+        this.el.setAttribute("name",newName) ?? "";
+    }
+
+
+    /**
+     * Getter and setter for the className of the element
+     */
+    get className() {
+        return this.el.className;
+    }
+    set className(className) {
+        this.el.className = className ?? "";
     }
 
     /**

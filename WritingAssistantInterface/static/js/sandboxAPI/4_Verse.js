@@ -10,6 +10,7 @@ export class Verse extends BaseNode {
         const finalID = Verse.formatID({id: serial, prefix: "v-", suffix: isNew ? "-tmp" : ""});
         super({
             id: finalID,
+            name: finalID,
             tag: "input",
             type: "text",
             value: value,

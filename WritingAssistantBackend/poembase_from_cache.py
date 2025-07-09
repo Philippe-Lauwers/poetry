@@ -8,5 +8,5 @@ def get_poem(lang: int=1):
     # one Poem object per language, stored in a dictionary with lang(uage) as key
     if lang not in _poem_cache:
         _poem_cache[lang] = PoemBase(lang)
-    pass
+
     return _poem_cache[lang]

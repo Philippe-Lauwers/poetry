@@ -7,3 +7,4 @@ pr_poem;For actions that target versioning on poem level
 pr_stanza;For actions that target versioning on stanza level
 pr_verse;For actions that target versioning of a verse
 pr_keyword;For actoins that target versioning of a keyword
+sug_verse;For actions that target generated suggestions for a verse

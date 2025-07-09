@@ -7,6 +7,7 @@ import time
 import numpy as np
 import pickle
 import os
+import re
 import numpy as np
 import scipy.stats
 import kenlm
@@ -27,6 +28,7 @@ import warnings
 from .verse_generator import VerseGenerator
 from .poem_container import Poem as PoemContainer, Stanza, Verse # container to store the output in a hierarchy of Poem>>Stanza>>Verse objects
 from .poembase_config import PoembaseConfig
+from .poem_repository import PoemRepository, StanzaRepository, VerseRepository
 
 warnings.filterwarnings("ignore")
 
@@ -54,6 +56,9 @@ class PoemBase:
     @property
     def container(self):
         return self._poemContainer
+    @container.setter
+    def container(self, myContainer):
+        self._poemContainer = myContainer
 
     def initializeConfig(self, lang):
 
@@ -97,34 +102,62 @@ class PoemBase:
         self.i2w = self.generator.vocab.itos
         self.w2i = self.generator.vocab.stoi
 
+    def initPoemContainer(self,form=None,nmfDim=None, lang=None, origin=None):
+        #Delete any lingering instances of the PoemBase class
+        try:
+            obj = self.container
+            del obj
+        except AttributeError:
+            pass
+        # get the nmfDim: None if the argument is None, a random value if the argument is 'random'
+        if nmfDim == 'random':
+            self._nmfDim = random.randint(0, self.W.shape[1] - 1)
+        elif type(nmfDim) == int:
+            self._nmfDim  = nmfDim
+        else:
+            self._nmfDim = nmfDim
+
+        self.container = PoemContainer()
+        self.container.form = form
+        self.container.nmfDim = self._nmfDim
+        self.container.language = lang
+        self.container.origin = origin
+
+    def receiveUserInput(self, form=None, nmfDim=None, userInput=None, structure=None):
+        self.initPoemContainer(form=form, nmfDim=nmfDim, lang=self.lang, origin='browser')
+        # Stores a representation of the poem in the database
+        self.container.receiveUserInput(userInput, structure)
+        PoemRepository.save(self.container)
+
     def write(self, constraints=('rhyme'), form='sonnet', nmfDim=False, userInput=None, structure=None):
         self.form = form
         self.blacklist_words = set()
         self.blacklist = []
         self.previous_sent = None
 
-        # Stores a representation of the poem
-        self._poemContainer = PoemContainer()
-        self._poemContainer.form = form
-        self._poemContainer.nmfDim = nmfDim
-        if userInput is not None and structure is not None:
-            self._poemContainer.receiveUserInput(userInput, structure)
+        if userInput is None:
+            self.initPoemContainer(form=form, nmfDim=nmfDim, lang=self.lang, origin='GRU')
 
         if constraints == ('rhyme'):
-            self.writeRhyme(nmfDim)
+            self.writeRhyme(nmfDim, userInput, structure)
 
-    def writeRhyme(self, nmfDim):
+    def writeRhyme(self, nmfDim, userInput=None, structure=None):
         # Flag to indicate whether a new stanza should be added,
         # set to true when a ' ' is encountered in the rhyme structure
         addNewStanza = False
 
-        rhymeStructure = self.getRhymeStructure()
-        if nmfDim == 'random':
-            nmfDim = random.randint(0,self.W.shape[1] - 1)
-        elif type(nmfDim) == int:
-            nmfDim = nmfDim
-        else:
-            nmfDim = None
+        # Little trick: by generating the rhymeStructure one verse further than the user input, we generate one verse
+        # If there is no user input, a complete draft will be generated
+        rhymeStructure = self.getRhymeStructure(userInput=userInput)
+        # If there is user input, we feed the last sentence of the input to the model
+        if userInput is not None:
+            i = -1
+            while abs(i) < len(userInput) and list(userInput.values())[i] == '': # look for the last non-empty verse
+                i -= 1
+            self.previous_sent = self.cleanInputVerse(list(userInput.values())[i])
+
+        nmfDim = self._nmfDim
+
         if not nmfDim == None:
             sys.stdout.write('\n' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") +' nmfdim ' + str(nmfDim) + ' (' + ', '.join(self.nmf_descriptions[nmfDim]) + ')\n\n')
             self.log.write('\n' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' nmfdim ' + str(nmfDim) + ' (' + ', '.join(self.nmf_descriptions[nmfDim]) + ')\n\n')
@@ -140,13 +173,18 @@ class PoemBase:
                     continue
                 else:
                     # adds the generated text to the _poemContainer
-                    if not self._poemContainer.stanzas or addNewStanza:
+                    if not self.container.stanzas or addNewStanza:
                         # If there is no stanza yet
                         #   or a ' ' was encountered in the rhyme structure before generating the verse
                         # -> add a new stanza to the _poemContainer
-                        self._poemContainer.addStanza()
+                        # If there is user input, fetch the id of the last stanza from the structure fields
+                        if userInput is not None:
+                            stanzaID = structure['struct-sandbox'].split(',')[-1]
+                            self.container.addStanza(id=stanzaID)
+                        else:
+                            self.container.addStanza()
                         addNewStanza = False
-                    self._poemContainer.stanzas[-1].addVerse(verseText=' '.join(words))
+                    self.container.stanzas[-1].addVerse(verseText=' '.join(words))
                     # writes the generated verse to stdout and log
                     sys.stdout.write(' '.join(words) + '\n')
                     self.log.write(' '.join(words) + '\n')
@@ -156,7 +194,7 @@ class PoemBase:
                     except KeyError as e:
                         #means verse does not follow rhyme, probably because of entropy computations
                         #do not show error for presentation
-                        #print('err blacklist', e)
+                        print('err blacklist', e)
                         pass
                     except IndexError as e2:
                         print('err blacklist index', e2)
@@ -218,31 +256,94 @@ class PoemBase:
 
         scoreList.sort()
         scoreList.reverse()
-
+        # xxxxx
         return scoreList[0][1]
 
-    def getRhymeStructure(self, cutoff=10):
+    def getRhymeStructure(self, cutoff=10, userInput=None):
+        if userInput is None:
+            return self.getCompleteRhymeStructure(cutoff=cutoff)
+        else:
+            return self.get1VerseRhymeStructure(cutoff=cutoff, userInput=userInput)
+
+    def getCompleteRhymeStructure(self, cutoff=10):
         chosenList = []
         mapDict = {}
 
-
         structure = PoembaseConfig.Poemforms.getElements(form=self.form, lang=self.lang)
         for el in set(structure):
-            freq = -1
-            while True:
-                rhymeForm = random.choice(list(self.freqRhyme.keys()))
-                freq = self.freqRhyme[rhymeForm]
-                if (freq >= cutoff) and not rhymeForm in chosenList:
-                    chosenList.append(rhymeForm)
-                    mapDict[el] = rhymeForm
-                    break
+            if not el in mapDict:
+                if el != '':
+                    randomSample = self.randomRhymeSample(cutoff=cutoff, chosenList=chosenList)
+                    mapDict[el] = randomSample
+                    chosenList.append(randomSample)
+                else:
+                    mapDict[el] = ''
+
         rhymeStructure = []
-        for struct in structure:
-            if struct:
-                rhymeStructure.append(mapDict[struct])
+        for structEl in structure:
+            if structEl:
+                rhymeStructure.append(mapDict[structEl])
             else:
-                rhymeStructure.append(struct)
+                rhymeStructure.append(structEl)
         return rhymeStructure
+
+    def get1VerseRhymeStructure(self, cutoff=10, userInput=None):
+        # Based on the userInput and the chosen form of the poem, this functions chooses an end sound for the next verse.
+        # By generating only a sound for the next verse, we will limit the model to generating only one verse, no further
+        # 'magic' will be required to curb the model.
+        chosenList = []
+        mapDict = {}
+
+        # Created a tuple that contains the rhyme pattern without the blanks for easier looping afterwards
+        poemStructure = PoembaseConfig.Poemforms.getElements(form=self.form, lang=self.lang)
+        poemStructureVerses = () # re-create the tuple without the empty lines (to match the user input)
+        for el in poemStructure:
+            if el != '':
+                poemStructureVerses += (el,)
+        userInputLastWords = []
+        for k in userInput.keys():
+            userInputLastWords.append(self.cleanInputVerse(userInput[k])[-1])
+
+        for i in range(len(userInputLastWords)):
+            if userInputLastWords[i] == '': # this is the location of the verse we want to generate
+                if not poemStructureVerses[i] in mapDict:
+                    randomSample = self.randomRhymeSample(cutoff=cutoff, chosenList=chosenList)
+                    mapDict[poemStructureVerses[i]] = randomSample
+                    chosenList.append(randomSample)
+                # else: # We know which rhyme applies to this verse, we don't have to look for one
+                    # pass
+            else: # if userInputLastWords[i] != '':
+                if not poemStructureVerses[i] in mapDict:
+                    try:
+                        rhymeEnding = self.rhymeDictionary[userInputLastWords[i]][-1]
+                        mapDict[poemStructureVerses[i]] = rhymeEnding
+                        chosenList.append(rhymeEnding)
+                    except KeyError: # replace by lookup with more blablabla if there is time
+                        randomSample = self.randomRhymeSample(cutoff=cutoff, chosenList=chosenList)
+                        mapDict[poemStructureVerses[i]] = randomSample
+                        chosenList.append(randomSample)
+
+        nEmpties = 0
+        for i in range(len(userInputLastWords)):
+            if poemStructure[i+nEmpties] == '': 
+                nEmpties+= 1
+            if userInputLastWords[i] == '':
+                requestedVerse = [mapDict[poemStructure[i+nEmpties]]]
+                # Check if the requested verse is preceded by an empty line in the poem structure (= new stanza)
+                # If so, insert an empty string in the requested verse list
+                if poemStructure[i+nEmpties-1] == '':
+                    requestedVerse.insert(0, '')
+                return requestedVerse
+
+    def randomRhymeSample(self, cutoff=10, chosenList=None):
+        freq = -1
+        while (freq < cutoff) or rhymeForm in chosenList:
+            rhymeForm = random.choice(list(self.freqRhyme.keys()))
+            freq = self.freqRhyme[rhymeForm]
+        return rhymeForm
+
+    def cleanInputVerse(self, txt):
+        return re.sub(r'[^\w\s]', '', txt).strip().split(' ')
 
     def createRhymeProbVector(self, rhyme):
         probVector = np.empty(len(self.i2w))

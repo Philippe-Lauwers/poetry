@@ -37,7 +37,7 @@ export function sandboxClick(e) {
 }
 
 /**
- * Handler for keyboard interaction: Enter, Tab, ArrowUp, ArrowDown
+ * Handlers for keyboard interaction: Enter, Tab, ArrowUp, ArrowDown
  * @param e
  */
 export function verseKeydown(e) {
@@ -45,7 +45,7 @@ export function verseKeydown(e) {
     switch (e.key) {
         case 'Enter':
         case 'Tab':
-            actionCaught = verseAccept(e);
+            actionCaught = verseAccept({myEvent: e});
             break;
         case 'ArrowUp':
             actionCaught = moveFocus(e, -1)
@@ -62,7 +62,6 @@ export function verseKeydown(e) {
     }
 }
 export function verseKeyup(e) {
-    let actionCaught = false;
     switch (e.key) {
         case 'Enter':
         case 'Tab':
@@ -80,8 +79,12 @@ export function verseKeyup(e) {
  * - Enter/Tab on nonempty => new field
  * - Enter/Tab on empty    => move this field into a new stanza
  */
-function verseAccept(e) {
-    const verse = BaseNode.getWrapper(e.target);   // assuming BaseNode.registry
+function verseAccept({myEvent = null, myVerse = null}) {
+    let verse;
+    if (myEvent) {
+        verse = BaseNode.getWrapper(myEvent.target);}   // assuming BaseNode.registry
+    else if (myVerse) {
+        verse = myVerse;}
     const poem = getSandbox();                // Poem instance
     let stanza = poem.findStanzaOf(verse);
     const wrapper = verse.parent;                  // VerseWrapper instance
@@ -90,12 +93,12 @@ function verseAccept(e) {
 
     if (verse.value.trim()) {
         // In case the field has a value, we do the following ...
-        if (wrapper.nextSibling !== null) {
+        if (wrapper.nextSibling) {
             // Test if the stanza has a next field, if so put focus there (and do nothing else)
             wrapper.nextSibling.firstChild.el.focus(); // focus next verse if it exists
             focusToEmptyField(poem, rhymeScheme); // focus -> first empty field when all verse fields are present
             return true;
-        } else if (wrapper.parent.nextSibling !== null) {
+        } else if (wrapper.parent.nextSibling) {
             // Test if there is a following stanza, if so there will always be a first field in the stanza;
             // put focus there and do nothing else
             wrapper.parent.nextSibling.firstChild.firstChild.el.focus(); // focus first verse of next stanza
@@ -103,33 +106,29 @@ function verseAccept(e) {
             return true;
         }
         // nonempty: spawn a fresh field in the (new or same) stanza
-        if (rhymeScheme.elements.length == 0 ||
-            locateInRhymeScheme(poem, verse) < rhymeScheme.elements.length - 1) {
-            // compare with rhymeScheme.elements.length - 2
+        if (!poemComplete(poem, verse, rhymeScheme)) {
+            // compare with rhymeScheme.elements.length - 1
             // -1 because we compare indexes with a length
-            // -1 because there will be no stanza separator at the end of the rhyme scheme
 
             if (allowNewStanza(poem, verse, rhymeScheme)) {
                 stanza = poem.addStanza()
             }
             const newVerse = stanza.addVerse({
-                events: {
-                    keydown: verseKeydown,
-                    change: highlightIfEmpty
-                }
+                events:
+                    // keydown: verseKeydown,
+                    // change: highlightIfEmpty
+                    verse.events
+
             });
             // When we create a new verse, we move the "generate verse" button from the current to the new verse
             // and match the id with the button next to it
-            let btn = e.target.nextSibling;
+            let btn = verse.el.nextSibling;
             while (btn) {
                 if (btn.id.startsWith("btn-gen-v")) {
-                    btn.id = "btn-gen-".concat(newVerse.id.replace("-tmp",""));
-                    btn.disabled = false;
-                    newVerse.parent.el.appendChild(btn);
-                    break;
-                }
-                btn = btn.nextSibling;
-            }
+                    poem.moveButton(btn, verse.parent, newVerse.parent);
+                }// move the button
+                btn = btn.nextSibling
+            }// to the new verse wrapper
 
             newVerse.el.focus();
         } else { // there is a rhyme scheme and the number of fields matches the rhyme scheme
@@ -209,7 +208,7 @@ export function highlightIfEmpty(e) {
 }
 
 /**
- * Disables the generate verse button when the input field next to it has a value
+ * Disables/activates the generate verse button when the input field next to it has a value
  * @param e
  */
 export function disableGenBtn(e, {includeFld = false} = {}) {
@@ -230,14 +229,6 @@ export function disableGenBtn(e, {includeFld = false} = {}) {
         if(fld.nextSibling.id.startsWith("btn-gen-v")){
             fld.nextElementSibling.disabled = (val !== '')
             if (includeFld) fld.disabled = (val !== '')
-        }
-    }
-    // If there is only one verse field, activate/desactivate the field according to it's content
-    if (poem.children.length == 1) {
-        if (poem.firstChild.children.length == 1) {
-            if (poem.firstChild.firstChild.firstChild.el === fld) {
-                document.getElementById("btn_generatePoem").disabled = (val !== '')
-            }
         }
     }
 }
@@ -308,6 +299,17 @@ export function locateInRhymeScheme(poem, verse) {
     return lineNr;
 }
 
+export function poemComplete(poem, verse, rhymeScheme = getRhymeScheme()) {
+    if(rhymeScheme.elements.length == 0) {
+        return false
+    };
+    if(locateInRhymeScheme(poem, verse) < rhymeScheme.elements.length - 1){
+        return false
+    };
+    // -1 because we compare indexes with a length
+    return true
+}
+
 /**
  * Places the focus on the first empty field if there is one and adapts the css class
  * @param poem
@@ -334,6 +336,9 @@ function focusToEmptyField(poem, rhymeScheme) {
  * @return Verse object (if empty) */
 function firstEmptyVerse(poem) {
     for (const stanza of poem.children) {
+        if (!stanza.children) {
+            return null
+        }
         for (const wrapper of stanza.children) {
             // wrapper.firstChild is the Verse instance for that <input>
             const verse = wrapper.firstChild;
@@ -346,6 +351,61 @@ function firstEmptyVerse(poem) {
 }
 
 /**
+ * Looks for the next verse of the poem, if there is one.
+ * @param verse
+ * @return Verse object || null
+ */
+function nextVerse(verse) {
+    if (verse.parent.nextSibling !== null) {
+        return verse.parent.nextSibling.firstChild;
+    }
+    let stanza = verse.stanza().nextSibling
+    if (stanza) {
+        return stanza.firstChild.firstChild ? stanza.firstChild.firstChild : null;
+    }
+    return null
+}
+
+
+/**
+ * This function enables disabled verses
+ * - first verse = when a draft poem was automatically generated, generate verse button can be ditched
+ * - last verse = when a sinle verse was requested
+**/
+function activateVerses(poem) {
+    for (const stanza of poem.children) {
+        for (const wrapper of stanza.children) {
+            // wrapper.firstChild is the Verse instance for that <input>
+            const verse = wrapper.firstChild;
+            verse.el.disabled = false; // enable empty verses
+            verse.className = "verse"
+            let btn = verse.el.nextSibling;
+            while (btn) {
+                btn.disabled = false;
+                btn = btn.nextSibling;
+            }
+        }
+    }
+}
+
+/** This function removes all buttons with the given prefix from the verse wrappers
+ *  * @param pref
+ */
+function removeButtons(pref = "btn-gen-v-") {
+    // remove the generate verse button from the previous verse wrapper
+    const sandbox = getSandbox();
+    for (let stanza of sandbox.children) {
+        for (let wrapper of stanza.children) {
+            for (let btn of wrapper.el.childNodes) {
+                if (btn.id.startsWith(pref)) {
+                    wrapper.removeButton(btn);
+                }
+            }
+        }
+    }
+}
+
+/**
  * This function is called when the poem is received from the backend, it is only accessible when
  * the sandbox is empty (i.e., there is a stanza>>versewrapper>>verse but the verse is empty
  * It creates stanzas and verse fields according to the poem object
@@ -353,52 +413,156 @@ function firstEmptyVerse(poem) {
  * @returns null
  */
 export function receivePoem(poem) {
-    //let txt = '';
     const sandbox = getSandbox();
-    const structSB = document.getElementById("struct-sandbox");
-    let structParent;
-    let myVerse = firstEmptyVerse(sandbox);
-    let myVerseWrapper;
+    const rhymeScheme = getRhymeScheme();
+    let myVerse;
     let myStanza;
-    let myStructFld;
+    const myStructPoem = document.getElementById("struct-sandbox");
+    let myStructStz;
+    let myStructVw;
+    let myStructV;
+
+    if (!document.getElementById("poem_id")) {
+        const idFld = document.createElement("input");
+        idFld.id = idFld.name = "poem_id"
+        idFld.type="text"
+        idFld.value = poem.id
+        document.getElementsByClassName("top-pane")[0].append(idFld)
+    }
+
+    // If the first verse is also the first empty verse, we know a full poem or a requested first verse is received
+    // (the button is otherwise deactivated
+    let FEV = firstEmptyVerse(sandbox)
+    const FV = sandbox.firstChild.firstChild.firstChild;
+    let isFullPoem = (FEV === FV)
     poem.stanzas.forEach((s, stanzaIndex) => {
-        if (myStanza) { // if we have a handle to a stanza, we need to add another for this iteration
-            myStanza = sandbox.addStanza({id: s.stanza.id});
-        } else { // first iteration -> grab the first stanza on the screen
-            myStanza = myVerse.stanza;
-            myStructFld = document.getElementById(("struct-" + myStanza.id));
-            myStanza.id = Stanza.formatID({id: s.stanza.id, prefix: "s-"});
-           // Update struct-sandbox with the new id and re-id the struct-s-... field
-            structSB.value = myStanza.id;
-            myStructFld.id = "struct-"+myStanza.id;
-            myStructFld.name = "struct-"+myStanza.id;
+        let {id, oldId, verses} = s.stanza;
+        let stanzaEl;
+
+        if (isFullPoem && stanzaIndex === 0) {
+            stanzaEl = document.getElementById(sandbox.findStanzaOf(FV).id);
+        } else {
+            stanzaEl = document.getElementById(Stanza.formatID({id: id, prefix: "s-"}));
         }
+
+        if (stanzaEl) { // The stanza is already present in the DOM, get a handle to it
+            myStanza = BaseNode.getWrapper(stanzaEl);
+            if (isFullPoem && stanzaIndex === 0) {
+                // If the stanza is the first stanza of a full poem, we need to update the id and the struct fields
+                const oldStzId = myStanza.id;
+                myStanza.id = Stanza.formatID({id: id, prefix: "s-"});
+                myStructStz = document.getElementById("struct-"+oldStzId);
+                myStructPoem.value = myStructPoem.value.replace(oldStzId, myStanza.id);
+                myStructStz.id = "struct-" + myStanza.id;
+                myStructStz.name = myStructStz.id
+            }
+        } else {
+            stanzaEl = document.getElementById(oldId);
+            if (stanzaEl) { // The stanza was found by the oldId, so we need to update the id and the struct fields
+                myStanza = BaseNode.getWrapper(stanzaEl);
+                const oldStzId = myStanza.id;
+                myStructStz = document.getElementById(("struct-" + myStanza.id));
+                // Stanza found by oldId, so we need to update the id and the struct fields
+                myStanza.id = Stanza.formatID({id: id, prefix: "s-"});
+                myStructPoem.value = myStructPoem.value.replace(oldStzId, myStanza.id);
+                myStructStz.id = "struct-" + myStanza.id;
+                myStructStz.name = myStructStz.id;
+            } else { // The stanza is not present in the DOM - neither by id nor by oldId - so we create one
+                const newStzId = Stanza.formatID({id: id, prefix: "s-"});
+                myStanza = sandbox.addStanza({id: newStzId});
+                // struct fields are updated in the stanza constructor
+                // but we still set a handle ready for handling the verses
+            }
+        }
+        myStructStz = document.getElementById("struct-" + myStanza.id);
         s.stanza.verses.forEach((v, verseIndex) => {
-            let {text, id} = v.verse;
-            if (myVerse.value === "") {
-                // first iteration, We are in the empty initial field
-                myVerseWrapper = myVerse.parent;
-                myStructFld = document.getElementById(("struct-" + myVerseWrapper.id));
-                myVerseWrapper.id = VerseWrapper.formatID({id: id, prefix: "vw-"});
-                structParent = document.getElementById("struct-" + myStanza.id);
-                structParent.value = myVerseWrapper.id;
-                myStructFld.id = "struct-"+myVerseWrapper.id;
-                myStructFld.name = "struct-"+myVerseWrapper.id;
+            let {text, id, oldId} = v.verse;
+            let verseEl
 
-                structParent = document.getElementById("struct-" + myVerseWrapper.id);
-                myStructFld.value = document.getElementById(("struct-" + myVerse.id));
-                myVerse.id = Verse.formatID({id: id, prefix: "v-"});
-                myVerse.value = text;
-                structParent.value = myVerse.id;
-                myStructFld.id = "struct-"+myVerse.id;
-                myStructFld.name = "struct-"+myVerse.id;
-
-                myVerse.parent.id = VerseWrapper.formatID({id: id, prefix: "vw-"});
+            if (isFullPoem && stanzaIndex === 0 && verseIndex === 0) {
+                verseEl = document.getElementById(FV.id);
             } else {
-                //let buttons = myVerse.parent.buttons;
-                const newVerse = myStanza.addVerse({id: id, value: text, events:myVerse.events, buttons:myVerse.buttons});
-                myVerse = newVerse
+                verseEl = document.getElementById(Verse.formatID({id: id, prefix: "v-"}));
+            }
+
+            if (verseEl) { // The verse is already present in the DOM, get a handle to it ...
+                myVerse = BaseNode.getWrapper(verseEl);
+                myVerse.value = (myVerse.value !== text) ? text : myVerse.value;
+                if (isFullPoem && stanzaIndex === 0 && verseIndex === 0) {
+                    oldId = myVerse.id
+                    const oldVwId = myVerse.parent.id;
+                    myVerse.id = Verse.formatID({id: id, prefix: "v-"});
+                    myVerse.name = myVerse.id;
+                    myVerse.parent.id = VerseWrapper.formatID({id: id, prefix: "vw-"});
+                    // Update the structure fields
+                    myStructV = document.getElementById("struct-" + oldId);
+                    myStructVw = document.getElementById("struct-" + oldVwId);
+
+                    myStructV.id = "struct-" + myVerse.id;
+                    myStructV.name = myStructV.id;
+                    myStructVw.value = myStructVw.value.replace(oldId, myVerse.id);
+                    myStructVw.id = "struct-" + myVerse.parent.id;
+                    myStructVw.name = myStructVw.id;
+                    myStructStz.value = myStructStz.value.replace(oldVwId, myVerse.parent.id);
+                }// ... and set the value if changed
+            } else { // The verse can not be found by id
+                // 1. We search by oldId which is the id of the verse in the old poem
+                verseEl = document.getElementById(oldId);
+                // 2. If the verse is not found by id or oldId,the user might have clicked the "generate verse" button
+                //    which only is accessible when the verse is empty
+                if (!verseEl) {
+                    verseEl = firstEmptyVerse(sandbox)?.el??null;
+                }
+
+                if (verseEl) { // The verse was found by the oldId, so we need to update the id and the struct fields
+                    // Update the verse id, name and value
+                    oldId = verseEl.id;
+                    myVerse = BaseNode.getWrapper(verseEl);
+                    myVerse.id = Verse.formatID({id: id, prefix: "v-"});
+                    myVerse.name = myVerse.id;
+                    myVerse.value = (myVerse.value !== text) ? text : myVerse.value;
+                    // Update the verse wrapper id
+                    let  myVerseWrapper = myVerse.parent;
+                    let oldVwId = myVerseWrapper.id;
+                    myVerseWrapper.id = VerseWrapper.formatID({id: id, prefix: "vw-"});
+                    // Update the structure fields
+                    myStructV = document.getElementById("struct-" + oldId);
+                    myStructVw = document.getElementById("struct-" + oldVwId);
+
+                    myStructStz.value = myStructStz.value.replace(oldVwId, myVerseWrapper.id);
+                    myStructVw.value = myStructVw.value.replace(oldId, myVerse.id);
+                    myStructVw.id = "struct-" + myVerseWrapper.id;
+                    myStructVw.name = myStructVw.id;
+                    myStructV.id = "struct-" + myVerse.id;
+                    myStructV.name = myStructV.id;
+                } else { // The verse can neither be found by id, nor by oldId
+                      // This scenario occurs when we are loading a full poem and are beyond the first verse
+                        let events = myVerse.events || {};
+                        // Look for the generate verse button in the verse wrapper
+                        let myBtn
+                        for (let btn of myVerse.parent.el.childNodes) {
+                            if (btn.id.startsWith("btn-gen-v")) {
+                                myBtn = btn;
+                                break;
+                            }
+                        }
+                        const myNewVerse = myStanza.addVerse({
+                            id: id,
+                            value: text,
+                            events: events,
+                        });
+                        // Move the generate verse button to the new verse wrapper
+                        if (myBtn) {
+                            sandbox.moveButton(myBtn, myVerse.parent, myNewVerse);
+                        }
+                        myVerse = myNewVerse;
+                }
             }
         });
     });
+    if (poemComplete(sandbox,myVerse,getRhymeScheme())) {
+        removeButtons("btn-gen-v-");
+    }
+    activateVerses(getSandbox())
+    verseAccept({myVerse: myVerse})
 }

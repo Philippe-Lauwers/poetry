@@ -10,10 +10,10 @@ class PoembaseConfig:
     @staticmethod
     def webLists():
         return [{"lang": {
-            "label": "Select a language for your poem",
+            "label": "Language: ",
             "options": PoembaseConfig.PoemLanguages.getList()}},
             {"form": {
-                "label": "Select a rhyme scheme for your poem",
+                "label": "Rhyme scheme: ",
                 "options": PoembaseConfig.Poemforms.getList()}}]
 
     @staticmethod
@@ -87,5 +87,3 @@ class PoembaseConfig:
                 outputList.append({'verse':{'id':e.id,'txt':e.rhymeSchemeElement}})
             output = {'id':form,'elements':outputList}
             return output
-
-

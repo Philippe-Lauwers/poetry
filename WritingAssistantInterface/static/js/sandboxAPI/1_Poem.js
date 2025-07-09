@@ -44,6 +44,11 @@ export class Poem extends BaseNode {
      */
     firstStanza() {
         return this.firstChild;
+    }/**
+     * Function that returns the last stanza of the poem
+     */
+    lastStanza() {
+        return this.lastChild;
     }
     /**
      *  Function that returns the first field of the poem
@@ -51,6 +56,13 @@ export class Poem extends BaseNode {
     firstVerse() {
         return this.firstStanza().firstVerse();
     }
+    /**
+     *  Function that returns the first field of the poem
+     */
+    lastVerse() {
+        return this.lastStanza().lastVerse();
+    }
+
 
     /**
      * Function that counts the number of inputfields (in reality the div-wrappers) in the poem
