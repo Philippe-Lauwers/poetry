@@ -220,3 +220,30 @@ class Keyword(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     poem_id = db.Column(db.Integer, db.ForeignKey('poems.id', name='fk_keywords_poem_id'), nullable=False)
     keyword = db.Column(db.String(100), nullable=False)
+
+
+class SuggestionBatch(db.Model):
+    __tablename__ = 'suggestionBatches'
+    __table_args__ = (db.PrimaryKeyConstraint('id', name='pk_suggestionBatches'),)
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    verse_id = db.Column(db.Integer, db.ForeignKey('verses.id', name='fk_suggestionBatches_verse_id'), nullable=False)
+    batchNo = db.Column(db.Integer, nullable=False)
+    timestamp = db.Column(
+        db.DateTime(timezone=True),
+        nullable=False,
+        default=lambda: datetime.now(timezone.utc),
+        server_default=db.func.now()
+    )
+
+
+class Suggestion(db.Model):
+    __tablename__ = 'suggestions'
+    __table_args__ = (db.PrimaryKeyConstraint('id', name='pk_suggestions'),)
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    suggestionBatch_id = db.Column(db.Integer,
+                                   db.ForeignKey('suggestionBatches.id', name='fk_suggestions_suggestionBatches_id'),
+                                   nullable=False)
+    status = db.Column(db.Integer, nullable=False, default=0)
+    suggestion = db.Column(db.String(1000), nullable=False)

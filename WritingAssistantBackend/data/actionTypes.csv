@@ -17,3 +17,5 @@ KW_GEN;The keyword was suggested by the computer
 KW_WRT;The keyword was provied by the user
 KW_ALT;The keyword has been changed
 KW_DEL;The keyword has been deleted
+SGB_GEN;The batch of suggestions has been generated
+SG_SEL;The suggestion has been selected

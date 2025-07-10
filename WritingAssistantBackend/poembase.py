@@ -79,8 +79,9 @@ class PoemBase:
         self.NGRAM_FILE = os.path.join(location, PoembaseConfig.getParameter(category='model', parameterName='ngram_file', language=lang))
         
         self.name = PoembaseConfig.getParameter(category='general', parameterName='name', language=lang)
-        self.length = float(PoembaseConfig.getParameter(category='poem', parameterName='length', language=lang))
+        self.length = int(PoembaseConfig.getParameter(category='poem', parameterName='length', language=lang))
         self.entropy_threshold = float(PoembaseConfig.getParameter(category='poem', parameterName='entropy_threshold', language=lang))
+        self.suggestionBatchSize = int(PoembaseConfig.getParameter(category='poem', parameterName='suggestion_batch_size', language=lang))
 
     def loadNMFData(self):
         self.W = np.load(self.NMF_FILE)
@@ -140,6 +141,7 @@ class PoemBase:
 
         if constraints == ('rhyme'):
             self.writeRhyme(nmfDim, userInput, structure)
+        pass
 
     def writeRhyme(self, nmfDim, userInput=None, structure=None):
         # Flag to indicate whether a new stanza should be added,
@@ -167,7 +169,11 @@ class PoemBase:
         for el in rhymeStructure:
             if el:
                 try:
-                    words = self.getSentence(rhyme=el, syllables = True, nmf=nmfDim)
+                    if userInput is not None:
+                        nSuggestions = self.suggestionBatchSize
+                    else:
+                        nSuggestions = 1
+                    words = self.getSentence(rhyme=el, syllables = True, nmf=nmfDim, n = nSuggestions)
                 except KeyError as e:
                     print('err', e)
                     continue
@@ -184,13 +190,24 @@ class PoemBase:
                         else:
                             self.container.addStanza()
                         addNewStanza = False
-                    self.container.stanzas[-1].addVerse(verseText=' '.join(words))
+                    if nSuggestions == 1: # generating a complete poem: only one suggestion is generated
+                        self.container.stanzas[-1].addVerse(verseText=' '.join(words))
+                    else: # generating n suggestions when a single verse is requested
+                        self.container.stanzas[-1].addVerse(verseText=[' '.join(w) for w in words])
                     # writes the generated verse to stdout and log
-                    sys.stdout.write(' '.join(words) + '\n')
-                    self.log.write(' '.join(words) + '\n')
+                    if isinstance(words, str):
+                        sys.stdout.write(' '.join(words) + '\n')
+                        self.log.write(' '.join(words) + '\n')
+                    else:
+                        sys.stdout.write('Generated ' + str(nSuggestions) + ' suggestions' + '\n')
+                        self.log.write('Generated ' + str(nSuggestions) + ' suggestions' + '\n')
+                        for w in words:
+                            sys.stdout.write(' '.join(w) + '\n')
+                            self.log.write(' '.join(w) + '\n')
                     try:
-                        self.blacklist.append(self.rhymeDictionary[words[-1]])
-                        self.blacklist_words = self.blacklist_words.union(words)
+                        if isinstance(words, str):
+                            self.blacklist.append(self.rhymeDictionary[words[-1]])
+                            self.blacklist_words = self.blacklist_words.union(words)
                     except KeyError as e:
                         #means verse does not follow rhyme, probably because of entropy computations
                         #do not show error for presentation
@@ -208,7 +225,7 @@ class PoemBase:
         self.log.write('\n\n')
         self.log.flush()
 
-    def getSentence(self, rhyme, syllables, nmf):
+    def getSentence(self, rhyme, syllables, nmf, n=3):
         if self.previous_sent:
             previous = self.previous_sent
         else:
@@ -256,8 +273,14 @@ class PoemBase:
 
         scoreList.sort()
         scoreList.reverse()
-        # xxxxx
-        return scoreList[0][1]
+        if n == 1:
+            output = scoreList[0][1]
+        else:
+            output = []
+            for i in range(n):
+                output.append(scoreList[i][1])
+
+        return output
 
     def getRhymeStructure(self, cutoff=10, userInput=None):
         if userInput is None:

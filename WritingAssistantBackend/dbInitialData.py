@@ -54,7 +54,9 @@ with app.app_context():
         "shorter": ("a", "b", "a", "b"),
         "pantoum": ("a", "b", "c", "d", "", "b", "e", "d", "f", "", "e", "g", "f", "h", "", "g", "a", "h", "c"),
         "limerick": ("a","a","b","b","a"),
-        "free verse": ()
+        "free verse": (),
+        "test": ("a","a","", "b","a")
+
         # add the rest...
     }
     rhyme_scheme_persistance = {"free verse":1}

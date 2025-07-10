@@ -1,7 +1,8 @@
 from .extensions import db
+from sqlalchemy import func
 from .dbModel import Poem as PoemModel, Stanza as StanzaModel, Verse as VerseModel, Keyword as KeywordModel, \
     Action as ActionModel, ActionType as ActionTypeModel, ActionTarget as ActionTargetModel, \
-    ActionTargetType as ActionTargetTypeModel
+    ActionTargetType as ActionTargetTypeModel, SuggestionBatch as SuggestionBatchModel, Suggestion as SuggestionModel
 
 _actionType_id = {}
 _actionTargetType_id = {}
@@ -136,6 +137,30 @@ class VerseRepository(BaseRepository):
             doLog = False
 
         if doLog: VerseRepository.logAction(actionType=actionType, actionTargetType='verse', targetID=verse.id)
+
+        if verse.suggestions is not None and len(verse.suggestions) > 0:
+            # save the suggestions
+            suggestionRepository.save(suggestions=verse.suggestions, verse_id=verse.id)
+
+class suggestionRepository(BaseRepository):
+    @staticmethod
+    def save(suggestions = None, verse_id = None):
+        # First save a batch-stub for the suggestions
+        orm_cntSuggestionBatches = (db.session.query(SuggestionBatchModel.verse_id.label("verse_id"),
+                                                    func.count(SuggestionBatchModel.verse_id).label("count"))
+                                                        .filter(SuggestionBatchModel.verse_id == verse_id)
+                                                        .one_or_none())
+        orm_suggestionBatch = SuggestionBatchModel(verse_id=verse_id, batchNo=orm_cntSuggestionBatches.count + 1)
+        db.session.add(orm_suggestionBatch)
+        db.session.flush()
+
+        VerseRepository.logAction(actionType='SGB_GEN', actionTargetType='suggestion', targetID=orm_suggestionBatch.id)
+
+        for s in suggestions:
+            orm_suggestion = SuggestionModel(suggestionBatch_id=orm_suggestionBatch.id, suggestion=s.text)
+            db.session.add(orm_suggestion)
+            db.session.flush()
+            s.id = orm_suggestion.id
 
 
 class KeywordRepository(BaseRepository):

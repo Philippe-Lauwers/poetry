@@ -173,13 +173,20 @@ class Stanza(BaseContainer):
         return {"stanza": stanza}
 
 class Verse(BaseContainer):
-    words = None
-
     def __init__(self, order=0, verseText: str = None, id= None):
         super().__init__()
-        self._words = self.cleanupText(verseText) or ""
+        if isinstance(verseText,(str)):
+            self._suggestions = None
+            self._words = self.cleanupText(verseText) or ""
+        else:
+            self._suggestions = [Suggestion(text=txt) for txt in verseText]
+            self._words = ""
         self._order = order
         self.id = id
+
+    @property
+    def suggestions(self):
+        return self._suggestions
 
     @property
     def text(self):
@@ -201,6 +208,37 @@ class Verse(BaseContainer):
         verse = {
             "text": self._words
         }
-        if self._id is not None: verse["id"] = self._id
+        if self.id is not None: verse["id"] = self._id
         if self._oldId is not None: verse["oldId"] = self._oldId
+        if self._suggestions is not None:
+            verse["suggestions"] = [s.to_dict() for s in self._suggestions]
         return {"verse": verse}
+    
+class Suggestion(BaseContainer):
+    def __init__(self, text: str = None, id = None):
+        super().__init__()
+        self._words = self.cleanupText(text) or ""
+        self.id = id
+        self.batchId = None
+
+    @property
+    def text(self):
+        return self._words
+    @text.setter
+    def text(self, value):
+        self._words = self.cleanupText(value) or ""
+
+    @property
+    def batchId(self):
+        return self._batchId
+    @batchId.setter
+    def batchId(self, value):
+        self._batchId = value
+
+    def to_dict(self):
+        suggestion = {
+            "text": self._words
+        }
+        if self.id is not None: suggestion["id"] = self.id
+        if self.batchId is not None: suggestion["batchId"] = self.batchId
+        return {"suggestion": suggestion}

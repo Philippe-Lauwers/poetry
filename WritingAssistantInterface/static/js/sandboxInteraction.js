@@ -334,7 +334,7 @@ function focusToEmptyField(poem, rhymeScheme) {
  * Walks through the current input to look for the first empty field
  * @param poem
  * @return Verse object (if empty) */
-function firstEmptyVerse(poem) {
+export function firstEmptyVerse(poem) {
     for (const stanza of poem.children) {
         if (!stanza.children) {
             return null
