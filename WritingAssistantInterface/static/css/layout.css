@@ -58,7 +58,7 @@
     border-radius: 6px;
 }
 
-#sandbox {
+#sandbox, #suggestionbox {
     margin: 0rem 0.1rem 0.1rem 0.1rem;
     flex: 1 1 auto;
     min-height: 0; /* grow to fill the rest of the height */
@@ -85,12 +85,12 @@ div {
 input {
     caret-color: var(--borderColor);
 }
+
 .btn {
     width: 28px;
     height: 28px;
     padding: 0;
     border: none;
-
 }
 .btn:disabled {
     background-position: -58px 0;

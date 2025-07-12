@@ -18,7 +18,7 @@
 /* =============== 3.  VERSE WRAPPER & FOCUS HIGHLIGHT =============== */
 .verse-wrapper {
     /* Layout */
-    display: flex; /* put input (and later buttons) in a row */
+    display: flex; /* put label (and later buttons) in a row */
     align-items: center;
     gap: 0.5rem; /* space reserved for future buttons     */
     position: relative;
@@ -48,6 +48,7 @@
     border-radius: 4px; /* rounded corners                       */
 }
 /* Light-grey highlight when *verse* gets disabled */
+.verse:read-only,
 .verse:disabled {
     outline: 1px solid #b4b4b4;
     background: #f5f5f5;
@@ -64,9 +65,7 @@
 
 }
 */
-
-[id^="btn-gen-v-"] {
-
+#btn_generateVerse {
     background-image: url('../img/btn_GenerateVerse.svg');
     background-repeat: no-repeat;
     background-position: 0 0;
@@ -74,12 +73,12 @@
 }
 
 /* hover/focus shifts to the second square */
-[id^="btn-gen-v-"]:hover,
-[id^="btn-gen-v-"]:focus {
+#btn_generateVerse:hover,
+#btn_generateVerse:focus {
     background-position: -29px 0;
 }
 
 /* disabled shows the third */
-[id^="btn-gen-v-"]:disabled {
+#btn_generateVerse:disabled {
     background-position: -58px 0;
 }

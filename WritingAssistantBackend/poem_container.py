@@ -63,14 +63,14 @@ class Poem(BaseContainer):
         self._stanzas.append(Stanza(stanzaText=stanzaText, order=st_order, id=id))
 
     def receiveUserInput(self, userInput, structure):
+        if not userInput: # if there's no user input, we can skip this
+            return False
         stanzas = structure["struct-sandbox"].split(',')
         for s in stanzas:
             hasVerse = False
             for vw in structure["struct-"+s].split(','):
-                v = structure["struct-"+vw]
-                if userInput[v] != "":
-                    hasVerse = True
-                    break
+                hasVerse = True
+                break
             if hasVerse:
                 self._stanzas.append(Stanza(id=s, userInput=userInput, structure=structure))
 
@@ -130,7 +130,6 @@ class Stanza(BaseContainer):
         self._verses = []
         self._order = order
         self._id = self.__format_Id__(id)
-        pass
         # If the user has already written some text, there will be at least one stanza
         # Split the stanza on \n into verses and add verses to the stanza-object
         # If no text is given, there will be no stanza object
@@ -143,8 +142,8 @@ class Stanza(BaseContainer):
             for key in structure.keys():
                 if key == "struct-"+id:
                     for v in structure[key].split(','):
-                        vTxt = userInput[structure["struct-"+v]]
-                        if vTxt != "":
+                        if v != "suggestionbox":
+                            vTxt = userInput[structure["struct-"+v]]
                             self.addVerse(id = structure["struct-"+v], verseText=vTxt)
 
     def addVerse(self, order=-1, verseText: str = None, id = None):
@@ -187,6 +186,12 @@ class Verse(BaseContainer):
     @property
     def suggestions(self):
         return self._suggestions
+    @suggestions.setter
+    def suggestions(self, value):
+        if isinstance(value, list):
+            self._suggestions = [Suggestion(text=s) for s in value]
+        else:
+            self._suggestions = [Suggestion(text=value)]
 
     @property
     def text(self):

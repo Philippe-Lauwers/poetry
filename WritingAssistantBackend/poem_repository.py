@@ -13,23 +13,44 @@ class BaseRepository:
     def logAction(**logArgs):
         # Fetching arguments
         arg_actionType = logArgs['actionType']
-        arg_actionTargetType = logArgs['actionTargetType']
+        if 'actionTargetType' in logArgs.keys():
+            arg_actionTargetType = logArgs['actionTargetType']
+            arg_actionTargets = None
+        if 'actionTargets' in logArgs.keys():
+            arg_actionTargets = logArgs['actionTargets']
+            arg_actionTargetType = None
+
         # Lookup, (create,) and cache of action-related ID's
         if not arg_actionType in _actionType_id:
             _actionType_id[arg_actionType] = db.session.query(ActionTypeModel).filter_by(
                 actionType=arg_actionType.strip()).first().id
-        if not arg_actionTargetType in _actionTargetType_id:
-            _actionTargetType_id[arg_actionTargetType] = db.session.query(ActionTargetTypeModel).filter_by(
-                actionTargetType=arg_actionTargetType.strip()).first().id
+        if arg_actionTargetType is not None:
+            if not arg_actionTargetType in _actionTargetType_id:
+                _actionTargetType_id[arg_actionTargetType] = db.session.query(ActionTargetTypeModel).filter_by(
+                    actionTargetType=arg_actionTargetType.strip()).first().id
+        elif arg_actionTargets is not None:
+            for target in arg_actionTargets.keys():
+                if not target in _actionTargetType_id:
+                    _actionTargetType_id[target] = db.session.query(ActionTargetTypeModel).filter_by(
+                        actionTargetType=target.strip()).first().id
+
         id_actionType = _actionType_id[arg_actionType]
-        id_actionTargetType = _actionTargetType_id[arg_actionTargetType]
+
         # Log the actions
         A = ActionModel(actionType_id=id_actionType)
         db.session.add(A)
         db.session.flush()
         # Attach target to action
-        ActionTargetModel(action_id=A.id, actionTargetType_id=id_actionTargetType,
-                          target_id=logArgs['targetID'])
+        if arg_actionTargetType is not None:
+            id_actionTargetType = _actionTargetType_id[arg_actionTargetType]
+            ATM = ActionTargetModel(action_id=A.id, actionTargetType_id=id_actionTargetType,
+                              target_id=logArgs['targetID'])
+            db.session.add(ATM)
+        elif arg_actionTargets is not None:
+            for target, targetID in arg_actionTargets.items():
+                ATM = ActionTargetModel(action_id=A.id, actionTargetType_id=_actionTargetType_id[target],
+                                  target_id=targetID)
+                db.session.add(ATM)
 
     @staticmethod
     def isTmpId(id):
@@ -140,9 +161,9 @@ class VerseRepository(BaseRepository):
 
         if verse.suggestions is not None and len(verse.suggestions) > 0:
             # save the suggestions
-            suggestionRepository.save(suggestions=verse.suggestions, verse_id=verse.id)
+            SuggestionRepository.save(suggestions=verse.suggestions, verse_id=verse.id)
 
-class suggestionRepository(BaseRepository):
+class SuggestionRepository(BaseRepository):
     @staticmethod
     def save(suggestions = None, verse_id = None):
         # First save a batch-stub for the suggestions
@@ -161,6 +182,36 @@ class suggestionRepository(BaseRepository):
             db.session.add(orm_suggestion)
             db.session.flush()
             s.id = orm_suggestion.id
+
+    @staticmethod
+    def acceptSuggestion(verse_id, suggestion_id):
+        # This method is called when a user accepts a suggestion
+        # - retrieve the suggestion
+        try:
+            orm_suggestion = db.session.query(SuggestionModel).filter_by(id=suggestion_id).first()
+            if not orm_suggestion:
+                raise ValueError("Suggestion not found")
+
+            # - update the verse with the accepted suggestion
+            orm_verse = db.session.query(VerseModel).filter_by(id=verse_id).first()
+            if not orm_verse:
+                raise ValueError("Verse not found")
+
+            orm_verse.text = orm_suggestion.suggestion
+            orm_suggestion.status = 1
+
+            db.session.add(orm_verse)
+            db.session.add(orm_suggestion)
+
+            actionTargets = {'suggesion': suggestion_id, 'verse': verse_id}
+            VerseRepository.logAction(actionType='SG_SEL', actionTargets = {'suggestion': suggestion_id, 'verse': verse_id})
+
+        except Exception as e:
+            print(f"Error accepting suggestion: {e}")
+            db.session.rollback()
+            raise e
+        db.session.commit()
+        return True
 
 
 class KeywordRepository(BaseRepository):

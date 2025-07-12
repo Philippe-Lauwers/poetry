@@ -51,6 +51,15 @@ def genVerse():
         headers={'Content-Type': 'application/json'})
     return jsonify(resp.json())
 
+@main_bp.route('/acceptSuggestion', methods=['POST'])
+def accSuggestion():
+    params = request.get_json(force=True)
+    # print(request.form.get('action'))
+    resp = requests.post(f"{BACKEND_URL}/acceptSuggestion",
+                         json=params,  # <— send JSON, not form-data
+                            headers={'Content-Type': 'application/json'})
+    return jsonify(resp.json())
+
 @main_bp.route('/poemForm', methods=['GET'])
 def poemForm():
     lang = request.args.get('lang', default='1', type=str)

@@ -4,6 +4,7 @@ import {Poem} from './sandboxAPI/1_Poem.js';
 import {Stanza} from './sandboxAPI/2_Stanza.js';
 import {VerseWrapper} from './sandboxAPI/3_VerseWrapper.js';
 import {Verse} from './sandboxAPI/4_Verse.js';
+import {Suggestionbox} from "./suggestionboxAPI/1_SuggestionBox.js";
 import {flashMessage} from './niftyThings.js';
 
 /**
@@ -79,7 +80,7 @@ export function verseKeyup(e) {
  * - Enter/Tab on nonempty => new field
  * - Enter/Tab on empty    => move this field into a new stanza
  */
-function verseAccept({myEvent = null, myVerse = null}) {
+export function verseAccept({myEvent = null, myVerse = null}) {
     let verse;
     if (myEvent) {
         verse = BaseNode.getWrapper(myEvent.target);}   // assuming BaseNode.registry
@@ -124,7 +125,7 @@ function verseAccept({myEvent = null, myVerse = null}) {
             // and match the id with the button next to it
             let btn = verse.el.nextSibling;
             while (btn) {
-                if (btn.id.startsWith("btn-gen-v")) {
+                if (btn.id.startsWith("btn_generateVerse")) {
                     poem.moveButton(btn, verse.parent, newVerse.parent);
                 }// move the button
                 btn = btn.nextSibling
@@ -226,9 +227,9 @@ export function disableGenBtn(e, {includeFld = false} = {}) {
     }
     // Activate/desactivate the "generate verse" button according to the content of the verse field
     if(fld.nextSibling) {
-        if(fld.nextSibling.id.startsWith("btn-gen-v")){
+        if(fld.nextSibling.id.startsWith("btn_generateVerse")) {
             fld.nextElementSibling.disabled = (val !== '')
-            if (includeFld) fld.disabled = (val !== '')
+            if (includeFld) fld.readonly = (val !== '')
         }
     }
 }
@@ -370,14 +371,14 @@ function nextVerse(verse) {
 /**
  * This function enables disabled verses
  * - first verse = when a draft poem was automatically generated, generate verse button can be ditched
- * - last verse = when a sinle verse was requested
+ * - last verse = when a single verse was requested
 **/
 function activateVerses(poem) {
-    for (const stanza of poem.children) {
+    for (const stanza of poem.children.filter(s => (s.constructor.name === "VerseWrapper"))) {
         for (const wrapper of stanza.children) {
             // wrapper.firstChild is the Verse instance for that <input>
             const verse = wrapper.firstChild;
-            verse.el.disabled = false; // enable empty verses
+            verse.el.readOnly = false;// enable empty verses
             verse.className = "verse"
             let btn = verse.el.nextSibling;
             while (btn) {
@@ -391,7 +392,7 @@ function activateVerses(poem) {
 /** This function removes all buttons with the given prefix from the verse wrappers
  *  * @param pref
  */
-function removeButtons(pref = "btn-gen-v-") {
+function removeButtons(pref = "btn_generateVerse") {
     // remove the generate verse button from the previous verse wrapper
     const sandbox = getSandbox();
     for (let stanza of sandbox.children) {
@@ -475,8 +476,9 @@ export function receivePoem(poem) {
             }
         }
         myStructStz = document.getElementById("struct-" + myStanza.id);
+
         s.stanza.verses.forEach((v, verseIndex) => {
-            let {text, id, oldId} = v.verse;
+            let {text, id, oldId, suggestions} = v.verse;
             let verseEl
 
             if (isFullPoem && stanzaIndex === 0 && verseIndex === 0) {
@@ -488,6 +490,10 @@ export function receivePoem(poem) {
             if (verseEl) { // The verse is already present in the DOM, get a handle to it ...
                 myVerse = BaseNode.getWrapper(verseEl);
                 myVerse.value = (myVerse.value !== text) ? text : myVerse.value;
+                if (suggestions) {
+                    const SB = new Suggestionbox({verse:myVerse, suggestions: suggestions});
+                    document.querySelector('[id^="btn-f5-lst-sug"]').disabled = false;
+                }
                 if (isFullPoem && stanzaIndex === 0 && verseIndex === 0) {
                     oldId = myVerse.id
                     const oldVwId = myVerse.parent.id;
@@ -521,6 +527,10 @@ export function receivePoem(poem) {
                     myVerse.id = Verse.formatID({id: id, prefix: "v-"});
                     myVerse.name = myVerse.id;
                     myVerse.value = (myVerse.value !== text) ? text : myVerse.value;
+                    if (suggestions) {
+                        const SB = new Suggestionbox({verse:myVerse, suggestions: suggestions});
+                        document.querySelector('[id^="btn-f5-lst-sug"]').disabled = false;
+                    }
                     // Update the verse wrapper id
                     let  myVerseWrapper = myVerse.parent;
                     let oldVwId = myVerseWrapper.id;
@@ -541,7 +551,7 @@ export function receivePoem(poem) {
                         // Look for the generate verse button in the verse wrapper
                         let myBtn
                         for (let btn of myVerse.parent.el.childNodes) {
-                            if (btn.id.startsWith("btn-gen-v")) {
+                            if (btn.id.startsWith("btn_generateVerse")) {
                                 myBtn = btn;
                                 break;
                             }
@@ -561,7 +571,7 @@ export function receivePoem(poem) {
         });
     });
     if (poemComplete(sandbox,myVerse,getRhymeScheme())) {
-        removeButtons("btn-gen-v-");
+        removeButtons("btn_generateVerse");
     }
     activateVerses(getSandbox())
     verseAccept({myVerse: myVerse})

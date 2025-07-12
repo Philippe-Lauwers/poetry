@@ -1,10 +1,15 @@
 import {receivePoem} from './sandboxInteraction.js';
 import {receiveRhymeScheme} from './paramboxInteraction.js'
+import {removeSuggestionbox} from "./suggestionboxInteraction.js";
 
 const form = document.getElementById('poemForm');
 form.addEventListener('submit', async e => {
         e.preventDefault();
-        const data = Object.fromEntries(new FormData(form).entries());
+
+        // grab data from the form
+        const frmData = new FormData(form);
+        frmData.append(e.submitter.name, e.submitter.value);
+        const data = Object.fromEntries(frmData.entries());
 
         // 1) Log the submission on your frontend Python
         await fetch('/log', {
@@ -14,11 +19,13 @@ form.addEventListener('submit', async e => {
         });
 
         let reqRoute = ""
-        const s_id = e.submitter.id.substring(0,e.submitter.id.lastIndexOf("-"))
-        if (e.submitter.id === "btn_generatePoem") {
+        const s_id = e.submitter.id
+        if (s_id === "btn_generatePoem") {
             reqRoute = "/generatePoem";
-        } else if (s_id === "btn-gen-v") {
+        } else if (s_id === "btn_generateVerse" || s_id.startsWith("btn-f5-lst-sug")) {
             reqRoute = "/generateVerse";
+        } else if (s_id.startsWith("btn_acceptSuggestion")) {
+            reqRoute = "/acceptSuggestion";
         }
         // 2) Route request
         let gen = await fetch(reqRoute, {
@@ -29,7 +36,7 @@ form.addEventListener('submit', async e => {
         const json = await gen.json();
 
         // 3) Display
-        json.poem ? receivePoem(json.poem) : 'Error';
+        json.poem ? receivePoem(json.poem) : json.suggAccept ? removeSuggestionbox(json.suggAccept, json.verse_id) :'Error';
     });
 
 const formFld = document.getElementById('form');

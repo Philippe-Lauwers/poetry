@@ -156,7 +156,8 @@ class PoemBase:
             i = -1
             while abs(i) < len(userInput) and list(userInput.values())[i] == '': # look for the last non-empty verse
                 i -= 1
-            self.previous_sent = self.cleanInputVerse(list(userInput.values())[i])
+            if len(userInput.values()) > 0:
+                self.previous_sent = self.cleanInputVerse(list(userInput.values())[i])
 
         nmfDim = self._nmfDim
 
@@ -193,7 +194,10 @@ class PoemBase:
                     if nSuggestions == 1: # generating a complete poem: only one suggestion is generated
                         self.container.stanzas[-1].addVerse(verseText=' '.join(words))
                     else: # generating n suggestions when a single verse is requested
-                        self.container.stanzas[-1].addVerse(verseText=[' '.join(w) for w in words])
+                        if self.container.stanzas[-1].verses[-1].text != "":
+                            self.container.stanzas[-1].addVerse(verseText=[' '.join(w) for w in words])
+                        else:
+                            self.container.stanzas[-1].verses[-1].suggestions = [' '.join(w) for w in words]
                     # writes the generated verse to stdout and log
                     if isinstance(words, str):
                         sys.stdout.write(' '.join(words) + '\n')
@@ -276,11 +280,19 @@ class PoemBase:
         if n == 1:
             output = scoreList[0][1]
         else:
+            randomList = self.pickRandomNfromN2(n, scoreList)
             output = []
             for i in range(n):
-                output.append(scoreList[i][1])
+                output.append(randomList[i][1])
 
         return output
+
+    def pickRandomNfromN2(self, n, listIn):
+        N2_topped = min(n**2,12) # no testing required, list contains >> 12 elements
+        N2_list = listIn[:N2_topped]
+        listOut = random.sample(N2_list, n)
+        return listOut
+
 
     def getRhymeStructure(self, cutoff=10, userInput=None):
         if userInput is None:
@@ -324,29 +336,38 @@ class PoemBase:
             if el != '':
                 poemStructureVerses += (el,)
         userInputLastWords = []
-        for k in userInput.keys():
-            userInputLastWords.append(self.cleanInputVerse(userInput[k])[-1])
+        if userInput:
+            for k in userInput.keys():
+                userInputLastWords.append(self.cleanInputVerse(userInput[k])[-1])
 
-        for i in range(len(userInputLastWords)):
-            if userInputLastWords[i] == '': # this is the location of the verse we want to generate
-                if not poemStructureVerses[i] in mapDict:
-                    randomSample = self.randomRhymeSample(cutoff=cutoff, chosenList=chosenList)
-                    mapDict[poemStructureVerses[i]] = randomSample
-                    chosenList.append(randomSample)
-                # else: # We know which rhyme applies to this verse, we don't have to look for one
-                    # pass
-            else: # if userInputLastWords[i] != '':
-                if not poemStructureVerses[i] in mapDict:
-                    try:
-                        rhymeEnding = self.rhymeDictionary[userInputLastWords[i]][-1]
-                        mapDict[poemStructureVerses[i]] = rhymeEnding
-                        chosenList.append(rhymeEnding)
-                    except KeyError: # replace by lookup with more blablabla if there is time
+        if userInput:
+            for i in range(len(userInputLastWords)):
+                if userInputLastWords[i] == '': # this is the location of the verse we want to generate
+                    if not poemStructureVerses[i] in mapDict:
                         randomSample = self.randomRhymeSample(cutoff=cutoff, chosenList=chosenList)
                         mapDict[poemStructureVerses[i]] = randomSample
                         chosenList.append(randomSample)
+                    # else: # We know which rhyme applies to this verse, we don't have to look for one
+                        # pass
+                else: # if userInputLastWords[i] != '':
+                    if not poemStructureVerses[i] in mapDict:
+                        try:
+                            rhymeEnding = self.rhymeDictionary[userInputLastWords[i]][-1]
+                            mapDict[poemStructureVerses[i]] = rhymeEnding
+                            chosenList.append(rhymeEnding)
+                        except KeyError: # replace by lookup with more blablabla if there is time
+                            randomSample = self.randomRhymeSample(cutoff=cutoff, chosenList=chosenList)
+                            mapDict[poemStructureVerses[i]] = randomSample
+                            chosenList.append(randomSample)
+        else: # if the user input is an empty dict (we know we requested suggestions, not an entire poem)
+            randomSample = self.randomRhymeSample(cutoff=cutoff, chosenList=chosenList)
+            # we have not received any user input, we use the first element in the rhyme scheme
+            mapDict[poemStructureVerses[0]] = randomSample
+            chosenList.append(randomSample)
 
         nEmpties = 0
+        if len(userInputLastWords) == 0:
+            return [mapDict[poemStructure[0]]]
         for i in range(len(userInputLastWords)):
             if poemStructure[i+nEmpties] == '': 
                 nEmpties+= 1

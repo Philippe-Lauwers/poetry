@@ -1,7 +1,7 @@
 // base-node.js
 export class BaseNode {
     static #registry = new WeakMap();
-    static #poemElements = ["Poem","Stanza","VerseWrapper","Verse"]
+    static #poemElements = ["Poem","Stanza","VerseWrapper","Verse"];
 
     /**
      * Constructor class: searches for element by id, creates a new one if needed
@@ -21,9 +21,12 @@ export class BaseNode {
                     name = "",
                     value = "",
                     className = "",
+                    addButtons = false,
+                    // default values for events and buttons
                     events = {},
                     buttons = {}
                 } = {}) {
+        let isNew = false;
         let el;
         // 1) if the function was passed an HTMLElement, use the HTMLElement
         if (selector instanceof HTMLElement) {
@@ -32,12 +35,13 @@ export class BaseNode {
         // 2) else if the function was passed a string, try to query it
         else if (typeof selector === "string") {
             el = document.querySelector(selector);
-            if(!el) {
+            if (!el) {
                el = document.getElementById(selector);
             }
         }
         // 3) if nothing was found, create a new DOM-element
         if (!el) {
+            isNew = true;
             el = document.createElement(tag);
             if (id) el.id = id;
             if (name) el.setAttribute("name",name);
@@ -58,15 +62,19 @@ export class BaseNode {
         // 6) attach any given buttons
         this._buttons = buttons;
         this._buttonMap = new Map();
-        Object.entries(buttons).forEach(([key,val]) => {
-            let cfg;
-            if (typeof val === "function") {
-                cfg = {id:key, onClick:val};
-            } else if (val && typeof val === "object") {
-                cfg = val
-            }
-            this.addButton(cfg)
-        });
+        if (isNew || addButtons) {
+            this._buttons = buttons;
+            this._buttonMap = new Map();
+            Object.entries(buttons).forEach(([key, val]) => {
+                let cfg;
+                if (typeof val === "function") {
+                    cfg = {id: key, onClick: val};
+                } else if (val && typeof val === "object") {
+                    cfg = val
+                }
+                this.addButton(cfg)
+            });
+        }
 
         //7) store the (new) element and register for weak look-ups
         if (!(el instanceof HTMLElement)) {
@@ -95,9 +103,9 @@ export class BaseNode {
         return BaseNode.#registry.get(domEl) || null;
     }
 
-    /**
+     /**
      * Append another BaseNode (or raw HTMLElement) and return the wrapper */
-    append(child) {
+        append(child) {
         // Set node to child (if BaseNode) or corresponding BaseNode of the DOM-element
         const node = child instanceof BaseNode ? child : BaseNode.#registry.get(child);
         // Set childEl to the DOM-element of child or child if this is a BaseNode
@@ -109,14 +117,54 @@ export class BaseNode {
         // Save the new element to the "struct-" field of the parent (for poem elements only)
         if (BaseNode.#poemElements.includes(this.constructor.name)) {
             const structFld = document.getElementById(`struct-${this.id}`)
+            if (!structFld.value.includes(childEl.id))
+            {
+                structFld.value += (structFld.value ? "," : "") + childEl.id;
+            }
+        }
+        return returnVal
+    }
+
+    /**
+    * Insert another BaseNode (or raw HTMLElement) before a given and return the wrapper */
+    insertBefore(child, beforeChild) {
+        // Set node to child (if BaseNode) or corresponding BaseNode of the DOM-element
+        const node = child instanceof BaseNode ? child : BaseNode.#registry.get(child);
+        // Set childEl to the DOM-element of child or child if this is a BaseNode
+        const childEl = node ? node.el : child;
+        // Append the childEl to the DOM-element of the current object
+        this.el.insertBefore(childEl, beforeChild.el);
+        // determine the child node (or create the new child node) the method will return
+        const returnVal =  node ?? new BaseNode(childEl);     // fallback generic wrapper
+        // Save the new element to the "struct-" field of the parent (for poem elements only)
+        if (BaseNode.#poemElements.includes(this.constructor.name)) {
+            const structFld = document.getElementById(`struct-${this.id}`)
                 structFld.value += (structFld.value ? ",":"") + childEl.id;
         }
         return returnVal
     }
 
+
     remove() {
+        this.children.forEach(child => {
+            child.remove();
+        })
         this.el.remove();
         BaseNode.#registry.delete(this.el);
+    }
+
+    deactivate() {
+        this.children.forEach(child => {
+            child.deactivate();
+        });
+        this.el.disabled = true;
+        let btn = this.el.nextSibling??this.el.firstChild;
+        while (btn) {
+            if (btn instanceof HTMLButtonElement) {
+                btn.disabled = true;
+            }
+            btn = btn.nextSibling;
+        }
     }
 
 
@@ -143,16 +191,15 @@ export class BaseNode {
      */
     moveButton(btnOrId, oldParent, newParent) {
         const btn = btnOrId instanceof String?document.getElementById(btnOrId):btnOrId;
-        let oldId = btn.id
-        let btnNum = btn.id.match(/\d+/);
-        let newNum = newParent.id.match(/\d+/);
-        btn.id = (btnNum && newNum)?btn.id.replace(btnNum[0],newNum[0]):btn.id;
-        btn.name = btn.id;
+        let oldValue = btn.value
+        let btnNum = btn.value.match(/\d+/);
+        let newNum = newParent.name.match(/\d+/);
+        btn.value = (btnNum && newNum)?btn.value.replace(btnNum[0],newNum[0]):btn.value;
         btn.disabled = false;
         newParent.el.appendChild(btn);
 
         // Re-map the button
-        this._buttonMap.delete(oldId);
+        // this._buttonMap.delete(oldId);
         this._buttonMap.set(btn.id, btn);
     }
     /**
@@ -172,6 +219,7 @@ export class BaseNode {
      *   @param alt = "",
      *   @param onClick = null,
      *   @param id
+     *   @param value = "",
      * @return dom-element of type button
      *   */
     #buildButton(cfg) {
@@ -182,16 +230,17 @@ export class BaseNode {
             formmethod = null,
             onClick = null,
             id = null,
+            name = null,
+            value = null,
             className = null// optional stable id
         } = cfg;
 
         const btn = document.createElement("button");
         btn.type = type?type:"button";
         if (className) btn.classList.add(className);
-        if (id) {
-            btn.id = id;
-            btn.name = id;
-        }
+        btn.id=id?id:"";
+        btn.name=name?name:btn.id;
+        btn.value=value?value:"";
 
         if (typeof onClick === "function") {
             btn.addEventListener("click", onClick);

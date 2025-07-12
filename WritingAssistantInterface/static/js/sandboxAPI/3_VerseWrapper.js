@@ -20,11 +20,9 @@ export class VerseWrapper extends BaseNode {
         const v = this.append(new Verse({id: id, value: value, events: events}))
         // check if there is a button in front of the verse field, in that case move the button to the back
         for (let elem of this.el.children) {
-            const elem_id = elem.id
-            switch (elem_id.substring(elem_id.indexOf("-") + 1, elem_id.lastIndexOf("-"))) {
-                case "gen-v":
-                    this.el.insertBefore(v.el, elem)
-                    break;
+            if (elem.id === "btn_generateVerse") {
+                this.el.insertBefore(v.el, elem)
+                break;
             }
         }
         return v;

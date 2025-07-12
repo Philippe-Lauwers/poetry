@@ -1,8 +1,6 @@
-import {BaseNode} from './API.js';
 import {Parambox} from './paramboxAPI/1_Parambox.js';
-import {Select} from './paramboxAPI/2_Select.js';
-import {Option} from './paramboxAPI/3_Option.js';
 import {retrieveRhymeScheme} from "./linkUserInteractionToBackend.js";
+import {firstEmptyVerse, getSandbox} from "./sandboxInteraction.js";
 
 export const getParambox = () => Parambox.instance;
 
@@ -15,6 +13,7 @@ export function loadParambox() {
 
     paramboxEL.querySelectorAll("select").forEach(selectEl => {
         const sel = parambox.addSelect({ selector: selectEl });
+        sel.el.addEventListener("change", e => {firstEmptyVerse(getSandbox()).el.focus()});
         Array.from(selectEl.options).forEach(optEl => {
         sel.addOption({ selector: optEl })
         });

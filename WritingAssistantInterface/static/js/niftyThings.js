@@ -10,6 +10,9 @@ import {BaseNode} from './API.js';
  * @param {number}      ms       – how long before it fades out
  */
 export function flashMessage(host, text, ms = 1750) {
+    if (document.getElementById("suggestionbox")) {
+        return false;  // don't show messages if there is a suggestionbox showing
+    }
     // Accept either a wrapper or a plain DOM element
     const el = host instanceof BaseNode ? host.el : host;
 

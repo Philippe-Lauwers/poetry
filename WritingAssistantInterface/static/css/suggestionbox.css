@@ -1,0 +1,102 @@
+.suggestion:hover {
+    background-color: #f5f5f5;
+    border-radius: 4px;
+}
+    /* =============== 1.  GENERAL RESET FOR THE SANDBOX =============== */
+#suggestionbox {
+    background: #ffffff; /* white “canvas” */
+    border: 1px solid var(--borderColor);
+    border-radius: 6px;
+    padding: 0.2rem;
+    margin-top: 0.2rem;
+    box-sizing: border-box; /* keep padding inside the width */
+    display: flex;
+    display-direction: row;
+    flex: 1 1 auto;
+    overflow: auto;
+    max-width: 100%; /* never overflow the sandbox          */
+}
+
+#suggestionlist {
+    margin-right:0.2rem;
+    display: flex;
+    border: 1px solid #b4b4b4;
+    border-radius: 6px;
+    padding: 0.2rem;
+    flex: 1 1 auto; /* ← this makes it grow to fill wrapper */
+    flex-direction: column;
+    box-sizing: border-box; /* include padding inside width         */
+    gap: 0.2rem; /* space between suggestions */}
+
+#suggestionrefresher {
+    vertical-align: top;
+}
+
+.suggestionWrapper {
+  display: flex;
+  flex-direction: row;
+  align-items: center; /* vertically align label and button */
+}
+
+
+.suggestion {
+    flex: 1 1 auto; /* ← this makes it grow to fill wrapper */
+    min-width: 0; /* lets long text shrink gracefully      */
+    font-size: 1rem;
+    box-sizing: border-box; /* include padding inside width         */
+    border: none;
+    padding: 0.2rem 0.2rem 0.3rem 0.2rem; /* space inside the input field          */
+    /* Smooth focus highlight */
+    transition: background 0.2s, border 0.2s;
+    margin-right: 0.2rem;
+}
+
+.suggestionWrapper:not(.selected):hover .suggestion {
+  outline: 1px solid #b4b4b4;
+  background: #f5f5f5;
+  border-radius: 4px;
+}
+.suggestionWrapper.selected .suggestion {
+  outline: 1px solid #b4b4b4;
+  background: #f5f5f5;
+  border-radius: 4px;
+}
+.suggestionWrapper:hover [id^="btn_acceptSuggestion"]:not(:disabled) {
+    background-position: -29px 0;
+}
+
+
+/* SOLVED IN layout.css (it is used in all panes)
+.btn {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: none;
+
+}
+*/
+[id^="btn_acceptSuggestion"] {
+    background-image: url('../img/btn_SaveVerse.svg');
+    background-repeat: no-repeat;
+    background-position: 0 0;
+    background-size: 86px 28px;
+}
+
+[id^="btn-f5-lst-sug-"] {
+    background-image: url('../img/btn_GenerateVerseAllOverAgain.svg');
+    background-repeat: no-repeat;
+    background-position: 0 0;
+    background-size: 86px 28px;
+}
+/* hover/focus shifts to the second square */
+[id^="btn-f5-lst-sug-"]:not(:disabled):hover,
+[id^="btn-f5-lst-sug-"]:not(:disabled):focus,
+[id^="btn_acceptSuggestion"]:not(:disabled):hover,
+[id^="btn_acceptSuggestion"]:not(:disabled):focus {
+    background-position: -29px 0;
+}
+/* disabled shows the third */
+[id^="btn-f5-lst-sug-"]:disabled,
+[id^="btn_acceptSuggestion"]:disabled {
+    background-position: -58px 0;
+}

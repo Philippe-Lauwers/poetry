@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify, render_template
 
 from .poembase_from_cache import get_poem
 from .poembase_config import PoembaseConfig
-from .poem_repository import PoemRepository
+from .poem_repository import PoemRepository, SuggestionRepository
 
 main_bp = Blueprint("main", __name__)
 
@@ -110,6 +110,26 @@ def write_verse():
     poem.write(form=pform, nmfDim=nmfDim, structure=structure, userInput=verses)
     PoemRepository.save(poem.container)
     return jsonify({"poem": poem.container.to_dict()})
+
+@main_bp.route("/acceptSuggestion", methods=["GET", "POST"])
+def accSuggestion():
+    # This endpoint writes to the database that a user decided to work with a suggestion
+    # - retrieving the parameters
+    data = request.get_json(force=True) or {}
+    # extract your fields (with fallbacks)
+    suggestion_id = data.get("btn_acceptSuggestion", "1").split("-")[-1]
+    for key, value in data.items():
+        if '-s-' in key:
+            vwLst = value.split(',')
+            prevVw = vwLst[0]
+            for vw in vwLst:
+                if vw == "suggestionbox":
+                    verse_id = prevVw.split("-")[-1]
+                    break
+                prevVw = vw
+
+    status = SuggestionRepository.acceptSuggestion(verse_id, suggestion_id)
+    return jsonify({"suggAccept": status, "verse_id": verse_id})
 
 
 @main_bp.route("/test")

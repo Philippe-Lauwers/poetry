@@ -20,7 +20,8 @@ window.addEventListener("DOMContentLoaded", () => {
                 change: e => highlightIfEmpty(e, e.target)},
             buttons: {
                 btn_generateVerse: {
-                    id: "btn-gen-v-1",
+                    id: "btn_generateVerse",
+                    value: "v-1",
                     type: "submit",
                     formaction: "/generateVerse",
                     formmethod: "post",
@@ -40,6 +41,7 @@ window.addEventListener("DOMContentLoaded", () => {
 });
 const parambox = new Parambox({
     selector: "#parambox",
+    addButtons: true,
     buttons: {
         btn_generatePoem: {
             id: "btn_generatePoem",

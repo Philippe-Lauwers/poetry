@@ -1,5 +1,6 @@
 import {deactivateParambox} from "./paramboxInteraction.js";
 import {disableGenBtn, getSandbox} from "./sandboxInteraction.js";
+import {deactivateSuggestionbox} from "./suggestionboxInteraction.js";
 
 export class Submit {
 
@@ -10,14 +11,16 @@ export class Submit {
                 deactivateParambox(e, e.submitter);
                 disableGenBtn(e, {includeFld: true});
             }, 0);
-        } else if (e.submitter.id.substring(0, e.submitter.id.lastIndexOf("-")) == "btn-gen-v") {
+        } else if (e.submitter.id == "btn_generateVerse" || e.submitter.id.startsWith("btn-f5-lst-sug")) {
             setTimeout(() => {
                 deactivateParambox(e, e.submitter);
                 for (let el of e.submitter.parentNode.childNodes) {
-                        el.disabled = true;
+                        el.readOnly = true;
                   }
                 e.submitter.disabled = true;
             }, 0);
+        } else if (e.submitter.id.startsWith("btn_acceptSuggestion")) {
+            deactivateSuggestionbox(e.submitter.id);
         }
     }
 }
