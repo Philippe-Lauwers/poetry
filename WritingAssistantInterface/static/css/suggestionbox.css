@@ -4,20 +4,28 @@
 }
     /* =============== 1.  GENERAL RESET FOR THE SANDBOX =============== */
 #suggestionbox {
-    background: #ffffff; /* white “canvas” */
+    background: #fafafa; /* white “canvas” */
     border: 1px solid var(--borderColor);
     border-radius: 6px;
     padding: 0.2rem;
     margin-top: 0.2rem;
     box-sizing: border-box; /* keep padding inside the width */
     display: flex;
-    display-direction: row;
+    flex-basis: row;
     flex: 1 1 auto;
     overflow: auto;
     max-width: 100%; /* never overflow the sandbox          */
 }
 
+#suggestionRefresher {
+    padding-top: 0.2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
 #suggestionlist {
+    background: #ffffff;
     margin-right:0.2rem;
     display: flex;
     border: 1px solid #b4b4b4;
@@ -27,10 +35,6 @@
     flex-direction: column;
     box-sizing: border-box; /* include padding inside width         */
     gap: 0.2rem; /* space between suggestions */}
-
-#suggestionrefresher {
-    vertical-align: top;
-}
 
 .suggestionWrapper {
   display: flex;
@@ -88,15 +92,26 @@
     background-position: 0 0;
     background-size: 86px 28px;
 }
+
+[id^="btn-close-box-sug-"] {
+    background-image: url('../img/btn_DelVerse.svg');
+    background-repeat: no-repeat;
+    background-position: 0 0;
+    background-size: 86px 28px;
+}
+
 /* hover/focus shifts to the second square */
 [id^="btn-f5-lst-sug-"]:not(:disabled):hover,
 [id^="btn-f5-lst-sug-"]:not(:disabled):focus,
+[id^="btn-close-box-sug-"]:not(:disabled):hover,
+[id^="btn-close-box-sug-"]:not(:disabled):focus,
 [id^="btn_acceptSuggestion"]:not(:disabled):hover,
 [id^="btn_acceptSuggestion"]:not(:disabled):focus {
     background-position: -29px 0;
 }
 /* disabled shows the third */
 [id^="btn-f5-lst-sug-"]:disabled,
+[id^="btn-close-box-sug-"]:disabled,
 [id^="btn_acceptSuggestion"]:disabled {
     background-position: -58px 0;
 }

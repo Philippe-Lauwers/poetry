@@ -247,8 +247,12 @@ export class BaseNode {
         }
 
         btn.title = alt ? alt : null;
-        btn.formAction = formaction ? formaction : null;
-        btn.formMethod = formmethod ? formmethod : null;
+        if (formmethod) {
+            btn.formMethod = formmethod;
+        }
+        if(formaction) {
+            btn.formAction = formaction;
+        }
 
         return btn;
     }

@@ -41,16 +41,22 @@ export function deactivateSuggestionbox(btnId) {
     //document.getElementById(btnId_parts[btnId_parts.length-2]).value = document.getElementById(btnId_parts.pop()).innerHTML;
 }
 
-export function removeSuggestionbox(YesOrNo = null, verse_id) {
+export function closeSuggestionBox({e = null, target = null, YesOrNo = null, verse_id = null} = {}) {
     if (YesOrNo === false) {
-        return false;
+        return false; // Indicates something went wrong when saving the acceptance of the suggestion
     }
+
+    const verseId = target?.id.startsWith("btn-close-box-sug-")
+        ? target.id.replace("btn-close-box-sug-", "")
+        : `v-${verse_id}`;
+
     let SB = getSuggestionbox();
     if (SB) {
         SB.remove();
         Suggestionbox.instance = null;
     }
-    let vs = document.getElementById("v-"+verse_id)
+    let vs = document.getElementById(verseId)
     vs.readOnly = false;
+    vs.classList.remove("verseEmpty");
     vs.focus();
 }

@@ -8,9 +8,7 @@
 import {BaseNode} from "../API.js";
 import {Suggestionlist} from "./2_1_SuggestionList.js";
 import {Suggestionrefresher} from "./2_2_SuggestionRefresher.js";
-
-//import {SuggestionWrapper} from "./3_1_SuggestionWrapper.js";
-
+import {closeSuggestionBox} from "../suggestionboxInteraction.js";
 
 export class Suggestionbox extends BaseNode {
 
@@ -40,6 +38,13 @@ export class Suggestionbox extends BaseNode {
         const sr = new Suggestionrefresher({
             verse: verse,
             buttons: {
+                btn_close_box: {
+                    id: "btn-close-box-sug-" + verse.id,
+                    type: "button",
+                    className: "btn",
+                    alt: "Close",
+                    onClick: e => {closeSuggestionBox(e, e.target);}
+                },
                 btn_f5_lst_sug: {
                     id: "btn-f5-lst-sug-" + verse.id,
                     type: "submit",

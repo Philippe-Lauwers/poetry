@@ -1,6 +1,6 @@
 import {receivePoem} from './sandboxInteraction.js';
 import {receiveRhymeScheme} from './paramboxInteraction.js'
-import {removeSuggestionbox} from "./suggestionboxInteraction.js";
+import {closeSuggestionBox} from "./suggestionboxInteraction.js";
 
 const form = document.getElementById('poemForm');
 form.addEventListener('submit', async e => {
@@ -36,7 +36,7 @@ form.addEventListener('submit', async e => {
         const json = await gen.json();
 
         // 3) Display
-        json.poem ? receivePoem(json.poem) : json.suggAccept ? removeSuggestionbox(json.suggAccept, json.verse_id) :'Error';
+        json.poem ? receivePoem(json.poem) : json.suggAccept ? closeSuggestionBox({YesOrNo:json.suggAccept, verse_id:json.verse_id}) :'Error';
     });
 
 const formFld = document.getElementById('form');
