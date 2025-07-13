@@ -213,6 +213,20 @@ class SuggestionRepository(BaseRepository):
         db.session.commit()
         return True
 
+    @staticmethod
+    def lookupSuggestionsByVerse(verse_id):
+        # This method returns all suggestions that were previously generated for a verse
+        suggestions = []
+
+        orm_suggestions = (db.session.query(SuggestionModel)
+                          .join(SuggestionBatchModel, SuggestionModel.suggestionBatch_id == SuggestionBatchModel.id)
+                          .filter(SuggestionBatchModel.verse_id == verse_id).all())
+        if orm_suggestions:
+           suggestions.extend([{"id":sugg.id,"suggestion":sugg.suggestion} for sugg in orm_suggestions])
+           return suggestions
+        else:
+            return None
+
 
 class KeywordRepository(BaseRepository):
     @staticmethod

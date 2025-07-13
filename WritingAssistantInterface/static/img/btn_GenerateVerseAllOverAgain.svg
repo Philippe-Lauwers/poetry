@@ -11,6 +11,28 @@
   <defs
      id="defs8">
     <linearGradient
+       id="linearGradient58">
+      <stop
+         style="stop-color:#7cab5b;stop-opacity:1;"
+         offset="0.2027833"
+         id="stop57" />
+      <stop
+         style="stop-color:#ffffff;stop-opacity:0;"
+         offset="0.75347912"
+         id="stop58" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient56">
+      <stop
+         style="stop-color:#7cab5b;stop-opacity:1;"
+         offset="0.24850895"
+         id="stop55" />
+      <stop
+         style="stop-color:#ffffff;stop-opacity:0;"
+         offset="0.79920477"
+         id="stop56" />
+    </linearGradient>
+    <linearGradient
        id="linearGradient53">
       <stop
          style="stop-color:#001f60;stop-opacity:0;"
@@ -39,7 +61,7 @@
          offset="0"
          id="stop48" />
       <stop
-         style="stop-color:#001f35;stop-opacity:1;"
+         style="stop-color:#b4b4b4;stop-opacity:1;"
          offset="0.7475149"
          id="stop49" />
     </linearGradient>
@@ -108,7 +130,7 @@
        x2="14.661027"
        y2="2.7336257" />
     <linearGradient
-       xlink:href="#linearGradient34"
+       xlink:href="#linearGradient58"
        id="linearGradient35"
        x1="7.8904252"
        y1="4.4083104"
@@ -117,7 +139,7 @@
        gradientUnits="userSpaceOnUse"
        gradientTransform="matrix(0.9573548,0,0,1.0016187,0.50003747,0.15346519)" />
     <linearGradient
-       xlink:href="#linearGradient44"
+       xlink:href="#linearGradient56"
        id="linearGradient36"
        gradientUnits="userSpaceOnUse"
        x1="7.8904252"

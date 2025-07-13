@@ -1,4 +1,5 @@
 import re # Regular expressions
+from .poem_repository import SuggestionRepository
 
 class BaseContainer():
     def __init__(self):
@@ -109,6 +110,15 @@ class Poem(BaseContainer):
     def origin(self, value):
         self._origin = value
 
+    def blacklists(self):
+        rhyme = []
+        words = set()
+        for s in self.stanzas:
+            BL = s.blacklists()
+            rhyme.extend(BL["rhyme"])
+            words.update(BL["words"])
+        return {"rhyme": rhyme, "words": words}
+
     def to_dict(self):
         # Return a dictionary representation of the poem, containing stanzas
         pass
@@ -162,6 +172,16 @@ class Stanza(BaseContainer):
     def order(self, value):
         self._order = value
 
+    def blacklists(self):
+        words = set()
+        rhyme = []
+        for v in self.verses:
+            BL = v.blacklists()
+            rhyme.extend(BL["rhyme"])
+            if BL["words"] is not None: # do not try to append if the verse is empty
+                words.update(BL["words"])
+        return {"rhyme": rhyme, "words": words}
+
     def to_dict(self):
         # Return a dictionary representation of the stanza
         stanza = {
@@ -170,6 +190,7 @@ class Stanza(BaseContainer):
         if self.id is not None: stanza["id"] = self._id
         if self.oldId is not None: stanza["oldId"] = self._oldId
         return {"stanza": stanza}
+
 
 class Verse(BaseContainer):
     def __init__(self, order=0, verseText: str = None, id= None):
@@ -208,6 +229,23 @@ class Verse(BaseContainer):
     @order.setter
     def order(self, value):
         self._order = value
+
+    def blacklists(self):
+        words = set()
+        rhyme = []
+        wordsList = self.text.split(" ")
+        rhyme.extend([wordsList[-1]])
+        words.update([w.lower() for w in wordsList])
+
+        if self.text == "":
+            previousSugg = SuggestionRepository.lookupSuggestionsByVerse(self.id)
+            if not previousSugg is None:
+                for sugg in previousSugg:
+                    wordsList = sugg["suggestion"].split(" ")
+                    rhyme.extend([wordsList[-1]])
+                    words.update([w.lower() for w in wordsList])
+
+        return {"rhyme": rhyme, "words": words}
 
     def to_dict(self):
         verse = {

@@ -158,6 +158,9 @@ class PoemBase:
                 i -= 1
             if len(userInput.values()) > 0:
                 self.previous_sent = self.cleanInputVerse(list(userInput.values())[i])
+            blacklists = self.container.blacklists()
+            self.blacklist.append(blacklists["rhyme"])
+            self.blacklist_words = self.blacklist_words.union(blacklists["words"])
 
         nmfDim = self._nmfDim
 
@@ -174,6 +177,7 @@ class PoemBase:
                         nSuggestions = self.suggestionBatchSize
                     else:
                         nSuggestions = 1
+
                     words = self.getSentence(rhyme=el, syllables = True, nmf=nmfDim, n = nSuggestions)
                 except KeyError as e:
                     print('err', e)
