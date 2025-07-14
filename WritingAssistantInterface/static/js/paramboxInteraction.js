@@ -14,7 +14,9 @@ export function loadParambox() {
 
     paramboxEL.querySelectorAll("select").forEach(selectEl => {
         const sel = parambox.addSelect({ selector: selectEl });
-        sel.el.addEventListener("change", e => {firstEmptyVerse(getSandbox()).el.focus()});
+        sel.el.addEventListener("change", e => {
+            firstEmptyVerse(getSandbox())?.el.focus();
+        });
         Array.from(selectEl.options).forEach(optEl => {
         sel.addOption({ selector: optEl })
         });
@@ -27,6 +29,7 @@ export function loadParambox() {
                 type: "submit",
                 formaction: "/savePoem",
                 formmethod: "post",
+                value:1,
                 className: "btn",
                 alt: "Save the draft"
             }

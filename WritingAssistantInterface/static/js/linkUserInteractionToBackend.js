@@ -26,6 +26,8 @@ form.addEventListener('submit', async e => {
             reqRoute = "/generateVerse";
         } else if (s_id.startsWith("btn_acceptSuggestion")) {
             reqRoute = "/acceptSuggestion";
+        }else if (s_id === "btn_savePoem") {
+            reqRoute = "/savePoem";
         }
         // 2) Route request
         let gen = await fetch(reqRoute, {

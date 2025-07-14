@@ -58,6 +58,38 @@
     border-radius: 6px;
 }
 
+#titlebox {
+    margin: 0rem;
+    background: #ffffff; /* white “canvas” */
+    padding: 0.1rem 1rem 0rem 1rem;
+}
+#poemTitle {
+    width: 50%; /* half the viewport width            */
+    max-width: 100%; /* never overflow the sandbox          */
+    box-sizing: border-box; /* include padding inside width         */
+    border-radius: 4px;
+    font-size: 1.25rem;
+    padding: 0.2rem 0.2rem 0.3rem 0.2rem; /* space inside the input field          */
+    color: var(--borderColor);
+}
+#poemTitle:placeholder-shown {
+  border: 1px solid var(--borderColor);
+  background: none;
+}
+#poemTitle:focus {
+  outline: none;
+  border: 1px solid var(--borderColor);
+  background: #f5f5f5;
+}
+#poemTitle:not(:placeholder-shown):not(:focus) {
+  border-top:none;
+  border-left: none;
+  border-right:none;
+  border-bottom: 1px double var(--borderColor);
+  border-radius:0rem;
+}
+
+
 #sandbox, #suggestionbox {
     margin: 0rem 0.1rem 0.1rem 0.1rem;
     flex: 1 1 auto;

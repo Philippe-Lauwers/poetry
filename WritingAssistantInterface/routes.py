@@ -68,6 +68,16 @@ def poemForm():
     resp = requests.get(f"{BACKEND_URL}/poemForm", params=params)
     return jsonify(resp.json())
 
+@main_bp.route('/savePoem', methods=['POST'])
+def savePoem():
+    print("Saving poem...")
+    # proxy form data to your backend /write
+    params = request.get_json(force=True)
+    resp = requests.post(f"{BACKEND_URL}/savePoem",
+        json=params,               # <— send JSON, not form-data
+        headers={'Content-Type': 'application/json'})
+    return jsonify(resp.json())
+
 @main_bp.route('/log', methods=['POST'])
 def log():
     data = request.json

@@ -64,7 +64,14 @@ export function verseKeydown(e) {
     }
 }
 export function verseKeyup(e) {
+    const poem = getSandbox();            // the Poem instance
     switch (e.key) {
+        case ' ':
+        case 'Backspace':
+        case 'Delete':
+            if (poem.firstChild.firstChild.firstChild === BaseNode.getWrapper(e.target)) {
+                document.getElementById('poemTitle').placeholder = e.target.value;
+            }
         case 'Enter':
         case 'Tab':
         case 'ArrowUp':
@@ -222,6 +229,7 @@ export function disableGenBtn(e, {includeFld = false} = {}) {
         val = fld.value
     } else {
         fld = poem.firstChild.firstChild.firstChild.el;
+        console.log("in disableGenBtn, fld is: " + fld)
         // trick the following script into believing the field is not empty
         // because we are generating content for an empty verse but still want the button disabled
         val = "Clicked a submit button";
@@ -304,7 +312,6 @@ export function locateInRhymeScheme(poem, verse) {
 export function poemComplete(poem, verse, rhymeScheme = getRhymeScheme()) {
     console.log (rhymeScheme)
     if(rhymeScheme.elements.length == 0) {
-        console.log("Rhyme scheme is empty")
         document.getElementById("btn_savePoem").disabled = false;
         document.getElementById("chckBx_final").disabled = false;
         return false
