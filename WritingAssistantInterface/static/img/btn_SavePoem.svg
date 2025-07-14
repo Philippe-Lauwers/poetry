@@ -36,12 +36,16 @@
        id="b">
       <stop
          style="stop-color:#f4e5d9;stop-opacity:1;"
-         offset="0.00795229"
+         offset="0"
          id="stop12" />
       <stop
          style="stop-color:#d49867;stop-opacity:1"
-         offset=".208"
+         offset="0.208"
          id="stop3" />
+      <stop
+         style="stop-color:#d49865;stop-opacity:0.95686275;"
+         offset="0.53081512"
+         id="stop20" />
       <stop
          style="stop-color:#d49835;stop-opacity:0"
          offset=".934"
@@ -89,10 +93,10 @@
     <linearGradient
        xlink:href="#b"
        id="f"
-       x1="10.158"
-       y1="9.8889999"
-       x2="12.355"
-       y2="9.8889999"
+       x1="10.049842"
+       y1="10.654314"
+       x2="12.40908"
+       y2="8.2995005"
        gradientUnits="userSpaceOnUse"
        gradientTransform="matrix(0.69387,0,0,0.9561,3.818,-5.435)" />
     <linearGradient
@@ -238,7 +242,7 @@
      d="m 13.393,0.498 a 1.26,2.484 30.558 0 0 -1.6,1.114 1.26,2.484 30.558 0 0 -0.827,2.804 1.2,2.606 22.77 0 0 0.002,0.004 1.2,2.606 22.77 0 0 0.108,0.137 1.2,2.606 22.77 0 0 2.097,-1.377 1.2,2.606 22.77 0 0 0.096,-0.195 L 12.619,2.504 13.593,2.128 A 1.2,2.606 22.77 0 0 13.668,1.834 1.2,2.606 22.77 0 0 13.724,0.542 1.26,2.484 30.558 0 0 13.393,0.498 Z"
      id="path16" />
   <path
-     style="fill:none;stroke:url(#f);stroke-width:0.264588;stroke-linecap:round;stroke-dasharray:none;stroke-opacity:1"
+     style="fill:none;stroke:url(#f);stroke-width:0.317506;stroke-linecap:round;stroke-dasharray:none;stroke-opacity:1"
      d="m 12.299,2.65 c -1.502,2.546 -1.335,2.74 -1.335,2.74 v 0"
      id="path17" />
 </svg>

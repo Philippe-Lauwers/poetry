@@ -37,6 +37,7 @@ form.addEventListener('submit', async e => {
 
         // 3) Display
         json.poem ? receivePoem(json.poem) : json.suggAccept ? closeSuggestionBox({YesOrNo:json.suggAccept, verse_id:json.verse_id}) :'Error';
+        document.getElementById("btn_savePoem").disabled = false;
     });
 
 const formFld = document.getElementById('form');

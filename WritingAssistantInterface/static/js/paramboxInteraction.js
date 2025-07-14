@@ -32,6 +32,7 @@ export function loadParambox() {
             }
         }
     })
+    document.getElementById("btn_savePoem").disabled = true;
 }
 
 /**
@@ -69,8 +70,9 @@ export function deactivateParambox(e=null, submitter=null) {
         if (submitter) {
             submitter.disabled = true;
         }
-        document.getElementById("btn_generatePoem").disabled = true;
     }
+    document.getElementById("btn_generatePoem").disabled = true;
+    document.getElementById("btn_savePoem").disabled = true;
 }
 
 /**

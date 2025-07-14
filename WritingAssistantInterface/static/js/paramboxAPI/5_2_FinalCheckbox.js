@@ -6,6 +6,7 @@ export class FinalCheckbox extends BaseNode {
         super({
             selector, id, tag: "input", type: "checkbox", events, buttons
         }); // Now `this.el` is set and registered.
+        this.el.disabled = true; // enabled when appropriate content is written
     }
-    this.el.disabled = true; // enable appropriate content is written
+
 }

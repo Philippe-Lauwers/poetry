@@ -302,13 +302,20 @@ export function locateInRhymeScheme(poem, verse) {
 }
 
 export function poemComplete(poem, verse, rhymeScheme = getRhymeScheme()) {
+    console.log (rhymeScheme)
     if(rhymeScheme.elements.length == 0) {
-        return false
-    };
-    if(locateInRhymeScheme(poem, verse) < rhymeScheme.elements.length - 1){
+        console.log("Rhyme scheme is empty")
+        document.getElementById("btn_savePoem").disabled = false;
+        document.getElementById("chckBx_final").disabled = false;
         return false
     };
     // -1 because we compare indexes with a length
+    if(locateInRhymeScheme(poem, verse) < rhymeScheme.elements.length - 1){
+        document.getElementById("btn_savePoem").disabled = false;
+        return false
+    };
+    document.getElementById("btn_savePoem").disabled = false;
+    document.getElementById("chckBx_final").disabled = false;
     return true
 }
 
