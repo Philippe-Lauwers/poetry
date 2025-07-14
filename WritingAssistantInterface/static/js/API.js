@@ -20,6 +20,8 @@ export class BaseNode {
                     id = "",
                     name = "",
                     value = "",
+                    htmlFor = "",
+                    txt = "",
                     className = "",
                     addButtons = false,
                     // default values for events and buttons
@@ -47,7 +49,9 @@ export class BaseNode {
             if (name) el.setAttribute("name",name);
             if (type) el.type = type;
             if (className) el.className = className;
+            if (htmlFor) el.setAttribute("for", htmlFor);
             if (value) el.value = value;
+            if (txt) el.textContent = txt;
         }
         // 4) register the DOM-element
         this.el = el;
@@ -130,10 +134,12 @@ export class BaseNode {
     insertBefore(child, beforeChild) {
         // Set node to child (if BaseNode) or corresponding BaseNode of the DOM-element
         const node = child instanceof BaseNode ? child : BaseNode.#registry.get(child);
+        const beforeNode = beforeChild instanceof BaseNode ? beforeChild : BaseNode.#registry.get(beforeChild);
         // Set childEl to the DOM-element of child or child if this is a BaseNode
         const childEl = node ? node.el : child;
+        const beforeChildEL = beforeNode ? beforeNode.el : beforeChild;
         // Append the childEl to the DOM-element of the current object
-        this.el.insertBefore(childEl, beforeChild.el);
+        this.el.insertBefore(childEl, beforeChildEL);
         // determine the child node (or create the new child node) the method will return
         const returnVal =  node ?? new BaseNode(childEl);     // fallback generic wrapper
         // Save the new element to the "struct-" field of the parent (for poem elements only)
@@ -162,6 +168,20 @@ export class BaseNode {
         while (btn) {
             if (btn instanceof HTMLButtonElement) {
                 btn.disabled = true;
+            }
+            btn = btn.nextSibling;
+        }
+    }
+
+    activate() {
+        this.children.forEach(child => {
+            child.activate();
+        });
+        this.el.disabled = false;
+        let btn = this.el.nextSibling??this.el.firstChild;
+        while (btn) {
+            if (btn instanceof HTMLButtonElement) {
+                btn.disabled = false;
             }
             btn = btn.nextSibling;
         }

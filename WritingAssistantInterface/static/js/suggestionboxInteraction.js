@@ -12,7 +12,7 @@ export const getSuggestionbox = () => Suggestionbox.instance;
 
 export function suggestionlabelDblClick(e,target) {
     // Accept the suggestion on double-click
-    document.getElementById("btn_acceptSuggestion"+target.id).click();
+    document.querySelector('[id^="btn_acceptSuggestion"][value^="sugg-"]').click();
 }
 
 export function deactivateSuggestionbox(btnId) {
@@ -37,9 +37,16 @@ export function deactivateSuggestionbox(btnId) {
         }
     });
     document.getElementById(vwId.replace("vw","v")).value = document.getElementById(suggId).innerHTML;
-
-    //document.getElementById(btnId_parts[btnId_parts.length-2]).value = document.getElementById(btnId_parts.pop()).innerHTML;
 }
+
+export function activateSuggestionbox() {
+    let SB = getSuggestionbox();
+    SB.activate();
+    // 'selected' mimics "disabled=true" behaviour for the label in front of the button -> remove class
+    document
+      .querySelectorAll('label[id^="sugg-"]')
+      .forEach(label => label.classList.remove('my-class'));
+    }
 
 export function closeSuggestionBox({e = null, target = null, YesOrNo = null, verse_id = null} = {}) {
     if (YesOrNo === false) {
@@ -59,4 +66,15 @@ export function closeSuggestionBox({e = null, target = null, YesOrNo = null, ver
     vs.readOnly = false;
     vs.classList.remove("verseEmpty");
     vs.focus();
+
+    for (let struct of document.querySelectorAll('input[id^="struct-"]')) {
+        if (struct.value.includes("suggestionbox")) {
+            struct.value = struct.value.replace(",suggestionbox", "");
+            struct.value = struct.value.replace("suggestionbox", "");
+            if (struct.value === "") {
+                struct.value = "none";
+            }
+        }
+    }
+
 }

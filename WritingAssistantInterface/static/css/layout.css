@@ -85,6 +85,19 @@ div {
 input {
     caret-color: var(--borderColor);
 }
+input[type="checkbox"] {
+  width: 1rem;
+  height: 1rem;
+  margin-right: 0.5rem;
+}
+/* hover state on the checkbox itself */
+input[type="checkbox"]:hover {
+  background-color: #ff0000;   /* only visible if you remove default appearance */
+}
+/* checked state on the checkbox itself (not input inside input!) */
+input[type="checkbox"]:checked {
+  background-color: var(--borderColor);
+}
 
 .btn {
     width: 28px;

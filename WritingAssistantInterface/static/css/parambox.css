@@ -3,10 +3,12 @@
     padding: 1rem;
     margin: 0.1rem 0.1rem 0rem 0.1rem;
 
+
     display: flex;
     gap: 1rem;
     flex: 0 0 auto; /* fixed height based on content or padding */
     flex-direction: row;
+    align-items: center;
 }
 
 #parambox select {
@@ -15,9 +17,22 @@
     max-width: 200px;
 }
 
-#parambox label {
+#final {
+    display:flex;
+    gap: 1rem;
+    flex: 0 0 auto; /* fixed height based on content or padding */
+    flex-direction: row;
+    gap: 0.1rem;
+    align-items:center
+}
+
+#parambox label,
+#final label {
     font-weight: 600;
     color: var(--borderColor);
+}
+#final label {
+    margin-right: 0.5rem
 }
 
 /* SOLVED IN layout.css (it is used in all panes)
@@ -37,13 +52,23 @@
     background-size: 86px 28px;
 }
 
+#btn_savePoem {
+    background-image: url('../img/btn_SavePoem.svg');
+    background-repeat: no-repeat;
+    background-position: 0 0;
+    background-size: 86px 28px;
+}
+
 /* hover/focus shifts to the second square */
 #btn_generatePoem:hover,
-#btn_generatePoem:focus {
+#btn_generatePoem:focus,
+#btn_savePoem:hover,
+#btn_savePoem:focus {
     background-position: -29px 0;
 }
 
 /* disabled shows the third */
-#btn_generatePoem:disabled {
+#btn_generatePoem:disabled,
+#btn_savePoem:disabled{
     background-position: -58px 0;
 }

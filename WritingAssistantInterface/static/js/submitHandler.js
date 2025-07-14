@@ -19,6 +19,9 @@ export class Submit {
                   }
                 e.submitter.disabled = true;
             }, 0);
+            if (e.submitter.id.startsWith("btn-f5-lst-sug")) {
+                deactivateSuggestionbox(e.submitter.id);
+            }
         } else if (e.submitter.id.startsWith("btn_acceptSuggestion")) {
             deactivateSuggestionbox(e.submitter.id);
         }

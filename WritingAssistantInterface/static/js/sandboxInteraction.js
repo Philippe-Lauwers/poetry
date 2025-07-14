@@ -5,6 +5,7 @@ import {Stanza} from './sandboxAPI/2_Stanza.js';
 import {VerseWrapper} from './sandboxAPI/3_VerseWrapper.js';
 import {Verse} from './sandboxAPI/4_Verse.js';
 import {Suggestionbox} from "./suggestionboxAPI/1_SuggestionBox.js";
+import {activateSuggestionbox} from "./suggestionboxInteraction.js";
 import {flashMessage} from './niftyThings.js';
 
 /**
@@ -491,9 +492,8 @@ export function receivePoem(poem) {
                 myVerse = BaseNode.getWrapper(verseEl);
                 myVerse.value = (myVerse.value !== text) ? text : myVerse.value;
                 if (suggestions) {
-                    const SB = new Suggestionbox({verse:myVerse, suggestions: suggestions});
-                    document.querySelector('[id^="btn-f5-lst-sug"]').disabled = false;
-                }
+                    const SB = new Suggestionbox({verse: myVerse, suggestions: suggestions});
+                    activateSuggestionbox();}
                 if (isFullPoem && stanzaIndex === 0 && verseIndex === 0) {
                     oldId = myVerse.id
                     const oldVwId = myVerse.parent.id;
@@ -529,7 +529,7 @@ export function receivePoem(poem) {
                     myVerse.value = (myVerse.value !== text) ? text : myVerse.value;
                     if (suggestions) {
                         const SB = new Suggestionbox({verse:myVerse, suggestions: suggestions});
-                        document.querySelector('[id^="btn-f5-lst-sug"]').disabled = false;
+                        activateSuggestionbox();
                     }
                     // Update the verse wrapper id
                     let  myVerseWrapper = myVerse.parent;

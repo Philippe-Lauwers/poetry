@@ -7,6 +7,7 @@ export const getParambox = () => Parambox.instance;
 export function loadParambox() {
     // Select boxes are generated in index.html using jinja
     // We create wrapper objects for storing additional parameters
+    // and add an event listener to the select boxes
     const parambox = getParambox();            // the Poem instance
     if (!parambox) return;                    // safety guard
     const paramboxEL = parambox.el;
@@ -18,6 +19,19 @@ export function loadParambox() {
         sel.addOption({ selector: optEl })
         });
     });
+    // Add a submit button and a checkbox to indicate the poem is final
+    parambox.addFinal({
+        id: "final", label:"Final", buttons: {
+            btn_finalPoem: {
+                id: "btn_savePoem",
+                type: "submit",
+                formaction: "/savePoem",
+                formmethod: "post",
+                className: "btn",
+                alt: "Save the draft"
+            }
+        }
+    })
 }
 
 /**
@@ -82,4 +96,11 @@ export async function receiveRhymeScheme() {
 }
 export function getRhymeScheme() {
     return _poemDesc !== undefined ?_poemDesc.rhymeScheme: null;
+}
+
+/**
+ * Function to toggle the alt- and title-attributes of the save button */
+export function toggleSaveButton(e, target, {saveBtn = null}) {
+    saveBtn.alt = saveBtn.title === "Save the draft" ? "Save the final version" : "Save the draft";
+    saveBtn.title = saveBtn.title === "Save the draft" ? "Save the final version" : "Save the draft";
 }
