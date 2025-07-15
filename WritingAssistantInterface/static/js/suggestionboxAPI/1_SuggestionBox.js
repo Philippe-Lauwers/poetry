@@ -15,38 +15,38 @@ export class Suggestionbox extends BaseNode {
     constructor({selector = "#suggestionbox", verse = null, suggestions = null, events = {}, buttons = {}} = {}) {
         const id = (typeof selector === "string")
             ? selector.replace(/^#/, "")
-            : "";
+            : "suggB-" + verse.id
 
         super({selector, tag: "div", id, events, buttons});
         // Now `this.el` is set and registered.
         Suggestionbox.instance = this;
 
-        this.addSuggestionlist({verse: verse, suggestions: suggestions})
-        this.addSuggestionrefresher({verse: verse});
+        this.addSuggestionlist({selector:selector.replace("suggB","suggL"), verse: verse, suggestions: suggestions})
+        this.addSuggestionrefresher({verse_id: selector.replace("suggB-",""), verse});
 
         verse.stanza.append(this);
     }
 
     /** Adds the box that will contain the list of suggestions */
-    addSuggestionlist({verse: verse, suggestions: suggestions, events = {}, buttons = {}} = {}) {
-        const sl = new Suggestionlist({verse: verse, suggestions:suggestions})
+    addSuggestionlist({selector, verse: verse, suggestions: suggestions, events = {}, buttons = {}} = {}) {
+        const sl = new Suggestionlist({selector, verse: verse, suggestions:suggestions})
         return this.append(sl);
     }
 
     /** Adds the box that will contain the refresh button */
-    addSuggestionrefresher({verse = None, events = {}, buttons = {}} = {}) {
+    addSuggestionrefresher({verse_id="",verse = None, events = {}, buttons = {}} = {}) {
         const sr = new Suggestionrefresher({
             verse: verse,
             buttons: {
                 btn_close_box: {
-                    id: "btn-close-box-sug-" + verse.id,
+                    id: "btn-close-box-sug-" + verse_id,
                     type: "button",
                     className: "btn",
                     alt: "Close",
                     onClick: e => {closeSuggestionBox(e, e.target);}
                 },
                 btn_f5_lst_sug: {
-                    id: "btn-f5-lst-sug-" + verse.id,
+                    id: "btn-f5-lst-sug-" + verse_id,
                     type: "submit",
                     formaction: "/generateVerse",
                     formmethod: "post",

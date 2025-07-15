@@ -46,12 +46,16 @@ class BaseContainer():
 
 
 class Poem(BaseContainer):
-    def __init__(self, poem_text: str = None, form=None, nmfDim=None, lang=None):
+    def __init__(self, id = None, poem_text: str = None, title: str = None, form=None, nmfDim=None, lang=None, status = 1):
         super().__init__()
+        self._id = id
+        self._title = title
         self._stanzas = []
         self._form = form
         self._nmfDim = nmfDim
         self._poemLanguage = lang
+        self._status = status
+        self._origin = None
         # If the user has already written some text, there will be at least one stanza
         # Split the poem on \n\n into stanzas and add stanzas to the poem-object
         # If no text is given, create an empty poem object
@@ -63,7 +67,8 @@ class Poem(BaseContainer):
         st_order = order if order >= 0 else len(self._stanzas)
         self._stanzas.append(Stanza(stanzaText=stanzaText, order=st_order, id=id))
 
-    def receiveUserInput(self, userInput, structure):
+    def receiveUserInput(self, userInput, structure, title=None):
+        self.title = title
         if not userInput: # if there's no user input, we can skip this
             return False
         stanzas = structure["struct-sandbox"].split(',')
@@ -84,6 +89,13 @@ class Poem(BaseContainer):
         self._form = value
 
     @property
+    def title(self):
+        return self._title
+    @title.setter
+    def title(self,title):
+        self._title = title
+
+    @property
     def language(self):
         return self._poemLanguage
 
@@ -98,6 +110,13 @@ class Poem(BaseContainer):
     @nmfDim.setter
     def nmfDim(self, value):
         self._nmfDim = value
+
+    @property
+    def status(self):
+        return self._status
+    @status.setter
+    def status(self,value):
+        self._status = value
 
     @property
     def stanzas(self):
@@ -131,6 +150,9 @@ class Poem(BaseContainer):
         }
         if self.id is not None: poem["id"] = self._id
         if self.oldId is not None: poem["oldId"] = self._oldId
+        if self.title is not None: poem["title"] = self._title
+        if self.status is not None: poem["status"] = self._status
+
         return poem
 
 
@@ -152,7 +174,7 @@ class Stanza(BaseContainer):
             for key in structure.keys():
                 if key == "struct-"+id:
                     for v in structure[key].split(','):
-                        if v != "suggestionbox":
+                        if not v.startswith("suggB"):
                             vTxt = userInput[structure["struct-"+v]]
                             self.addVerse(id = structure["struct-"+v], verseText=vTxt)
 

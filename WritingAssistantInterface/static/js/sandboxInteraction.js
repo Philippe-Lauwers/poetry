@@ -1,4 +1,4 @@
-import {deactivateParambox, getRhymeScheme} from './paramboxInteraction.js';
+import {deactivateParambox, activateParambox, getRhymeScheme} from './paramboxInteraction.js';
 import {BaseNode} from './API.js';
 import {Poem} from './sandboxAPI/1_Poem.js';
 import {Stanza} from './sandboxAPI/2_Stanza.js';
@@ -70,7 +70,9 @@ export function verseKeyup(e) {
         case 'Backspace':
         case 'Delete':
             if (poem.firstChild.firstChild.firstChild === BaseNode.getWrapper(e.target)) {
-                document.getElementById('poemTitle').placeholder = e.target.value;
+                if (document.getElementById('poemTitle').value.trim() === '') {
+                    document.getElementById('poemTitle').placeholder = e.target.value;
+                }
             }
         case 'Enter':
         case 'Tab':
@@ -216,6 +218,18 @@ export function highlightIfEmpty(e) {
     }
 }
 
+export function disableSandbox() {
+    const fldSet = document.getElementById("sandboxFields")
+    const fldSetStatus = fldSet.getAttribute('disabled')
+    fldSet.setAttribute('disabled',true)
+}
+export function enableSandbox() {
+    const fldSet = document.getElementById("sandboxFields")
+    const fldSetStatus = fldSet.getAttribute('disabled')
+    fldSet.removeAttribute('disabled')
+
+}
+
 /**
  * Disables/activates the generate verse button when the input field next to it has a value
  * @param e
@@ -229,7 +243,6 @@ export function disableGenBtn(e, {includeFld = false} = {}) {
         val = fld.value
     } else {
         fld = poem.firstChild.firstChild.firstChild.el;
-        console.log("in disableGenBtn, fld is: " + fld)
         // trick the following script into believing the field is not empty
         // because we are generating content for an empty verse but still want the button disabled
         val = "Clicked a submit button";
@@ -238,7 +251,7 @@ export function disableGenBtn(e, {includeFld = false} = {}) {
     if(fld.nextSibling) {
         if(fld.nextSibling.id.startsWith("btn_generateVerse")) {
             fld.nextElementSibling.disabled = (val !== '')
-            if (includeFld) fld.readonly = (val !== '')
+            if (includeFld) fld.readOnly = (val !== '')
         }
     }
 }
@@ -310,20 +323,19 @@ export function locateInRhymeScheme(poem, verse) {
 }
 
 export function poemComplete(poem, verse, rhymeScheme = getRhymeScheme()) {
-    console.log (rhymeScheme)
     if(rhymeScheme.elements.length == 0) {
-        document.getElementById("btn_savePoem").disabled = false;
-        document.getElementById("chckBx_final").disabled = false;
-        return false
+        document.getElementById("btn_savePoem").removeAttribute("disabled");
+        document.getElementById("chckBx_final").removeAttribute("disabled");
+        return false;
     };
     // -1 because we compare indexes with a length
-    if(locateInRhymeScheme(poem, verse) < rhymeScheme.elements.length - 1){
-        document.getElementById("btn_savePoem").disabled = false;
-        return false
+    if(locateInRhymeScheme(poem, verse) < rhymeScheme.elements.length - 1) {
+        document.getElementById("btn_savePoem").removeAttribute("disabled");
+        return false;
     };
-    document.getElementById("btn_savePoem").disabled = false;
-    document.getElementById("chckBx_final").disabled = false;
-    return true
+    document.getElementById("btn_savePoem").removeAttribute("disabled");
+    document.getElementById("chckBx_final").removeAttribute("disabled");
+    return true;
 }
 
 /**
@@ -402,6 +414,7 @@ function activateVerses(poem) {
             }
         }
     }
+    enableSandbox()
 }
 
 /** This function removes all buttons with the given prefix from the verse wrappers
@@ -498,6 +511,10 @@ export function receivePoem(poem) {
 
             if (isFullPoem && stanzaIndex === 0 && verseIndex === 0) {
                 verseEl = document.getElementById(FV.id);
+                // Now tha we have grabbed the first verse, set the placeholder of the title field to the first verse
+                if (document.getElementById("poemTitle").value === "") {
+                    document.getElementById("poemTitle").placeholder = text;
+                }
             } else {
                 verseEl = document.getElementById(Verse.formatID({id: id, prefix: "v-"}));
             }
@@ -506,7 +523,12 @@ export function receivePoem(poem) {
                 myVerse = BaseNode.getWrapper(verseEl);
                 myVerse.value = (myVerse.value !== text) ? text : myVerse.value;
                 if (suggestions) {
-                    const SB = new Suggestionbox({verse: myVerse, suggestions: suggestions});
+                    const SB = new Suggestionbox({
+                        selector: Verse.formatID({id: id, prefix: "suggB-v-"}),
+                        id: Verse.formatID({id: id, prefix: "suggB-v-"}),
+                        verse: myVerse,
+                        suggestions: suggestions
+                    });
                     activateSuggestionbox();}
                 if (isFullPoem && stanzaIndex === 0 && verseIndex === 0) {
                     oldId = myVerse.id
@@ -542,7 +564,12 @@ export function receivePoem(poem) {
                     myVerse.name = myVerse.id;
                     myVerse.value = (myVerse.value !== text) ? text : myVerse.value;
                     if (suggestions) {
-                        const SB = new Suggestionbox({verse:myVerse, suggestions: suggestions});
+                        const SB = new Suggestionbox({
+                            selector: Verse.formatID({id: id, prefix: "suggB-v-"}),
+                            id: Verse.formatID({id: id, prefix: "suggB-v-"}),
+                            verse: myVerse,
+                            suggestions: suggestions
+                        });
                         activateSuggestionbox();
                     }
                     // Update the verse wrapper id
@@ -588,5 +615,7 @@ export function receivePoem(poem) {
         removeButtons("btn_generateVerse");
     }
     activateVerses(getSandbox())
+    enableSandbox()
+    activateParambox()
     verseAccept({myVerse: myVerse})
 }

@@ -103,7 +103,7 @@ class PoemBase:
         self.i2w = self.generator.vocab.itos
         self.w2i = self.generator.vocab.stoi
 
-    def initPoemContainer(self,form=None,nmfDim=None, lang=None, origin=None):
+    def initPoemContainer(self,form=None,nmfDim=None, lang=None, title=None, origin=None):
         #Delete any lingering instances of the PoemBase class
         try:
             obj = self.container
@@ -120,11 +120,12 @@ class PoemBase:
 
         self.container = PoemContainer()
         self.container.form = form
+        self.container.title = title
         self.container.nmfDim = self._nmfDim
         self.container.language = lang
         self.container.origin = origin
 
-    def receiveUserInput(self, form=None, nmfDim=None, userInput=None, structure=None):
+    def receiveUserInput(self, title=None, form=None, nmfDim=None, userInput=None, structure=None):
         self.initPoemContainer(form=form, nmfDim=nmfDim, lang=self.lang, origin='browser')
         # Stores a representation of the poem in the database
         self.container.receiveUserInput(userInput, structure)
@@ -189,19 +190,16 @@ class PoemBase:
                         #   or a ' ' was encountered in the rhyme structure before generating the verse
                         # -> add a new stanza to the _poemContainer
                         # If there is user input, fetch the id of the last stanza from the structure fields
-                        if userInput is not None:
-                            stanzaID = structure['struct-sandbox'].split(',')[-1]
-                            self.container.addStanza(id=stanzaID)
-                        else:
+                        # if userInput is not None:
+                        #     stanzaID = structure['struct-sandbox'].split(',')[-1]
+                        #     self.container.addStanza(id=stanzaID)
+                        if userInput is None:
                             self.container.addStanza()
                         addNewStanza = False
                     if nSuggestions == 1: # generating a complete poem: only one suggestion is generated
                         self.container.stanzas[-1].addVerse(verseText=' '.join(words))
                     else: # generating n suggestions when a single verse is requested
-                        if self.container.stanzas[-1].verses[-1].text != "":
-                            self.container.stanzas[-1].addVerse(verseText=[' '.join(w) for w in words])
-                        else:
-                            self.container.stanzas[-1].verses[-1].suggestions = [' '.join(w) for w in words]
+                        self.container.stanzas[-1].verses[-1].suggestions = [' '.join(w) for w in words]
                     # writes the generated verse to stdout and log
                     if isinstance(words, str):
                         sys.stdout.write(' '.join(words) + '\n')

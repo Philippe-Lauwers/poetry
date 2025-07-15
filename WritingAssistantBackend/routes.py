@@ -3,6 +3,7 @@ from flask import Blueprint, request, jsonify, render_template
 from .poembase_from_cache import get_poem
 from .poembase_config import PoembaseConfig
 from .poem_repository import PoemRepository, SuggestionRepository
+from .poem_container import Poem
 
 main_bp = Blueprint("main", __name__)
 
@@ -21,6 +22,7 @@ def convInt(value):
         return int(value)
     except ValueError:
         return value
+
 @main_bp.route("/generatePoem", methods=["GET", "POST"])
 def write_poem():
     # This endpoint writes a poem
@@ -101,12 +103,13 @@ def write_verse():
     # extract your fields (with fallbacks)
     lang = data.get("lang", "1")
     pform = data.get("form", "1")
+    title = data.get("title", "")
     nmfDim = convInt(data.get("nmfDim", "random"))
     verses = {k:v for (k,v) in data.items() if k.startswith("v-")}
     structure = {k:v for (k,v) in data.items() if k.startswith("struct")}
 
     poem = get_poem(lang=lang)
-    poem.receiveUserInput(form=pform, nmfDim=nmfDim, structure= structure, userInput=verses)
+    poem.receiveUserInput(form=pform ,title=title, nmfDim=nmfDim, structure= structure, userInput=verses)
     poem.write(form=pform, nmfDim=nmfDim, structure=structure, userInput=verses)
     PoemRepository.save(poem.container)
     return jsonify({"poem": poem.container.to_dict()})
@@ -123,7 +126,7 @@ def accSuggestion():
             vwLst = value.split(',')
             prevVw = vwLst[0]
             for vw in vwLst:
-                if vw == "suggestionbox":
+                if vw.startswith("suggB"):
                     verse_id = prevVw.split("-")[-1]
                     break
                 prevVw = vw
@@ -131,6 +134,27 @@ def accSuggestion():
     status = SuggestionRepository.acceptSuggestion(verse_id, suggestion_id)
     return jsonify({"suggAccept": status, "verse_id": verse_id})
 
+@main_bp.route("/savePoem", methods=["GET", "POST"])
+def savePoem():
+    # This endpoint saves the poem to the database
+    # - retrieving the parameters
+    data = request.get_json(force=True) or {}
+    # extract your fields (with fallbacks)
+    poem_id = data.get("poem_id", "1")
+    lang = data.get("lang", "1")
+    pform = data.get("form", "1")
+    title = data.get("poemTitle")
+    if title == "": title = None
+    status = data.get("chckBx_final")
+    if status is None: status = 1 # set to "draft"
+    nmfDim = convInt(data.get("nmfDim", "random"))
+    verses = {k: v for (k, v) in data.items() if k.startswith("v-")}
+    structure = {k: v for (k, v) in data.items() if k.startswith("struct")}
+
+    poem_container = Poem(id=poem_id, lang=lang, form=pform, nmfDim=nmfDim, title=title, status=status)
+    poem_container.receiveUserInput(title = title, structure = structure, userInput = verses)
+    PoemRepository.save(poem_container)
+    return jsonify({"poem": poem_container.to_dict()})
 
 @main_bp.route("/test")
 def index():

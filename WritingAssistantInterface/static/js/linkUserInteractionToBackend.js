@@ -1,6 +1,8 @@
 import {receivePoem} from './sandboxInteraction.js';
-import {receiveRhymeScheme} from './paramboxInteraction.js'
+import {getParambox, receiveRhymeScheme} from './paramboxInteraction.js'
 import {closeSuggestionBox} from "./suggestionboxInteraction.js";
+import {Parambox} from "./paramboxAPI/1_Parambox.js";
+import {FinalWrapper} from "./paramboxAPI/4_FinalWrapper.js";
 
 const form = document.getElementById('poemForm');
 form.addEventListener('submit', async e => {
@@ -26,7 +28,9 @@ form.addEventListener('submit', async e => {
             reqRoute = "/generateVerse";
         } else if (s_id.startsWith("btn_acceptSuggestion")) {
             reqRoute = "/acceptSuggestion";
-        }else if (s_id === "btn_savePoem") {
+        } else if (s_id === "btn_savePoem") {
+            reqRoute = "/savePoem";
+        } else if (s_id === "btn_editPoem") {
             reqRoute = "/savePoem";
         }
         // 2) Route request
@@ -39,7 +43,8 @@ form.addEventListener('submit', async e => {
 
         // 3) Display
         json.poem ? receivePoem(json.poem) : json.suggAccept ? closeSuggestionBox({YesOrNo:json.suggAccept, verse_id:json.verse_id}) :'Error';
-        document.getElementById("btn_savePoem").disabled = false;
+        document.getElementById("btn_savePoem").removeAttribute("disabled");
+        if (reqRoute==="/savePoem" || reqRoute==="/editPoem") getParambox().getFinal().addEdit()
     });
 
 const formFld = document.getElementById('form');

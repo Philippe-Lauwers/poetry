@@ -21,6 +21,11 @@ export class Parambox extends BaseNode {
 
     addFinal({selector = null, id=null, label="", chckBx=true, events = {}, buttons = {}} = {}) {
         const finalWrapper = new FinalWrapper({selector, id, events, buttons});
+        this._finalWrapper = finalWrapper;
         return this.append(finalWrapper);
     }
+    getFinal() {
+         return this._finalWrapper
+    }
+
 }

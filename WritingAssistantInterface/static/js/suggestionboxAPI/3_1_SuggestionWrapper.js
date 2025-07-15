@@ -11,16 +11,17 @@ import {suggestionlabelDblClick} from "../suggestionboxInteraction.js";
 
 export class SuggestionWrapper extends BaseNode {
 
-    constructor({suggestion = null, events = {}, buttons = {}} = {}) {
-        super({tag: "div", className:"suggestionWrapper", events, buttons});
+    constructor({selector="", id="", suggestion = null, events = {}, buttons = {}} = {}) {
+        super({selector, id, tag: "div", className:"suggestionWrapper", events, buttons});
         // Now `this.el` is set and registered.
-        this.addSuggestion({suggestion: suggestion});
+        this.addSuggestion({selector:selector.replace("suggWr","sugg"), suggestion: suggestion});
     }
 
-    // /** Adds the box that will contain the list of suggestions */
-    addSuggestion({suggestion = null}) {
+    // /** Adds the wrapper that will hold the suggestion and corresponding buttons */
+    addSuggestion({selector, suggestion = null}) {
         const sl = new Suggestion({
-            id: "sugg-"+ suggestion.id,
+            selector:selector,
+            id: selector,
             suggestion: suggestion,
             events: {dblclick: e => suggestionlabelDblClick(e, e.target)}
         });

@@ -1,4 +1,5 @@
 import {Suggestionbox} from "./suggestionboxAPI/1_SuggestionBox.js";
+import {enableSandbox} from "./sandboxInteraction.js";
 
 /**
  *Create a single shared instance of the sandbox */
@@ -20,23 +21,27 @@ export function deactivateSuggestionbox(btnId) {
     SB.deactivate();
     const btnId_parts = btnId.split("_");
     const suggId = btnId_parts.pop()
+    const verseId = btnId_parts.pop()
     // Mimic "disabled=true" behaviour for the label in front of the button
-    document.getElementById(suggId).classList.add("selected");
+    document.getElementById("sugg_"+verseId+"_"+suggId).classList.add("selected");
 
     const fields = document.querySelectorAll('input[id^="struct-"]');
     let vwId
     fields.forEach(structFld => {
-        if (structFld.value.includes("suggestionbox")) {
+        if (structFld.value.includes("suggB")) {
             let previous = structFld.value.split(",")[0];
             structFld.value.split(",").forEach(DOMelem => {
-                if (DOMelem.includes("suggestionbox")) {
+                if (DOMelem.startsWith("suggB")) {
                     vwId = previous;
                 }
                 previous = DOMelem;
             });
         }
     });
-    document.getElementById(vwId.replace("vw","v")).value = document.getElementById(suggId).innerHTML;
+    const chosenVrs = document.getElementById("sugg_"+verseId+"_"+suggId).innerHTML;
+    document.getElementById(vwId.replace("vw","v")).value = chosenVrs;
+    const titleFld = document.getElementById("poemTitle");
+    if (titleFld.value=="") { titleFld.placeholder = chosenVrs }
 }
 
 export function activateSuggestionbox() {
@@ -66,15 +71,18 @@ export function closeSuggestionBox({e = null, target = null, YesOrNo = null, ver
     vs.readOnly = false;
     vs.classList.remove("verseEmpty");
     vs.focus();
+    enableSandbox()
 
     for (let struct of document.querySelectorAll('input[id^="struct-"]')) {
-        if (struct.value.includes("suggestionbox")) {
-            struct.value = struct.value.replace(",suggestionbox", "");
-            struct.value = struct.value.replace("suggestionbox", "");
+        if (struct.value.includes("suggB")) {
+            const toCleanup = struct.value;
+            const cleanedup = toCleanup.split(",").filter(item => !item.includes("suggB")).join(",");
+            struct.value = cleanedup;
             if (struct.value === "") {
                 struct.value = "none";
             }
         }
     }
+
 
 }

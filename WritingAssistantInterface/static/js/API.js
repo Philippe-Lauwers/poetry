@@ -45,8 +45,9 @@ export class BaseNode {
         if (!el) {
             isNew = true;
             el = document.createElement(tag);
+            if (type) el.type = type;
             if (id) el.id = id;
-            if (name) el.setAttribute("name",name);
+            el.setAttribute("name",name?name:["input","checkbox"].includes(type)?id:type);
             if (type) el.type = type;
             if (className) el.className = className;
             if (htmlFor) el.setAttribute("for", htmlFor);

@@ -19,18 +19,20 @@ export class Suggestionlist extends BaseNode {
 
         super({selector, tag: "div", id, events, buttons});
         // Now `this.el` is set and registered.
-        this.addSuggestions({verse: verse, suggestions: suggestions})
+        this.addSuggestions({selector:selector.replace("suggL-","suggWr_"), verse: verse, suggestions: suggestions})
     }
 
-addSuggestions({verse = null, suggestions = [], events = {}, buttons = {}} = {}) {
+addSuggestions({selector = "", verse = null, suggestions = [], events = {}, buttons = {}} = {}) {
     // Create a wrapper for each suggestion
     suggestions.forEach(suggestion => {
         let firstWrppr = this.firstChild;
         const suggestionWrapper = new SuggestionWrapper({
+            selector: selector+"_sugg-"+suggestion.suggestion.id,
+            id: selector+"_sugg-"+suggestion.suggestion.id,
             suggestion: suggestion.suggestion,
             buttons: {
                 btn_acc_sug: {
-                    id: "btn_acceptSuggestion_"+verse.id+"_sugg-"+ suggestion.suggestion.id,
+                    id: "btn_acceptSuggestion_"+selector.replace("suggWr_","")+"_sugg-"+ suggestion.suggestion.id,
                     name: "btn_acceptSuggestion",
                     value:"sugg-"+ suggestion.suggestion.id,
                     type: "submit",

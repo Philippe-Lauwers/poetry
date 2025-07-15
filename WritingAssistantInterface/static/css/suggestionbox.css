@@ -3,7 +3,8 @@
     border-radius: 4px;
 }
     /* =============== 1.  GENERAL RESET FOR THE SANDBOX =============== */
-#suggestionbox {
+#suggestionBox,
+[id^="suggB"] {
     background: #fafafa; /* white “canvas” */
     border: 1px solid var(--borderColor);
     border-radius: 6px;
@@ -11,7 +12,7 @@
     margin-top: 0.2rem;
     box-sizing: border-box; /* keep padding inside the width */
     display: flex;
-    flex-basis: row;
+    flex-direction: row;
     flex: 1 1 auto;
     overflow: auto;
     max-width: 100%; /* never overflow the sandbox          */
@@ -24,7 +25,8 @@
     gap: 0.2rem;
 }
 
-#suggestionlist {
+#suggestionlist,
+[id^="suggL"] {
     background: #ffffff;
     margin-right:0.2rem;
     display: flex;

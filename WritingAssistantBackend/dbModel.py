@@ -63,6 +63,15 @@ class PoemLanguage(db.Model):
     label = db.Column(db.String(100), nullable=False)
 
 
+class PoemStatus(db.Model):
+    __tablename__ = 'poemStatuses'
+    __table_args__ = (db.PrimaryKeyConstraint('id', name='pk_poemStatuses'),
+                      db.UniqueConstraint('poemStatusNo', name='uq_poemStatuses_poemStatusNo'),)
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    poemStatusNo = db.Column(db.Integer, nullable=False)
+    poemStatus = db.Column(db.String(100), nullable=False)
+
 # For defining the different types of poems. Rhymeschemes are used to group the rhymescheme elements
 class RhymeScheme(db.Model):
     __tablename__ = 'rhymeSchemes'
@@ -190,8 +199,20 @@ class Poem(db.Model):
                                nullable=False)
     language = synonym('poemLanguage_id')
     theme_id = db.Column(db.Integer, db.ForeignKey('themes.id', name='fk_poems_themes_id'), nullable=False)
-    status = db.Column(db.Integer, nullable=False)
-    title = db.Column(db.String(1000), nullable=True)
+    status = db.Column(db.Integer, db.ForeignKey('poemStatuses.id', name='fk_poems_poemStatuses_id'), nullable=False)
+    title = db.Column(db.String(1000))
+
+class PreviousPoem(db.Model):
+    __tablename__ = 'previousPoems'
+    __table_args__ = (db.PrimaryKeyConstraint('id', name='pk_previousPoems'),)
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    poem_id = db.Column(db.Integer, db.ForeignKey('poems.id', name='fk_previousPoems_poems_id'), nullable=False)
+    action_id = db.Column(db.Integer, db.ForeignKey('actions.id', name='fk_previousPoems_actions_id'), nullable=False)
+    previousTitle = db.Column(db.String(500))
+    previousRhymeScheme_id = db.Column(db.Integer, db.ForeignKey('rhymeSchemes.id', name='fk_previousPoems_rhymeSchemes_id'), nullable = False)
+    previousTheme_id = db.Column(db.Integer, db.ForeignKey('themes.id', name='fk_previousPoems_themes_id'), nullable=False)
+    previousStatus = db.Column(db.Integer, nullable=False)
 
 
 class Stanza(db.Model):
@@ -212,6 +233,16 @@ class Verse(db.Model):
     order = db.Column(db.Integer, nullable=False)
     status = db.Column(db.Integer, nullable=False)
     verse = db.Column(db.String(1000), nullable=False)
+
+
+class PreviousVerse(db.Model):
+    __tablename__ = 'previousVerses'
+    __table_args__ = (db.PrimaryKeyConstraint('id', name='pk_previousVerses'),)
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    verse_id = db.Column(db.Integer, db.ForeignKey('verses.id', name='fk_previousVerses_verses_id'), nullable=False)
+    action_id = db.Column(db.Integer, db.ForeignKey('actions.id', name='fk_previousVerses_actions_id'), nullable=False)
+    previousVerse = db.Column(db.String(1000), nullable=False)
 
 
 class Keyword(db.Model):

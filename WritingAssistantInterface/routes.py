@@ -2,6 +2,7 @@
 
 import os
 import requests
+import random
 from flask import Blueprint, render_template, request, jsonify
 
 # Load env (optional if already done in app.py)
@@ -31,7 +32,31 @@ def home():
             weblists_form = section['form']
             break
 
-    return render_template('index.html',weblists=weblists, weblists_form=weblists_form)
+    return render_template('index.html', weblists=weblists, weblists_form=weblists_form,
+                           randomPlaceholder=pickPlaceholder())
+
+def pickPlaceholder():
+    placeholders = [
+          # Shakespearean */
+          "Pray, endow upon this tome thine own beauteous epithet.",
+          "Anoint this scroll with thy most wondrous moniker.",
+          "Do grant this work the charm of thy fairest title.",
+          "Bestow, I beseech thee, upon these words thy peerless name.",
+          # Poe‑flavored */
+          "Whisper here the name that haunts thy darkling soul.",
+          "Imprint upon this page the shadowed name thou hold’st dearest.",
+          "Reveal the title that stirs within thy midnight heart.",
+          "Inscribe here the epithet that lingers in thy sombre reveries.",
+          # Wilde‑esque */
+          "Dare to christen this modest volume with your most exquisite epithet.",
+          "Impart upon these pages the graceful title of your own inventing.",
+          "Endow this little masterpiece with the flourish of your finest name.",
+          "Bestow a moniker upon this work that even my wit might envy.",
+          "Grant this humble opus the elegance of your singular designation.",
+          "Crown this collection with whatever title your genius deems worthy."
+        ]
+    return random.choice(placeholders)
+
 
 @main_bp.route('/generatePoem', methods=['POST'])
 def genPoem():

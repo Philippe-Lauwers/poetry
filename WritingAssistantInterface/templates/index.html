@@ -45,8 +45,10 @@
                         {% endfor %}
                     {% endfor %}
                 </div>
-                <div id="titlebox"><input type="text" id="poemTitle" name="poemTitle" placeholder="Title"/></div>
-                <div id="sandbox"></div>
+                <div id="titlebox">
+                    <input type="text" id="poemTitle" name="poemTitle"
+                           placeholder="{{ randomPlaceholder }}"/></div>
+                <fieldset id="sandboxFields"><div id="sandbox"></div></fieldset>
             </div>
         </div>
     </div>

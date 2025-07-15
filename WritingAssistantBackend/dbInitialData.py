@@ -13,7 +13,7 @@ from WritingAssistantBackend.dbModel import (
     User,
     PoemLanguage,
     RhymeScheme,
-    RhymeSchemeElement,
+    RhymeSchemeElement, PoemStatus,
 )
 
 # 1) Build the app and enable SQL echo
@@ -49,12 +49,12 @@ with app.app_context():
 
     # ---- 3. Insert rhyme schemes & elements, rhyme_schemes copied from poembase.py  ----
     rhyme_schemes = {
-        "sonnet": ("a", "b", "b", "a", "", "c", "d", "d", "c", "", "e", "f", "e", "", "f", "e", "f"),
-        "short": ("a", "b", "a", "b", "", "c", "d", "c", "d"),
-        "shorter": ("a", "b", "a", "b"),
-        "pantoum": ("a", "b", "c", "d", "", "b", "e", "d", "f", "", "e", "g", "f", "h", "", "g", "a", "h", "c"),
-        "limerick": ("a","a","b","b","a"),
-        "free verse": (),
+        "Sonnet": ("a", "b", "b", "a", "", "c", "d", "d", "c", "", "e", "f", "e", "", "f", "e", "f"),
+        "Octave": ("a", "b", "a", "b", "", "c", "d", "c", "d"),
+        "Quatrain": ("a", "b", "a", "b"),
+        "Pantoum": ("a", "b", "c", "d", "", "b", "e", "d", "f", "", "e", "g", "f", "h", "", "g", "a", "h", "c"),
+        "Limerick": ("a","a","b","b","a"),
+        "Free verse": (),
         "test": ("a","a","", "b","a")
 
         # add the rest...
@@ -215,7 +215,7 @@ with app.app_context():
     from WritingAssistantBackend.dbModel import ActionType
     from WritingAssistantBackend.dbModel import ActionTargetType
 
-    print("-> Creating action types")
+    print("-> Importing csv files")
     # Fetch config files
     directory = os.fsencode('data')
     # Loop through files in config directory
@@ -223,6 +223,7 @@ with app.app_context():
         for file in os.listdir(directory):
             filename = os.fsdecode(file)
             if filename=='actionTypes.csv':
+                print("   * importing action types")
                 with open(os.path.join('data', filename), mode='r') as file:
                     csvFile = csv.DictReader(file, delimiter=';')
                     for row in csvFile:
@@ -232,14 +233,27 @@ with app.app_context():
                                              actionTypeDescription=row['actionTypeDescription'].strip())
                             db.session.add(AT)
             elif filename == 'actionTargetTypes.csv':
+                print("   * importing action target types")
                 with open(os.path.join('data', filename), mode='r') as file:
                     csvFile = csv.DictReader(file, delimiter=';')
                     for row in csvFile:
-                        AT = db.session.query(ActionTargetType).filter_by(actionTargetType=row['actionTargetType'].strip()).first()
-                        if not AT:
-                            AT = ActionTargetType(actionTargetType=row['actionTargetType'].strip(),
+                        ATT = db.session.query(ActionTargetType).filter_by(actionTargetType=row['actionTargetType'].strip()).first()
+                        if not ATT:
+                            ATT = ActionTargetType(actionTargetType=row['actionTargetType'].strip(),
                                             actionTargetTypeDescription=row['actionTargetTypeDescription'].strip())
-                            db.session.add(AT)
+                            db.session.add(ATT)
+
+            elif filename == 'poemstatuses.csv':
+                print("   * importing action poem statuses")
+                with open(os.path.join('data', filename), mode='r') as file:
+                    csvFile = csv.DictReader(file, delimiter=';')
+                    for row in csvFile:
+                        PS  = db.session.query(PoemStatus).filter_by(poemStatusNo=row['statusNo'].strip()).first()
+                        if not PS:
+                            PS = PoemStatus(poemStatusNo=row['statusNo'].strip(),
+                                            poemStatus=row['statusDescription'].strip())
+                            db.session.add(PS)
+
 
         db.session.commit()
 

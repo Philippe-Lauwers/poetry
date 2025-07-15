@@ -6,8 +6,15 @@
     flex: 1 1 auto;
     overflow: auto;
 }
-
-
+#sandboxFields{
+    background: #ffffff; /* white “canvas” */
+    padding: 0rem;
+    margin: 0rem;
+    box-sizing: border-box; /* keep padding inside the width */
+    flex: 1 1 auto;
+    overflow: auto;
+    border:none;
+}
 
 /* =============== 2.  STANZA LAYOUT (50 % OF WINDOW WIDTH) =============== */
 .stanza-wrapper {

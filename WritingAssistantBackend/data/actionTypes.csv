@@ -1,17 +1,20 @@
 actionType;actionTypeDescription
 PM_GEN;Automatic creation of an (entire) poem
 PM_WRT;The poem has been (partially) written by the user
-PM_ALT;The poem has been changed
+PM_UPD_TIT;The title of the poem has been changed
+PM_UPD_FRM;The form of the poem has been changed
+PM_FIN;The poem was saved as final
+PM_EDT;The poem was reverted to edit mode
 PM_DEL;The poem has been deleted
 ST_GEN;The stanza has been added to the poem during automated poem generation
 ST_WRT;The stanza has been added as result of user interaction
-ST_ALT;The stanza has been changed
+ST_UPD;The stanza has been changed
 ST_DEL;The stanza has been deleted
 VRS_GEN;The verse has been generated automatically
 VRS_WRT;The verse has been (partially) written by the user
 VRS_SUG;The system generated 'n' candidates and presented them to the user
 VRS_ACC;The user accepted this suggestion for the verse
-VRS_ALT;The verse has been changed
+VRS_UPD;The verse has been changed
 VRS_DEL;The verse has been deleted
 KW_GEN;The keyword was suggested by the computer
 KW_WRT;The keyword was provied by the user

@@ -40,6 +40,7 @@ export function loadParambox() {
 
 /**
  * Called after a submit that fetches an entire poem
+ * Removes entries from select that are not suited (keeps only the persistent options and the currently selected)
  * @param e
  * @param submitter
  */
@@ -75,7 +76,15 @@ export function deactivateParambox(e=null, submitter=null) {
         }
     }
     document.getElementById("btn_generatePoem").disabled = true;
+}
+export function activateParambox() {
+    document.getElementById("btn_savePoem").removeAttribute("disabled");
+}
+export function deactivateFinal() {
     document.getElementById("btn_savePoem").disabled = true;
+    document.getElementById("chckBx_final").el.disabled = false;
+    deactivateParambox()
+    getParambox()
 }
 
 /**
