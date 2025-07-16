@@ -56,8 +56,10 @@ export class FinalWrapper extends BaseNode {
             checkbox.classList.add("read-only");
         } else {
             this.removeButton("btn_editPoem");
-            document.getElementById("btn_savePoem").style.display = "inline-block";
-            for (let el of parambox.children) {
+            const saveBtn = document.getElementById("btn_savePoem")
+            saveBtn.style.display = "inline-block";
+            saveBtn.removeAttribute("disabled")
+        for (let el of parambox.children) {
                 el.disabled=false;
             }
             checkbox.removeEventListener('click', this.blockCheckbox);

@@ -23,7 +23,9 @@ export function deactivateSuggestionbox(btnId) {
     const suggId = btnId_parts.pop()
     const verseId = btnId_parts.pop()
     // Mimic "disabled=true" behaviour for the label in front of the button
-    document.getElementById("sugg_"+verseId+"_"+suggId).classList.add("selected");
+    const selectedLabel = document.getElementById("sugg_"+verseId+"_"+suggId)
+        if (selectedLabel) {selectedLabel.classList.add("selected")};
+        // (If we pressed the refresh button, there is no selected label)
 
     const fields = document.querySelectorAll('input[id^="struct-"]');
     let vwId
@@ -38,10 +40,14 @@ export function deactivateSuggestionbox(btnId) {
             });
         }
     });
-    const chosenVrs = document.getElementById("sugg_"+verseId+"_"+suggId).innerHTML;
-    document.getElementById(vwId.replace("vw","v")).value = chosenVrs;
-    const titleFld = document.getElementById("poemTitle");
-    if (titleFld.value=="") { titleFld.placeholder = chosenVrs }
+    if (verseId) { // If there is no verseID, it means the refresh button was pressed
+        const chosenVrs = document.getElementById("sugg_" + verseId + "_" + suggId).innerHTML;
+        document.getElementById(vwId.replace("vw", "v")).value = chosenVrs;
+        const titleFld = document.getElementById("poemTitle");
+        if (titleFld.value == "") {
+            titleFld.placeholder = chosenVrs
+        }
+    }
 }
 
 export function activateSuggestionbox() {
@@ -83,6 +89,4 @@ export function closeSuggestionBox({e = null, target = null, YesOrNo = null, ver
             }
         }
     }
-
-
 }

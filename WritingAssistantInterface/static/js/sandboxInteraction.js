@@ -227,7 +227,6 @@ export function enableSandbox() {
     const fldSet = document.getElementById("sandboxFields")
     const fldSetStatus = fldSet.getAttribute('disabled')
     fldSet.removeAttribute('disabled')
-
 }
 
 /**
@@ -406,7 +405,7 @@ function activateVerses(poem) {
             // wrapper.firstChild is the Verse instance for that <input>
             const verse = wrapper.firstChild;
             verse.el.readOnly = false;// enable empty verses
-            verse.className = "verse"
+            verse.className = "verse";
             let btn = verse.el.nextSibling;
             while (btn) {
                 btn.disabled = false;
@@ -414,6 +413,8 @@ function activateVerses(poem) {
             }
         }
     }
+    poem.firstChild.firstChild.firstChild.el.readOnly = false;
+    poem.firstChild.firstChild.firstChild.className = "verse";
     enableSandbox()
 }
 
