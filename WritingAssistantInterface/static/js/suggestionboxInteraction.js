@@ -1,5 +1,6 @@
 import {Suggestionbox} from "./suggestionboxAPI/1_SuggestionBox.js";
-import {enableSandbox} from "./sandboxInteraction.js";
+import {enableSandbox, setTitlePlaceholder} from "./sandboxInteraction.js";
+import {BaseNode} from "./API.js";
 
 /**
  *Create a single shared instance of the sandbox */
@@ -44,9 +45,7 @@ export function deactivateSuggestionbox(btnId) {
         const chosenVrs = document.getElementById("sugg_" + verseId + "_" + suggId).innerHTML;
         document.getElementById(vwId.replace("vw", "v")).value = chosenVrs;
         const titleFld = document.getElementById("poemTitle");
-        if (titleFld.value == "") {
-            titleFld.placeholder = chosenVrs
-        }
+        setTitlePlaceholder(BaseNode.getWrapper(chosenVrs))
     }
 }
 

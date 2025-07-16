@@ -1,8 +1,6 @@
 import {receivePoem} from './sandboxInteraction.js';
 import {getParambox, receiveRhymeScheme} from './paramboxInteraction.js'
 import {closeSuggestionBox} from "./suggestionboxInteraction.js";
-import {Parambox} from "./paramboxAPI/1_Parambox.js";
-import {FinalWrapper} from "./paramboxAPI/4_FinalWrapper.js";
 
 const form = document.getElementById('poemForm');
 form.addEventListener('submit', async e => {

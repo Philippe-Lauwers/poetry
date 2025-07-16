@@ -49,7 +49,7 @@ export function verseKeydown(e) {
         case 'Delete':
         case 'Spacebar':
         case ' ':
-            setTitlePlaceholder(e)
+            setTitlePlaceholder(e.target)
             break;
         case 'Enter':
         case 'Tab':
@@ -70,11 +70,11 @@ export function verseKeydown(e) {
         e.preventDefault();
     }
 }
-function setTitlePlaceholder(e) {
+export function setTitlePlaceholder(myFld) {
     const poem = getSandbox();
-    if (poem.firstChild.firstChild.firstChild === BaseNode.getWrapper(e.target)) {
+    if (poem.firstChild.firstChild.firstChild === BaseNode.getWrapper(myFld)) {
                 if (document.getElementById('poemTitle').value.trim() === '') {
-                    document.getElementById('poemTitle').placeholder = e.target.value;
+                    document.getElementById('poemTitle').placeholder = myFld.value;
                 }
     }
 }
@@ -528,9 +528,7 @@ export function receivePoem(poem) {
             if (isFullPoem && stanzaIndex === 0 && verseIndex === 0) {
                 verseEl = document.getElementById(FV.id);
                 // Now tha we have grabbed the first verse, set the placeholder of the title field to the first verse
-                if (document.getElementById("poemTitle").value === "") {
-                    document.getElementById("poemTitle").placeholder = text;
-                }
+                setTitlePlaceholder(verseEl)
             } else {
                 verseEl = document.getElementById(Verse.formatID({id: id, prefix: "v-"}));
             }
