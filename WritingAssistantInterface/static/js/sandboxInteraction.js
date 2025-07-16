@@ -528,7 +528,6 @@ export function receivePoem(poem) {
             if (isFullPoem && stanzaIndex === 0 && verseIndex === 0) {
                 verseEl = document.getElementById(FV.id);
                 // Now tha we have grabbed the first verse, set the placeholder of the title field to the first verse
-                setTitlePlaceholder(verseEl)
             } else {
                 verseEl = document.getElementById(Verse.formatID({id: id, prefix: "v-"}));
             }
@@ -536,6 +535,8 @@ export function receivePoem(poem) {
             if (verseEl) { // The verse is already present in the DOM, get a handle to it ...
                 myVerse = BaseNode.getWrapper(verseEl);
                 myVerse.value = (myVerse.value !== text) ? text : myVerse.value;
+                setTitlePlaceholder(verseEl)
+
                 if (suggestions) {
                     const SB = new Suggestionbox({
                         selector: Verse.formatID({id: id, prefix: "suggB-v-"}),

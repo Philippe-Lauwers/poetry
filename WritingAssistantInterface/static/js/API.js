@@ -91,7 +91,7 @@ export class BaseNode {
         if (BaseNode.#poemElements.includes(this.constructor.name)) {
             let fld;
             fld = document.createElement("input")
-            fld.type = "text";
+            fld.type = "hidden";
             fld.name = "struct-".concat(this.id);
             fld.id = fld.name;
             //document.getElementById("poemForm").appendChild(fld);
