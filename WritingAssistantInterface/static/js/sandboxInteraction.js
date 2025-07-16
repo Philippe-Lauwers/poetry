@@ -45,8 +45,15 @@ export function sandboxClick(e) {
 export function verseKeydown(e) {
     let actionCaught = false;
     switch (e.key) {
+        case 'Backspace':
+        case 'Delete':
+        case 'Spacebar':
+        case ' ':
+            setTitlePlaceholder(e)
+            break;
         case 'Enter':
         case 'Tab':
+            setTitlePlaceholder(e)
             actionCaught = verseAccept({myEvent: e});
             break;
         case 'ArrowUp':
@@ -63,17 +70,18 @@ export function verseKeydown(e) {
         e.preventDefault();
     }
 }
+function setTitlePlaceholder(e) {
+    const poem = getSandbox();
+    if (poem.firstChild.firstChild.firstChild === BaseNode.getWrapper(e.target)) {
+                if (document.getElementById('poemTitle').value.trim() === '') {
+                    document.getElementById('poemTitle').placeholder = e.target.value;
+                }
+    }
+}
 export function verseKeyup(e) {
     const poem = getSandbox();            // the Poem instance
     switch (e.key) {
         case ' ':
-        case 'Backspace':
-        case 'Delete':
-            if (poem.firstChild.firstChild.firstChild === BaseNode.getWrapper(e.target)) {
-                if (document.getElementById('poemTitle').value.trim() === '') {
-                    document.getElementById('poemTitle').placeholder = e.target.value;
-                }
-            }
         case 'Enter':
         case 'Tab':
         case 'ArrowUp':
@@ -144,6 +152,13 @@ export function verseAccept({myEvent = null, myVerse = null}) {
             newVerse.el.focus();
         } else { // there is a rhyme scheme and the number of fields matches the rhyme scheme
             focusToEmptyField(poem, rhymeScheme);
+            let btn = verse.el.nextSibling;
+            while (btn) {
+                if (btn.id.startsWith("btn_generateVerse")) {
+                    poem.moveButton(btn, verse.parent, newVerse.parent);
+                }// move the button
+                btn = btn.nextSibling
+            }
         }
         return true;
     } else { // if (verse.value.trim() == '')

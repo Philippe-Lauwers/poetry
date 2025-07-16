@@ -49,7 +49,7 @@ def pickPlaceholder():
           "Inscribe here the epithet that lingers in thy sombre reveries.",
           # Wilde‑esque */
           "Dare to christen this modest volume with your most exquisite epithet.",
-          "Impart upon these pages the graceful title of your own inventing.",
+          "Impart upon these pages the graceful title of thine own inventing.",
           "Endow this little masterpiece with the flourish of your finest name.",
           "Bestow a moniker upon this work that even my wit might envy.",
           "Grant this humble opus the elegance of your singular designation.",

@@ -214,8 +214,8 @@ export class BaseNode {
         const btn = btnOrId instanceof String?document.getElementById(btnOrId):btnOrId;
         let oldValue = btn.value
         let btnNum = btn.value.match(/\d+/);
-        let newNum = newParent.name.match(/\d+/);
-        btn.value = (btnNum && newNum)?btn.value.replace(btnNum[0],newNum[0]):btn.value;
+        let newNum = newParent.id.match(/\d+/);
+        btn.value = (btnNum && newNum)?btn.value.replace(String(btnNum[0]),String(newNum[0])):btn.value;
         btn.disabled = false;
         newParent.el.appendChild(btn);
 

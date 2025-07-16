@@ -76,8 +76,9 @@ export function closeSuggestionBox({e = null, target = null, YesOrNo = null, ver
     let vs = document.getElementById(verseId)
     vs.readOnly = false;
     vs.classList.remove("verseEmpty");
-    vs.focus();
     enableSandbox()
+    vs.focus();
+
 
     for (let struct of document.querySelectorAll('input[id^="struct-"]')) {
         if (struct.value.includes("suggB")) {
