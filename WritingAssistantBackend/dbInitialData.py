@@ -63,7 +63,7 @@ with app.app_context():
         print(f"-> Inserting scheme {scheme_name!r}")
         rs = RhymeScheme.query.filter_by(rhymeScheme=scheme_name).first()
         if not rs:
-            if scheme_name in rhyme_scheme_persistance:
+            if scheme_name.lower() in rhyme_scheme_persistance:
                 rs = RhymeScheme(rhymeScheme=scheme_name, persistent=True)
             else:
                 rs = RhymeScheme(rhymeScheme=scheme_name)

@@ -1,7 +1,7 @@
 import {BaseNode} from "../API.js";
 import {FinalCheckbox} from "./5_2_FinalCheckbox.js";
 import {FinalLabel} from "./5_1_FinalLabel.js";
-import {getParambox, toggleSaveButton} from "../paramboxInteraction.js";
+import {getParambox, toggleSaveButton, mockDisableSelect} from "../paramboxInteraction.js";
 
 export class FinalWrapper extends BaseNode {
 
@@ -48,8 +48,9 @@ export class FinalWrapper extends BaseNode {
             document.getElementById("btn_savePoem").style.display = "none";
             for (let el of parambox.children) {
                 if (el.id!=="btn_editPoem" && el.id!=="chckBx_final" && el.id!=="final") {
-                    console.log("Disabling element",el.id)
-                    el.disabled=true;
+                    if (el.nodeName.toLowerCase()=="select") {
+                        mockDisableSelect(el)
+                    }
                 }
             }
             checkbox.addEventListener('click', this.blockCheckbox);

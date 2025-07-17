@@ -1,5 +1,5 @@
 import {receivePoem} from './sandboxInteraction.js';
-import {getParambox, receiveRhymeScheme} from './paramboxInteraction.js'
+import {getParambox, mockEnableSelect, receiveRhymeScheme} from './paramboxInteraction.js'
 import {closeSuggestionBox} from "./suggestionboxInteraction.js";
 
 const form = document.getElementById('poemForm');
@@ -42,6 +42,7 @@ form.addEventListener('submit', async e => {
         // 3) Display
         json.poem ? receivePoem(json.poem) : json.suggAccept ? closeSuggestionBox({YesOrNo:json.suggAccept, verse_id:json.verse_id}) :'Error';
         document.getElementById("btn_savePoem").removeAttribute("disabled");
+        mockEnableSelect("form")
         if (reqRoute==="/savePoem" || reqRoute==="/editPoem") getParambox().getFinal().addEdit()
     });
 

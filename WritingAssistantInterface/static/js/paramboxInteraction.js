@@ -63,7 +63,7 @@ export function deactivateParambox(e=null, submitter=null) {
         }
         // If there are no persistent options, don't disable the select but remove the non-persistent options
         if (!hasPersistentOption) {
-            sel.el.disabled = true;
+            mockDisableSelect(sel.el);
         } else {
             for (let opt of sel.children) {
                 if (!opt.persistence && sel.el.value !== opt.el.value) {
@@ -85,6 +85,27 @@ export function deactivateFinal() {
     document.getElementById("chckBx_final").el.disabled = false;
     deactivateParambox()
     getParambox()
+}
+export function mockDisableSelect(el) {
+    const myEl = (typeof el ==="string") ? document.getElementById(el) : el;
+    myEl.classList.add('read-only-select');
+    myEl.setAttribute('aria-disabled', 'true');
+    myEl.setAttribute('tabindex', '-1');
+    myEl.addEventListener('keydown', preventChange);
+    myEl.addEventListener('focus', preventChange);
+}
+export function mockEnableSelect(el) {
+    const myEl = (typeof el ==="string") ? document.getElementById(el) : el;
+    console.log( "mockEnableSelect()",el, myEl)
+    myEl.classList.remove('read-only-select');
+    myEl.removeAttribute('aria-disabled');
+    myEl.removeAttribute('tabindex');
+    myEl.removeEventListener('keydown', preventChange);
+    myEl.removeEventListener('focus', preventChange);
+}
+function preventChange(e) {
+    e.stopImmediatePropagation();
+    e.preventDefault();
 }
 
 /**
