@@ -470,7 +470,7 @@ export function receivePoem(poem) {
     if (!document.getElementById("poem_id")) {
         const idFld = document.createElement("input");
         idFld.id = idFld.name = "poem_id"
-        idFld.type="text"
+        idFld.type="hidden"
         idFld.value = poem.id
         document.getElementsByClassName("top-pane")[0].append(idFld)
     }
