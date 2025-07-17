@@ -4,6 +4,7 @@ from .poembase_from_cache import get_poem
 from .poembase_config import PoembaseConfig
 from .poem_repository import PoemRepository, SuggestionRepository
 from .poem_container import Poem
+from .poem_rouge import PoemRougeScorer
 
 main_bp = Blueprint("main", __name__)
 
@@ -154,6 +155,7 @@ def savePoem():
     poem_container = Poem(id=poem_id, lang=lang, form=pform, nmfDim=nmfDim, title=title, status=status)
     poem_container.receiveUserInput(title = title, structure = structure, userInput = verses)
     PoemRepository.save(poem_container)
+    if int(status) == 2: PoemRougeScorer(poem_container).analyze()
     return jsonify({"poem": poem_container.to_dict()})
 
 @main_bp.route("/test")

@@ -44,8 +44,6 @@ with app.app_context():
             db.session.add(pl)
             db.session.flush()
         poem_language_ids[iso] = pl.id
-    db.session.commit()
-    db.session.expunge(pl)
 
     # ---- 3. Insert rhyme schemes & elements, rhyme_schemes copied from poembase.py  ----
     rhyme_schemes = {
@@ -84,11 +82,6 @@ with app.app_context():
                         rhymeSchemeElement=elm
                     )
                     db.session.add(rse)
-
-    # ---- 4. Commit once ----
-    db.session.commit()
-    db.session.expunge(rs)
-    db.session.expunge(rse)
 
     import os
     import json
@@ -214,6 +207,8 @@ with app.app_context():
     import csv
     from WritingAssistantBackend.dbModel import ActionType
     from WritingAssistantBackend.dbModel import ActionTargetType
+    from WritingAssistantBackend.dbModel import RougeMetric
+    from WritingAssistantBackend.dbModel import DistanceMetric
 
     print("-> Importing csv files")
     # Fetch config files
@@ -242,7 +237,6 @@ with app.app_context():
                             ATT = ActionTargetType(actionTargetType=row['actionTargetType'].strip(),
                                             actionTargetTypeDescription=row['actionTargetTypeDescription'].strip())
                             db.session.add(ATT)
-
             elif filename == 'poemstatuses.csv':
                 print("   * importing action poem statuses")
                 with open(os.path.join('data', filename), mode='r') as file:
@@ -253,6 +247,24 @@ with app.app_context():
                             PS = PoemStatus(poemStatusNo=row['statusNo'].strip(),
                                             poemStatus=row['statusDescription'].strip())
                             db.session.add(PS)
+            elif filename == 'rougeMetrics.csv':
+                print("   * importing rouge metrics")
+                with open(os.path.join('data', filename), mode='r') as file:
+                    csvFile = csv.DictReader(file, delimiter=';')
+                    for row in csvFile:
+                        RougeM = db.session.query(RougeMetric).filter_by(rouge_metric=row['rougeMetric'].strip()).first()
+                        if not RougeM:
+                            RougeM = RougeMetric(rouge_metric=row['rougeMetric'].strip())
+                            db.session.add(RougeM)
+            elif filename == 'distanceMetrics.csv':
+                print("   * importing distance metrics")
+                with open(os.path.join('data', filename), mode='r') as file:
+                    csvFile = csv.DictReader(file, delimiter=';')
+                    for row in csvFile:
+                        DistanceM = db.session.query(DistanceMetric).filter_by(distance_metric=row['distanceMetric'].strip()).first()
+                        if not DistanceM:
+                            DistanceM = DistanceMetric(distance_metric=row['distanceMetric'].strip())
+                            db.session.add(DistanceM)
 
 
         db.session.commit()

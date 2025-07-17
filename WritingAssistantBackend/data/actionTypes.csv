@@ -1,6 +1,7 @@
 actionType;actionTypeDescription
 PM_GEN;Automatic creation of an (entire) poem
 PM_WRT;The poem has been (partially) written by the user
+PM_UPD;The poem was changed (groups poem actions)
 PM_UPD_TIT;The title of the poem has been changed
 PM_UPD_FRM;The form of the poem has been changed
 PM_FIN;The poem was saved as final

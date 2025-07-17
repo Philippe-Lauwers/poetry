@@ -96,34 +96,36 @@ class PoemRepository(BaseRepository):
                 PoemRepository.logAction(actionType=actionType, actionTargetType='poem', targetID=orm_poem.id)
             else:
                 savePrevious = False
-                actions = []
+                actions = {}
                 # lookup status id
                 orm_status = db.session.query(PoemStatusModel).filter_by(poemStatusNo=poem.status).first()
                 # change the poem record if needed
                 orm_poem = db.session.query(PoemModel).filter_by(id=poem.id).first()
                 if orm_poem.title != poem.title:
                     savePrevious = True
-                    actions.append('PM_UPD_TIT')
+                    actions.update({'PM_UPD_TIT':0})
                 if orm_poem.rhymeScheme_id != int(poem.form):
                     savePrevious = True
-                    actions.append('PM_UPD_FRM')
-                if orm_poem.status != int(orm_status.poemStatusNo):
+                    actions.update({'PM_UPD_FRM':0})
+                if orm_poem.status != int(orm_status.id):
                     savePrevious = True
-                    if poem.status == 2:
-                        actions.append('PM_FIN')
-                    elif poem.status == 1:
-                        actions.append('PM_EDT')
+                    if int(poem.status) == 2:
+                        actions.update({'PM_FIN':0})
+                    elif int(poem.status) == 1:
+                        actions.update({'PM_EDT':0})
 
                 if savePrevious:
                     # log the action because we need the id for saving the previous version
-                    action_ids = []
-                    for action in actions:
-                        A = ActionModel(actionType_id=ActionRepository.actionType(actionType=action))
+                    AGroup = ActionModel(actionType_id=ActionRepository.actionType('PM_UPD'))
+                    db.session.add(AGroup)
+                    db.session.flush()
+                    for action in actions.keys():
+                        A = ActionModel(actionType_id=ActionRepository.actionType(actionType=action),group_id=AGroup.id)
                         db.session.add(A)
                         db.session.flush()
-                        action_ids.append(A.id)
+                        actions.update({action: A.id})
                     # save the previous version
-                    orm_previousPoem = PreviousPoemModel(poem_id=orm_poem.id, action_id=A.id,
+                    orm_previousPoem = PreviousPoemModel(poem_id=orm_poem.id, action_id=AGroup.id,
                                                          previousTitle=orm_poem.title,
                                                          previousRhymeScheme_id=orm_poem.rhymeScheme_id,
                                                          previousStatus=orm_poem.status,
@@ -136,7 +138,7 @@ class PoemRepository(BaseRepository):
                     db.session.add(orm_previousPoem)
                     db.session.flush()
 
-                    for action_id in action_ids:
+                    for action_id in actions.values():
                         VerseRepository.logAction(action=action_id,
                                                   actionTargets={'poem': poem.id, 'pr_poem': orm_previousPoem.id})
 
@@ -191,14 +193,16 @@ class VerseRepository(BaseRepository):
     def save(verse, stanza_id, isNew=True):
         doLog = True
         if verse.id is None or str(verse.id).endswith("-tmp"):
-            # create the poem record
+            # create the verse record
             orm_verse = VerseModel(stanza_id=stanza_id, order=verse.order,
                                    status=1, verse=verse.text)
             db.session.add(orm_verse)
             db.session.flush()
 
-            if verse.id is None:
-                actionType = 'VRS_GEN'
+            if verse.suggestions is not None and len(verse.suggestions) > 0:
+                actionType = 'VRS_SUG'
+            elif verse.text == '': # an empty stub was created to attach suggestions to
+                doLog = False
             else:
                 actionType = 'VRS_WRT'
 
@@ -213,6 +217,9 @@ class VerseRepository(BaseRepository):
                 # Log the action first because we will need the id of the action
                 actionType = 'VRS_UPD'
                 actionType_id = ActionRepository.actionType(actionType=actionType)
+
+                if orm_verse.verse=="":
+                    print("verse accepted, yet action type is vrs_upd")
 
                 A = ActionModel(actionType_id=actionType_id)
                 db.session.add(A)

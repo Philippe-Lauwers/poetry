@@ -180,10 +180,25 @@ class Action(db.Model):
         default=lambda: datetime.now(timezone.utc),
         server_default=db.func.now()
     )
+    group_id = db.Column(
+        db.Integer,
+        db.ForeignKey(
+            'actions.id',
+            name='fk_actions_actions_group_id',
+            ondelete='CASCADE'
+        ),
+        nullable=True
+    )
     targets = db.relationship(
         "ActionTarget",
         back_populates="action",
         cascade="all, delete-orphan"
+    )
+    parent = db.relationship(
+        'Action',
+        remote_side=[id],
+        backref=db.backref('children', cascade='all, delete-orphan'),
+        foreign_keys=[group_id],
     )
 
 
@@ -213,7 +228,6 @@ class PreviousPoem(db.Model):
     previousRhymeScheme_id = db.Column(db.Integer, db.ForeignKey('rhymeSchemes.id', name='fk_previousPoems_rhymeSchemes_id'), nullable = False)
     previousTheme_id = db.Column(db.Integer, db.ForeignKey('themes.id', name='fk_previousPoems_themes_id'), nullable=False)
     previousStatus = db.Column(db.Integer, nullable=False)
-
 
 class Stanza(db.Model):
     __tablename__ = 'stanzas'
@@ -278,3 +292,50 @@ class Suggestion(db.Model):
                                    nullable=False)
     status = db.Column(db.Integer, nullable=False, default=0)
     suggestion = db.Column(db.String(1000), nullable=False)
+
+
+class RougeMetric(db.Model):
+    __tablename__ = 'rougeMetrics'
+    __table_args__ = (db.PrimaryKeyConstraint('id', name='pk_rougeMetrics'),)
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    rouge_metric = db.Column(db.String(10), nullable=False)
+
+class RougeScore(db.Model):
+    __tablename__ = 'rougeScores'
+    __table_args__ = (db.PrimaryKeyConstraint('id', name='pk_rougeScores'),)
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    poem_id = db.Column(db.Integer, db.ForeignKey('poems.id', name='fk_rougeScores_poems_id'))
+    verse_id = db.Column(db.Integer, db.ForeignKey('verses.id', name='fk_rougeScores_verses_id'))
+    rougeMetric_id = db.Column(db.Integer, db.ForeignKey('rougeMetrics.id',
+                                                         name='fk_rougeScores_rougeMetrics_id'),
+                               nullable=False)
+    precision = db.Column(db.Float, nullable=False)
+    recall = db.Column(db.Float, nullable=False)
+    f1 = db.Column(db.Float, nullable=False)
+    rougeMetric = db.relationship("RougeMetric")
+
+
+class DistanceMetric(db.Model):
+    __tablename__ = 'distanceMetrics'
+    __table_args__ = (db.PrimaryKeyConstraint('id', name='pk_distanceMetrics'),)
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    distance_metric = db.Column(db.String(50), nullable=False)
+
+class DistanceScore(db.Model):
+    __tablename__ = 'distanceScores'
+    __table_args__ = (db.PrimaryKeyConstraint('id', name='pk_distanceScores'),)
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    poem_id = db.Column(db.Integer, db.ForeignKey('poems.id', name='fk_distanceScores_poems_id'))
+    verse_id = db.Column(db.Integer, db.ForeignKey('verses.id', name='fk_distanceScores_verses_id'))
+    distanceMetric_id = db.Column(db.Integer,
+                                    db.ForeignKey('distanceMetrics.id',
+                                                name='fk_distanceScores_distanceMetrics_id'),
+                                    nullable=False)
+    distance = db.Column(db.Float)
+    similarity = db.Column(db.Float)
+    distanceMetric = db.relationship("DistanceMetric")
+
