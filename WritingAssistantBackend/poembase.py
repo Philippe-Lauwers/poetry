@@ -126,19 +126,19 @@ class PoemBase:
         self.container.origin = origin
 
     def receiveUserInput(self, title=None, form=None, nmfDim=None, userInput=None, structure=None):
-        self.initPoemContainer(form=form, nmfDim=nmfDim, lang=self.lang, origin='browser')
+        self.initPoemContainer(form=form, nmfDim=nmfDim, lang=self.lang, origin='browser', title=title)
         # Stores a representation of the poem in the database
-        self.container.receiveUserInput(userInput, structure)
+        self.container.receiveUserInput(userInput, structure, title)
         PoemRepository.save(self.container)
 
-    def write(self, constraints=('rhyme'), form='sonnet', nmfDim=False, userInput=None, structure=None):
+    def write(self, constraints=('rhyme'), form='sonnet', nmfDim=False, userInput=None, structure=None, title=None):
         self.form = form
         self.blacklist_words = set()
         self.blacklist = []
         self.previous_sent = None
 
         if userInput is None:
-            self.initPoemContainer(form=form, nmfDim=nmfDim, lang=self.lang, origin='GRU')
+            self.initPoemContainer(form=form, nmfDim=nmfDim, lang=self.lang, origin='GRU', title=None)
 
         if constraints == ('rhyme'):
             self.writeRhyme(nmfDim, userInput, structure)
@@ -160,9 +160,9 @@ class PoemBase:
             if len(userInput.values()) > 0:
                 self.previous_sent = self.cleanInputVerse(list(userInput.values())[i])
             blacklists = self.container.blacklists()
-            self.blacklist.append(blacklists["rhyme"])
+            self.blacklist.append([self.rhymeDictionary[w] for w in blacklists["rhyme"] if w != ""])
             self.blacklist_words = self.blacklist_words.union(blacklists["words"])
-
+            pass
         nmfDim = self._nmfDim
 
         if not nmfDim == None:
@@ -178,7 +178,6 @@ class PoemBase:
                         nSuggestions = self.suggestionBatchSize
                     else:
                         nSuggestions = 1
-
                     words = self.getSentence(rhyme=el, syllables = True, nmf=nmfDim, n = nSuggestions)
                 except KeyError as e:
                     print('err', e)
@@ -211,7 +210,11 @@ class PoemBase:
                             sys.stdout.write(' '.join(w) + '\n')
                             self.log.write(' '.join(w) + '\n')
                     try:
-                        if isinstance(words, str):
+                        if isinstance(words[0], list):
+                            for verseWords in words:
+                                self.blacklist.extend(self.rhymeDictionary[verseWords[-1]])
+                                self.blacklist_words = self.blacklist_words.union(verseWords)
+                        else:
                             self.blacklist.append(self.rhymeDictionary[words[-1]])
                             self.blacklist_words = self.blacklist_words.union(words)
                     except KeyError as e:

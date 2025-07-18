@@ -68,7 +68,7 @@ class Poem(BaseContainer):
         self._stanzas.append(Stanza(stanzaText=stanzaText, order=st_order, id=id))
 
     def receiveUserInput(self, userInput, structure, title=None):
-        self.title = title
+        if title is not None: self.title = title
         if not userInput: # if there's no user input, we can skip this
             return False
         stanzas = structure["struct-sandbox"].split(',')
@@ -130,13 +130,16 @@ class Poem(BaseContainer):
         self._origin = value
 
     def blacklists(self):
+        # titleWords = [w.lower() for w in self.title.split(" ")] if self.title else []
         rhyme = []
         words = set()
         for s in self.stanzas:
             BL = s.blacklists()
-            rhyme.extend(BL["rhyme"])
-            words.update(BL["words"])
-        return {"rhyme": rhyme, "words": words}
+            # rhyme.extend([w for w in BL["rhyme"] if not w in titleWords])
+            # words.update([w for w in BL["words"] if not w in titleWords])
+            rhyme.extend([w for w in BL["rhyme"])
+            words.update([w for w in BL["words"])
+    return {"rhyme": rhyme, "words": words}
 
     def to_dict(self):
         # Return a dictionary representation of the poem, containing stanzas
@@ -255,8 +258,8 @@ class Verse(BaseContainer):
     def blacklists(self):
         words = set()
         rhyme = []
-        wordsList = self.text.split(" ")
-        rhyme.extend([wordsList[-1]])
+        wordsList = [w for w in self.text.split(" ") if w != ""]
+        if len(wordsList) > 0 : rhyme.extend([wordsList[-1].lower()])
         words.update([w.lower() for w in wordsList])
 
         if self.text == "":

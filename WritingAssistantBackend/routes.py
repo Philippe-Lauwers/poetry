@@ -88,6 +88,7 @@ def write_poem():
     lang = data.get("lang", "1")
     pform = data.get("form", "1")
     nmfDim = convInt(data.get("nmfDim", "random"))
+    title = data.get("poemTitle")
     print(f"Writing poem in {lang} with form {pform} and nmfDim {nmfDim}")
     # - create the poem object (or get it from cache)
     poem = get_poem(lang=lang)
@@ -104,7 +105,7 @@ def write_verse():
     # extract your fields (with fallbacks)
     lang = data.get("lang", "1")
     pform = data.get("form", "1")
-    title = data.get("title", "")
+    title = data.get("poemTitle", "")
     nmfDim = convInt(data.get("nmfDim", "random"))
     verses = {k:v for (k,v) in data.items() if k.startswith("v-")}
     structure = {k:v for (k,v) in data.items() if k.startswith("struct")}
