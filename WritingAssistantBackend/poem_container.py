@@ -1,4 +1,5 @@
 import re # Regular expressions
+
 from .poem_repository import SuggestionRepository
 
 class BaseContainer():
@@ -46,7 +47,7 @@ class BaseContainer():
 
 
 class Poem(BaseContainer):
-    def __init__(self, id = None, poem_text: str = None, title: str = None, form=None, nmfDim=None, lang=None, status = 1):
+    def __init__(self, id = None, poem_text: str = None, title: str = None, form=None, nmfDim=0, lang=None, status = 1):
         super().__init__()
         self._id = id
         self._title = title
@@ -56,6 +57,7 @@ class Poem(BaseContainer):
         self._poemLanguage = lang
         self._status = status
         self._origin = None
+        self._keywords = []
         # If the user has already written some text, there will be at least one stanza
         # Split the poem on \n\n into stanzas and add stanzas to the poem-object
         # If no text is given, create an empty poem object
@@ -129,6 +131,10 @@ class Poem(BaseContainer):
     def origin(self, value):
         self._origin = value
 
+    @property
+    def keywords(self):
+        return self._keywords
+
     def blacklists(self):
         # titleWords = [w.lower() for w in self.title.split(" ")] if self.title else []
         rhyme = []
@@ -137,9 +143,9 @@ class Poem(BaseContainer):
             BL = s.blacklists()
             # rhyme.extend([w for w in BL["rhyme"] if not w in titleWords])
             # words.update([w for w in BL["words"] if not w in titleWords])
-            rhyme.extend([w for w in BL["rhyme"])
-            words.update([w for w in BL["words"])
-    return {"rhyme": rhyme, "words": words}
+            rhyme.extend([w for w in BL["rhyme"]])
+            words.update([w for w in BL["words"]])
+        return {"rhyme": rhyme, "words": words}
 
     def to_dict(self):
         # Return a dictionary representation of the poem, containing stanzas
@@ -155,7 +161,7 @@ class Poem(BaseContainer):
         if self.oldId is not None: poem["oldId"] = self._oldId
         if self.title is not None: poem["title"] = self._title
         if self.status is not None: poem["status"] = self._status
-
+        if self.keywords is not None: poem["keywords"] = [k.to_dict() for k in self.keywords]
         return poem
 
 
@@ -258,7 +264,8 @@ class Verse(BaseContainer):
     def blacklists(self):
         words = set()
         rhyme = []
-        wordsList = [w for w in self.text.split(" ") if w != ""]
+        filteredText = re.sub(r"(?:[^\w\s]|_)+", '', self.text) #filter out non-alphanumeric characters
+        wordsList = [w for w in filteredText.split(" ") if w != ""]
         if len(wordsList) > 0 : rhyme.extend([wordsList[-1].lower()])
         words.update([w.lower() for w in wordsList])
 
@@ -266,7 +273,8 @@ class Verse(BaseContainer):
             previousSugg = SuggestionRepository.lookupSuggestionsByVerse(self.id)
             if not previousSugg is None:
                 for sugg in previousSugg:
-                    wordsList = sugg["suggestion"].split(" ")
+                    filteredText = re.sub(r"(?:[^\w\s]|_)+", '',sugg["suggestion"])  # filter out non-alphanumeric characters
+                    wordsList = filteredText.split(" ")
                     rhyme.extend([wordsList[-1]])
                     words.update([w.lower() for w in wordsList])
 
@@ -310,3 +318,70 @@ class Suggestion(BaseContainer):
         if self.id is not None: suggestion["id"] = self.id
         if self.batchId is not None: suggestion["batchId"] = self.batchId
         return {"suggestion": suggestion}
+
+class Keyword(BaseContainer):
+    def __init__(self, text: str = None, id = None):
+        super().__init__()
+        self._text = self.cleanupText(text) or ""
+        self._id = id
+        self._suggestions = []
+
+    @property
+    def id(self):
+        return self._id
+    @id.setter
+    def id(self, value):
+        self._id = self.__format_Id__(value) if value is not None else None
+    @property
+    def text(self):
+        return self._text
+    @text.setter
+    def text(self, value):
+        self._text = self.cleanupText(value) or ""
+    @property
+    def suggestions(self):
+        return self._suggestions
+
+    def to_dict(self):
+        keyword = {
+            "text": self._text
+        }
+        if self.id is not None: keyword["id"] = self.id
+        if len(self._suggestions) > 0:
+            collections = {}
+            keyword["suggestions"] = [s.to_dict() for s in self._suggestions]
+        return keyword
+
+class KeywordSuggestion(BaseContainer):
+    def __init__(self, suggestion = None, id = None):
+        super().__init__()
+        self._suggestion = suggestion
+        self.id = id
+        self.batchId = None
+
+    @property
+    def id(self):
+        return self._id
+    @id.setter
+    def id(self, value):
+        self._id = self.__format_Id__(value) if value is not None else None
+    @property
+    def collectionId(self):
+        return self._collectionId
+    @collectionId.setter
+    def collectionId(self, value):
+        self._collectionId = value
+    @property
+    def suggestion(self):
+        return self._suggestion
+    @suggestion.setter
+    def suggestion(self, value):
+        self._suggestion = value
+
+    def to_dict(self):
+        suggestion = {
+            "suggestion": self._suggestion
+        }
+        if self.id is not None: suggestion["id"] = self.id
+        if self.collectionId is not None: suggestion["collectionId"] = self.collectionId
+        return suggestion

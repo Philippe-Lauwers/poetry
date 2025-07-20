@@ -19,7 +19,9 @@ VRS_UPD;The verse has been changed
 VRS_DEL;The verse has been deleted
 KW_GEN;The keyword was suggested by the computer
 KW_WRT;The keyword was provied by the user
-KW_ALT;The keyword has been changed
+KW_UPD;The keyword has been changed
 KW_DEL;The keyword has been deleted
 SGB_GEN;The batch of suggestions has been generated
 SG_SEL;The suggestion has been selected
+KWSB_GEN;The batch of keyword suggestions has been generated
+KWS_SEL;The keyword suggestion has been selected

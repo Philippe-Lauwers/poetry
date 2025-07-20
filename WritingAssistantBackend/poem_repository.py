@@ -2,6 +2,8 @@ from .extensions import db
 from sqlalchemy import func
 from .dbModel import Poem as PoemModel, PreviousPoem as PreviousPoemModel, PoemStatus as PoemStatusModel, \
     Stanza as StanzaModel, Verse as VerseModel, PreviousVerse as PreviousVerseModel, Keyword as KeywordModel, \
+    PreviousKeyword as PreviousKeywordModel, KeywordSuggestionBatch as KeywordSuggestionBatchModel, \
+    KeywordSuggestionCollection as KeywordSuggestionCollectionModel, KeywordSuggestion as KeywordSuggestionModel, \
     Action as ActionModel, ActionType as ActionTypeModel, ActionTarget as ActionTargetModel, \
     ActionTargetType as ActionTargetTypeModel, SuggestionBatch as SuggestionBatchModel, Suggestion as SuggestionModel
 
@@ -145,6 +147,8 @@ class PoemRepository(BaseRepository):
             # save the stanzas, regardless of where the id came from (earlier interaction or created just now
             for ST in poem.stanzas:
                 StanzaRepository.save(ST, poem_id=poem.id)
+            for KW in poem.keywords:
+                KeywordRepository.save(KW, poem_id=poem.id)
         except Exception as e:
             db.session.rollback()
             raise e
@@ -313,8 +317,101 @@ class SuggestionRepository(BaseRepository):
 
 class KeywordRepository(BaseRepository):
     @staticmethod
-    def save():
-        print("keyword save not yet implemented")
+    def save(keyword, poem_id):
+        if keyword.id is None or str(keyword.id).endswith("-tmp"):
+            # create the keyword record
+            orm_keyword = KeywordModel(poem_id=poem_id, keyword=keyword.text)
+            db.session.add(orm_keyword)
+            db.session.flush()
+
+            # store the keyword id in the keyword object because it will be used in the interface
+            keyword.id = orm_keyword.id
+
+            # the keyword is new and it has suggestions -> the it is generated, else it is provided by the user
+            if keyword.suggestions is not None and len(keyword.suggestions) > 0:
+                actionType = 'KW_GEN'
+            else:
+                actionType = 'KW_WRT'
+
+        elif str(keyword.id).isnumeric():
+            # The keyword already exists in the database, we check whether the user has changed it
+            orm_keyword = db.session.query(KeywordModel).filter_by(id=keyword.id).first()
+            if orm_keyword.keyword != keyword.text and orm_keyword.keyword != "":
+                # Log the action first because we will need the id of the action
+                actionType = 'KW_UPD'
+                A = ActionModel(actionType_id=ActionRepository.actionType(actionType=actionType))
+                db.session.add(A)
+                db.session.flush()
+
+                orm_previousKeyword = PreviousKeywordModel(action_id=A.id, keyword_id=keyword.id,
+                                                        previousKeyword=orm_keyword.keyword)
+                db.session.add(orm_previousKeyword)
+                db.session.flush()
+
+                orm_keyword.keyword = keyword.text
+                db.session.add(orm_keyword)
+                db.session.flush()
+
+                KeywordRepository.logAction(action=A.id,
+                                            actionTargets={'keyword': orm_keyword, 'pr_keyword': orm_previousKeyword.id})
+            else:
+                # id from the database but the keyword was not returned from the browser,
+                # no re-formatting or logging needed
+                pass
+
+        KeywordRepository.logAction(actionType=actionType, actionTargetType='keyword', targetID=keyword.id)
+
+        if keyword.suggestions is not None and len(keyword.suggestions) > 0:
+            # save the suggestions
+            KeywordSuggestionBatchRepository.save(keywordSuggestions=keyword.suggestions,keyword_id=keyword.id)
+
+
+class KeywordSuggestionBatchRepository(BaseRepository):
+    _batchId = 0
+    @staticmethod
+    def save(keywordSuggestions, keyword_id):
+        # Here, the suggestions are grouped in a batch and the creation of the batch is logged
+        if KeywordSuggestionBatchRepository._batchId == 0:
+            orm_cntKeywordSuggestionBatches = (db.session.query(KeywordSuggestionBatchModel.keyword_id.label("keyword_id"),
+                                                                func.count(KeywordSuggestionBatchModel.keyword_id).label(
+                                                                    "count"))
+                                               .filter(KeywordSuggestionBatchModel.keyword_id == keyword_id)
+                                               .one_or_none())
+            orm_keywordSuggestionBatch = KeywordSuggestionBatchModel(keyword_id=keyword_id,
+                                                                     batchNo=orm_cntKeywordSuggestionBatches.count + 1)
+            db.session.add(orm_keywordSuggestionBatch)
+            db.session.flush()
+            KeywordSuggestionBatchRepository._batch_id = orm_keywordSuggestionBatch.id
+
+        KeywordSuggestionRepository.save(keywordSuggestions=keywordSuggestions, keyword_id=keyword_id,
+                                         keywordBatch_id=KeywordSuggestionBatchRepository._batch_id)
+
+
+class KeywordSuggestionRepository(BaseRepository):
+    _collectionId = {}
+
+    @staticmethod
+    def save(keywordSuggestions, keyword_id, keywordBatch_id):
+        # Here, the suggestions are grouped in collections of n (the number of keywords to generate) keywords
+        for suggColl in range(len(keywordSuggestions)):
+            if not suggColl in KeywordSuggestionRepository._collectionId:
+                orm_keywordSuggestionCollection = KeywordSuggestionCollectionModel(
+                    keywordSuggestionBatch_id=keywordBatch_id)
+                db.session.add(orm_keywordSuggestionCollection)
+                db.session.flush()
+                KeywordSuggestionRepository._collectionId[suggColl] = orm_keywordSuggestionCollection.id
+
+            orm_keywordSuggestion = KeywordSuggestionModel(keyword_id=keyword_id,
+                                                           keywordSuggestionCollection_id=
+                                                           KeywordSuggestionRepository._collectionId[suggColl],
+                                                           suggestion=keywordSuggestions[suggColl].suggestion,
+                                                           status=2)
+            db.session.add(orm_keywordSuggestion)
+            db.session.flush()
+            keywordSuggestions[suggColl].id = orm_keywordSuggestion.id
+            keywordSuggestions[suggColl].collectionId = KeywordSuggestionRepository._collectionId[suggColl]
+
+            # do not log, all keywords are generated in one batch, the creation of the batch is logged
 
 
 class ActionRepository(BaseRepository):

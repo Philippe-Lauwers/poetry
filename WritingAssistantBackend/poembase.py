@@ -140,6 +140,9 @@ class PoemBase:
         if userInput is None:
             self.initPoemContainer(form=form, nmfDim=nmfDim, lang=self.lang, origin='GRU', title=None)
 
+        if title is not None and title != '' and title != self.container.title:
+            self.container.title = title
+
         if constraints == ('rhyme'):
             self.writeRhyme(nmfDim, userInput, structure)
         pass

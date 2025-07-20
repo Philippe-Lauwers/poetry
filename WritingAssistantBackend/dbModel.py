@@ -266,6 +266,47 @@ class Keyword(db.Model):
     poem_id = db.Column(db.Integer, db.ForeignKey('poems.id', name='fk_keywords_poem_id'), nullable=False)
     keyword = db.Column(db.String(100), nullable=False)
 
+class PreviousKeyword(db.Model):
+    __tablename__ = 'previousKeywords'
+    __table_args__ = (db.PrimaryKeyConstraint('id', name='pk_previousKeywords'),)
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    keyword_id = db.Column(db.Integer, db.ForeignKey('keywords.id', name='fk_previousKeywords_keywords_id'), nullable=False)
+    action_id = db.Column(db.Integer, db.ForeignKey('actions.id', name='fk_previousKeywords_actions_id'), nullable=False)
+    previousKeyword = db.Column(db.String(100), nullable=False)
+
+class KeywordSuggestionBatch(db.Model):
+    __tablename__ = 'keywordSuggestionBatches'
+    __table_args__ = (db.PrimaryKeyConstraint('id', name='pk_keywordSuggestionBatches'),)
+    
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    keyword_id = db.Column(db.Integer, db.ForeignKey('keywords.id', name='fk_keywordSuggestionBatches_keywords_id'), nullable=False)
+    batchNo = db.Column(db.Integer, nullable=False)
+    timestamp = db.Column(
+        db.DateTime(timezone=True),
+        nullable=False,
+        default=lambda: datetime.now(timezone.utc),
+        server_default=db.func.now()
+    )
+
+class KeywordSuggestionCollection(db.Model):
+    __tablename__ = 'keywordSuggestionCollections'
+    __table_args__ = (db.PrimaryKeyConstraint('id', name='pk_keywordCollections'),)
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    keywordSuggestionBatch_id = db.Column(db.Integer, db.ForeignKey('keywordSuggestionBatches.id', name='fk_keywordCollections_keywordSuggestionBatches_id'), nullable=False)
+
+class KeywordSuggestion(db.Model):
+    __tablename__ = 'keywordSuggestions'
+    __table_args__ = (db.PrimaryKeyConstraint('id', name='pk_keywordSuggestions'),)
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    keyword_id = db.Column(db.Integer, db.ForeignKey('keywords.id', name='fk_keywordSuggestions_keywords_id'), nullable=False)
+    keywordSuggestionCollection_id = db.Column(db.Integer, db.ForeignKey('keywordSuggestionCollections.id', name='fk_keywordSuggestions_keywordSuggestionCollections_id'), nullable=False)
+    status = db.Column(db.Integer, nullable=False)
+    suggestion = db.Column(db.String(100))
+
+
 
 class SuggestionBatch(db.Model):
     __tablename__ = 'suggestionBatches'

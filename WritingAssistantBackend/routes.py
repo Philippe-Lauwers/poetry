@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify, render_template
 
+from .keywordbase import KeywordBase
 from .poembase_from_cache import get_poem
 from .poembase_config import PoembaseConfig
 from .poem_repository import PoemRepository, SuggestionRepository
@@ -29,61 +30,6 @@ def write_poem():
     # This endpoint writes a poem
     # - retrieving the parameters
     data = request.get_json(force=True) or {}
-    debug = False
-    if (debug):
-        return jsonify({
-            "poem": {
-                "id": 20,
-                "parameters": {
-                    "form": "1",
-                    "nmfDim": 46
-                },
-                "stanzas": [
-                    {
-                        "stanza": {
-                            "id": 38,
-                            "verses": [
-                                {"verse": {"id": 109, "text": "i love the old rock band live band , as well"}},
-                                {"verse": {"id": 110, "text": "i love jazz music and i love young children"}},
-                                {"verse": {"id": 111, "text": "i love playing pop music in the kitchen"}},
-                                {"verse": {"id": 112, "text": "it 's one of my favorite songs to tell"}}
-                            ]
-                        }
-                    },
-                    {
-                        "stanza": {
-                            "id": 39,
-                            "verses": [
-                                {"verse": {"id": 113, "text": "this is my first solo album and i love him"}},
-                                {"verse": {"id": 114, "text": "the lyrics of the song are numerous"}},
-                                {"verse": {"id": 115, "text": "the sound of the song sounds fabulous"}},
-                                {"verse": {"id": 116, "text": "i love hip hop on my big ride to the gym"}}
-                            ]
-                        }
-                    },
-                    {
-                        "stanza": {
-                            "id": 40,
-                            "verses": [
-                                {"verse": {"id": 117, "text": "i like playing rock guitar , to be honest"}},
-                                {"verse": {"id": 118, "text": "i play bass guitar in a big way"}},
-                                {"verse": {"id": 119, "text": "i would love to sing a solo artist"}}
-                            ]
-                        }
-                    },
-                    {
-                        "stanza": {
-                            "id": 41,
-                            "verses": [
-                                {"verse": {"id": 120, "text": "i had a lot of fun playing punk rock ballet"}},
-                                {"verse": {"id": 121, "text": "i was a fan of indie rock rock rock music list"}},
-                                {"verse": {"id": 122, "text": "i love singing every single day"}}
-                            ]
-                        }
-                    }
-                ]
-            }
-        })
     # extract your fields (with fallbacks)
     lang = data.get("lang", "1")
     pform = data.get("form", "1")
@@ -92,7 +38,7 @@ def write_poem():
     print(f"Writing poem in {lang} with form {pform} and nmfDim {nmfDim}")
     # - create the poem object (or get it from cache)
     poem = get_poem(lang=lang)
-    poem.write(form=pform, nmfDim=nmfDim)
+    poem.write(form=pform, nmfDim=nmfDim, title=title)
     PoemRepository.save(poem.container)
     return jsonify({"poem": poem.container.to_dict()})
 
@@ -142,7 +88,7 @@ def savePoem():
     # - retrieving the parameters
     data = request.get_json(force=True) or {}
     # extract your fields (with fallbacks)
-    poem_id = data.get("poem_id", "1")
+    poem_id = data.get("poem_id", None)
     lang = data.get("lang", "1")
     pform = data.get("form", "1")
     title = data.get("poemTitle")
@@ -158,6 +104,29 @@ def savePoem():
     PoemRepository.save(poem_container)
     if int(status) == 2: PoemRougeScorer(poem_container).analyze()
     return jsonify({"poem": poem_container.to_dict()})
+
+@main_bp.route("/randomKeywords", methods=["GET", "POST"])
+def randomKeywords():
+    # This endpoint requests random keywords
+    # - retrieving the parameters
+    data = request.get_json(force=True) or {}
+    # extract your fields (with fallbacks)
+    data = request.get_json(force=True) or {}
+    lang = int(data.get("lang", "1"))
+    form = int(data.get("form", "1"))
+    nmfDim = convInt(data.get("nmfDim", "random"))
+    title = data.get("poemTitle", "")
+    if "btn_random1Keyword" in data.keys():
+        btn = "btn_random1Keyword"
+        keywordList = None
+    elif "btn_randomKeywords" in data.keys():
+        btn = "btn_randomKeywords"
+        n = int(data.get("btn_randomKeywords","1"))
+
+    if btn == "btn_random1Keyword":
+        return jsonify({"keywords":KeywordBase(lang=lang, form=form, nmfDim=nmfDim, title=title).fetch(inputKeywords=keywordList)})
+    elif btn == "btn_randomKeywords":
+        return jsonify({"keywords":KeywordBase(lang=lang, form=form, title=title).fetch(n=n)})
 
 @main_bp.route("/test")
 def index():
