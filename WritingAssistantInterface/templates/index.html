@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="/static/css/sandbox.css">
     <link rel="stylesheet" href="/static/css/suggestionbox.css">
     <link rel="stylesheet" href="/static/css/parambox.css">
+    <link rel="stylesheet" href="/static/css/keywordbox.css">
     <link rel="stylesheet" href="/static/css/niftyThings.css">
     <link rel="icon" href="static/img/favicon.ico" type="image/x-icon">
     <link rel="shortcut icon" href="static/img/favicon.ico" type="image/x-icon">
@@ -17,14 +18,12 @@
     <div class="container">
         <div class="top-pane">
             <h1>Poem factory</h1>
+            NMF Dimension:
+                    <input name="nmfDim" value="random">
         </div>
         <div class="bottom-pane">
             <div class="left-pane">
-                <h2>Keyword Pane</h2>
-                <label>
-                    NMF Dimension:
-                    <input name="nmfDim" value="random">
-                </label>
+                <div id="keywordbox"></div>
             </div>
             <div class="right-pane">
                 <div id="parambox">
@@ -60,6 +59,7 @@
 <script type="module" src="{{ url_for('static',filename='js/sandboxInteraction.js') }}"></script>
 <script type="module" src="{{ url_for('static',filename='js/paramboxInteraction.js') }}"></script>
 <script type="module" src="{{ url_for('static',filename='js/suggestionboxInteraction.js') }}"></script>
+<script type="module" src="{{ url_for('static',filename='js/keywordboxInteraction.js') }}"></script>
 <script type="module" src="{{ url_for('static',filename='js/niftyThings.js') }}"></script>
 <script>const rhymeSchemes = {{ weblists_form | tojson }};</script>
 </body>

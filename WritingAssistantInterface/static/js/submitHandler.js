@@ -1,6 +1,7 @@
 import {deactivateParambox} from "./paramboxInteraction.js";
 import {disableGenBtn, getSandbox, disableSandbox} from "./sandboxInteraction.js";
 import {deactivateSuggestionbox} from "./suggestionboxInteraction.js";
+import {deactivateKeywordbox} from "./keywordboxInteraction.js"
 
 export class Submit {
 
@@ -27,6 +28,8 @@ export class Submit {
         } else if (e.submitter.id.startsWith("btn_acceptSuggestion")) {
             deactivateSuggestionbox(e.submitter.id);
             disableSandbox()
+        } else if (e.submitter.id.includes("Keyword")) {
+            deactivateKeywordbox(e.submitter.id);
         }
     }
 }

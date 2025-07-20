@@ -155,7 +155,11 @@ export function verseAccept({myEvent = null, myVerse = null}) {
             let btn = verse.el.nextSibling;
             while (btn) {
                 if (btn.id.startsWith("btn_generateVerse")) {
-                    poem.moveButton(btn, verse.parent, newVerse.parent);
+                    if (typeof newVerse !== 'undefined') {
+                        poem.moveButton(btn, verse.parent, newVerse.parent);
+                    } else {
+                        poem.removeButton(btn);
+                    }
                 }// move the button
                 btn = btn.nextSibling
             }

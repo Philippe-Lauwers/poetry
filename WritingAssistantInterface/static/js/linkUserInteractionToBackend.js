@@ -30,6 +30,10 @@ form.addEventListener('submit', async e => {
             reqRoute = "/savePoem";
         } else if (s_id === "btn_editPoem") {
             reqRoute = "/savePoem";
+        } else if (s_id === "btn_randomKeywords") {
+            reqRoute = "/randomKeywords";
+        } else if (s_id === "btn_random1Keyword") {
+            reqRoute = "/randomKeywords";
         }
         // 2) Route request
         let gen = await fetch(reqRoute, {

@@ -18,8 +18,8 @@
     background-image: url("../img/icon.svg"),
     radial-gradient(
             farthest-corner at 1% 50%,
-            rgba(255, 255, 255, 1) 2%,
-            rgba(255, 255, 255, 0.8) 5%,
+            rgba(255, 255, 255, 1) 5%,
+            rgba(255, 255, 255, 0.8) 10%,
             rgba(255, 255, 255, 0.7) 20%,
             rgba(255, 255, 255, 0.1) 100%
     );
@@ -36,7 +36,7 @@
     padding: 1rem;
     margin: 0.4rem 0.4rem 0.2rem 0.4rem;
     border: 1px solid var(--borderColor);
-    border-radius: 6px;
+    border-radius: 0.6rem;
     flex: 0 0 auto;
 }
 
@@ -45,44 +45,43 @@
     padding-bottom: 0.4rem;
     display: flex;
     flex: 1 1 auto;
-    min-height: 0; /* grow to fill the rest of the height */
-    min-height: 0; /* allow children to scroll if needed */
+    min-height: 0;
+    min-height: 0;
 }
 
 /* Left pane */
 .left-pane {
     background: #ffffff;
-    padding: 1rem;
     flex: 0 0 20%;
-    overflow: auto; /* scroll if content overflows */
+    overflow: auto;
 
     /* appearance of this pane */
     margin: 0.2rem 0.2rem 0.2rem 0.4rem;
-    /* border-right: 2px solid var(--borderColor); */
     border: 1px solid var(--borderColor);
-    border-radius: 6px;
+    border-radius: 0.6rem;
 }
 
 .right-pane {
     background: #ffffff;
     display: flex;
-    flex: 1 1 auto; /* fixed height based on content or padding */
-    flex-direction: column; /* side-by-side children */
+    flex: 1 1 auto;
+    flex-direction: column;
     /* appearance */
     margin: 0.2rem 0.4rem 0.2rem 0.2rem;
     border: 1px solid var(--borderColor);
-    border-radius: 6px;
+    border-radius: 0.6rem;
 }
 
 
-
-#sandbox, #suggestionbox {
+#sandbox, #parambox {
     margin: 0rem 0.1rem 0.1rem 0.1rem;
     flex: 1 1 auto;
-    min-height: 0; /* grow to fill the rest of the height */
-    min-height: 0; /* allow children to scroll if needed */
-    /* appearance of this pane */
+    min-height: 0;
+    min-height: 0;
+}
 
+#sandbox {
+    padding-bottom: 1rem;
 }
 
 html, body {
@@ -131,19 +130,19 @@ input[type="checkbox"]::before {
     border-radius: inherit;
     background: transparent;
     transition: filter 0.2s, background-color 0.2s;
-    pointer-events: none; /* clicks go through to the real box */
+    pointer-events: none;
 }
 
 /* hover: brighten & saturate *only* the background layer */
 input[type="checkbox"]:hover::before {
-    background-color: #d4d4d4; /* your hover fill */
+    background-color: #d4d4d4;
     filter: brightness(1.1) saturate(1.2);
 }
 
 /* checked: set the fill color */
 input[type="checkbox"]:checked::before {
     background-color: var(--borderColor);
-    filter: none; /* reset any hover filter */
+    filter: none;
 }
 
 /* checked mark stays the same */
@@ -182,13 +181,16 @@ input[type="checkbox"].read-only + label {
     height: 28px;
     padding: 0;
     border: none;
-}
-
-.btn:disabled {
-    background-position: -58px 0;
+    background-repeat: no-repeat;
+    background-position: 0 0;
+    background-size: 86px 28px;
 }
 
 .btn:hover,
 .btn:focus {
     background-position: -29px 0;
+}
+
+.btn:disabled {
+    background-position: -58px 0;
 }

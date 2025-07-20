@@ -1,17 +1,17 @@
-    /* =============== 1.  GENERAL RESET FOR THE SANDBOX =============== */
+/* =============== 1.  GENERAL RESET FOR THE SANDBOX =============== */
 #suggestionBox,
 [id^="suggB"] {
-    background: #fafafa; /* white “canvas” */
+    background: #f8f8f8; /* white “canvas” */
     border: 1px solid var(--borderColor);
-    border-radius: 6px;
+    border-radius: 0.6rem;
     padding: 0.2rem;
     margin-top: 0.2rem;
-    box-sizing: border-box; /* keep padding inside the width */
+    box-sizing: border-box;
     display: flex;
     flex-direction: row;
     flex: 1 1 auto;
     overflow: auto;
-    max-width: 100%; /* never overflow the sandbox          */
+    max-width: 100%;
 }
 
 #suggestionRefresher {
@@ -24,49 +24,53 @@
 #suggestionlist,
 [id^="suggL"] {
     background: #ffffff;
-    margin-right:0.2rem;
+    margin-right: 0.2rem;
     display: flex;
     border: 1px solid #b4b4b4;
-    border-radius: 6px;
+    border-radius: 0.6rem;
     padding: 0.2rem;
-    flex: 1 1 auto; /* ← this makes it grow to fill wrapper */
+    flex: 1 1 auto;
     flex-direction: column;
-    box-sizing: border-box; /* include padding inside width         */
-    gap: 0.2rem; /* space between suggestions */}
+    box-sizing: border-box;
+    gap: 0.2rem;
+}
 
 .suggestionWrapper {
-  display: flex;
-  flex-direction: row;
-  align-items: center; /* vertically align label and button */
+    display: flex;
+    flex-direction: row;
+    align-items: center;
 }
 
 
 .suggestion {
-    flex: 1 1 auto; /* ← this makes it grow to fill wrapper */
-    min-width: 0; /* lets long text shrink gracefully      */
+    flex: 1 1 auto;
+    min-width: 0;
     font-size: 1rem;
-    box-sizing: border-box; /* include padding inside width         */
+    box-sizing: border-box;
     border: none;
-    padding: 0.2rem 0.2rem 0.3rem 0.2rem; /* space inside the input field          */
+    padding: 0.2rem 0.2rem 0.3rem 0.2rem;
     /* Smooth focus highlight */
     transition: background 0.2s, border 0.2s;
     margin-right: 0.2rem;
 }
+
 .suggestion:hover {
     background-color: #f5f5f5;
     border-radius: 4px;
 }
 
 .suggestionWrapper:not(.selected):hover .suggestion {
-  outline: 1px solid #b4b4b4;
-  background: #f5f5f5;
-  border-radius: 4px;
+    outline: 1px solid #b4b4b4;
+    background: #f5f5f5;
+    border-radius: 0.4rem;
 }
+
 .suggestionWrapper.selected .suggestion {
-  outline: 1px solid #b4b4b4;
-  background: #f5f5f5;
-  border-radius: 4px;
+    outline: 1px solid #b4b4b4;
+    background: #f5f5f5;
+    border-radius: 0.4rem;
 }
+
 .suggestionWrapper:hover [id^="btn_acceptSuggestion"]:not(:disabled) {
     background-position: -29px 0;
 }
@@ -81,6 +85,7 @@
 
 }
 */
+
 [id^="btn_acceptSuggestion"] {
     background-image: url('../img/btn_SaveVerse.svg');
     background-repeat: no-repeat;
@@ -90,30 +95,8 @@
 
 [id^="btn-f5-lst-sug-"] {
     background-image: url('../img/btn_GenerateVerseAllOverAgain.svg');
-    background-repeat: no-repeat;
-    background-position: 0 0;
-    background-size: 86px 28px;
 }
 
 [id^="btn-close-box-sug-"] {
     background-image: url('../img/btn_DelVerse.svg');
-    background-repeat: no-repeat;
-    background-position: 0 0;
-    background-size: 86px 28px;
-}
-
-/* hover/focus shifts to the second square */
-[id^="btn-f5-lst-sug-"]:not(:disabled):hover,
-[id^="btn-f5-lst-sug-"]:not(:disabled):focus,
-[id^="btn-close-box-sug-"]:not(:disabled):hover,
-[id^="btn-close-box-sug-"]:not(:disabled):focus,
-[id^="btn_acceptSuggestion"]:not(:disabled):hover,
-[id^="btn_acceptSuggestion"]:not(:disabled):focus {
-    background-position: -29px 0;
-}
-/* disabled shows the third */
-[id^="btn-f5-lst-sug-"]:disabled,
-[id^="btn-close-box-sug-"]:disabled,
-[id^="btn_acceptSuggestion"]:disabled {
-    background-position: -58px 0;
 }

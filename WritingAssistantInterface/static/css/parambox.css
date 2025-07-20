@@ -1,12 +1,12 @@
 #parambox {
-    background: #fafafa;
+    background: #f8f8f8;
     padding: 1rem;
-    margin: 0.1rem 0.1rem 0.1rem 0.1rem;
-
+    margin: 0.1rem 0.1rem 0.5rem 0.1rem;
+    border-radius: 0.6rem 0.6rem 0rem 0rem;
 
     display: flex;
     gap: 1rem;
-    flex: 0 0 auto; /* fixed height based on content or padding */
+    flex: 0 0 auto;
     flex-direction: row;
     align-items: center;
 }
@@ -16,20 +16,21 @@
     min-width: 100px;
     max-width: 200px;
 }
+
 #parambox select.read-only-select {
-  background-color: #f5f5f5;
-  color: #666666;
-  border: solid 1px #b4b4b4;
+    background-color: #f5f5f5;
+    color: #666666;
+    border: solid 1px #b4b4b4;
     border-radius: 0.2rem;
-  cursor: not-allowed;
-  pointer-events: none;
-  opacity: 1;
+    cursor: not-allowed;
+    pointer-events: none;
+    opacity: 1;
 }
 
 #final {
     display: flex;
     gap: 1rem;
-    flex: 0 0 auto; /* fixed height based on content or padding */
+    flex: 0 0 auto;
     flex-direction: row;
     gap: 0.1rem;
     align-items: center
@@ -57,38 +58,12 @@
 
 #btn_generatePoem {
     background-image: url('../img/btn_GeneratePoem.svg');
-    background-repeat: no-repeat;
-    background-position: 0 0;
-    background-size: 86px 28px;
 }
 
 #btn_savePoem {
     background-image: url('../img/btn_SavePoem.svg');
-    background-repeat: no-repeat;
-    background-position: 0 0;
-    background-size: 86px 28px;
 }
 
 #btn_editPoem {
     background-image: url('../img/btn_EditPoem.svg');
-    background-repeat: no-repeat;
-    background-position: 0 0;
-    background-size: 86px 28px;
-}
-
-/* hover/focus shifts to the second square */
-#btn_generatePoem:hover,
-#btn_generatePoem:focus,
-#btn_savePoem:hover,
-#btn_savePoem:focus,
-#btn_editPoem:hover,
-#btn_editPoem:focus {
-    background-position: -29px 0;
-}
-
-/* disabled shows the third */
-#btn_generatePoem:disabled,
-#btn_savePoem:disabled,
-#btn_editPoem:disabled {
-    background-position: -58px 0;
 }

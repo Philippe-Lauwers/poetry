@@ -3,6 +3,7 @@ import {loadParambox, receiveRhymeScheme, getRhymeScheme} from "./paramboxIntera
 import {Submit} from "./submitHandler.js";
 import {Poem} from "./sandboxAPI/1_Poem.js";
 import {Parambox} from "./paramboxAPI/1_Parambox.js";
+import {Keywordbox} from "./keywordboxAPI/1_Keywordbox.js";
 
 window.addEventListener("DOMContentLoaded", () => {
     const sandbox = new Poem({
@@ -54,6 +55,7 @@ const parambox = new Parambox({
         }
     }
 });
+const keywordbox = new Keywordbox({selector:"#keywordbox"})
 
 loadParambox();
 if (getRhymeScheme() == null) receiveRhymeScheme();
