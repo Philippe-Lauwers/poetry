@@ -124,9 +124,9 @@ def randomKeywords():
         n = int(data.get("btn_randomKeywords","1"))
 
     if btn == "btn_random1Keyword":
-        return jsonify({"keywords":KeywordBase(lang=lang, form=form, nmfDim=nmfDim, title=title).fetch(inputKeywords=keywordList)})
+        return jsonify({"poem":KeywordBase(lang=lang, form=form, nmfDim=nmfDim, title=title).fetch(inputKeywords=keywordList)})
     elif btn == "btn_randomKeywords":
-        return jsonify({"keywords":KeywordBase(lang=lang, form=form, title=title).fetch(n=n)})
+        return jsonify({"poem":KeywordBase(lang=lang, form=form, title=title).fetch(n=n)})
 
 @main_bp.route("/test")
 def index():

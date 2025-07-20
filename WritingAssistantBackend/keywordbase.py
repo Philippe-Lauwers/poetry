@@ -96,13 +96,11 @@ class KeywordBase:
         self.suggestionBatchSize = int(
             PoembaseConfig.getParameter(category='poem', parameterName='suggestion_batch_size', language=lang))
 
-    @timed
     def loadNMFData(self):
         self.W = np.load(self.NMF_FILE)
         with open(self.NMF_DESCRIPTION_FILE, 'rb') as f:
             self.nmf_descriptions = pickle.load(f, encoding='utf8')
         
-    @timed
     def loadVocabulary(self):
         self.i2w = self.generator.vocab.itos
         self.w2i = self.generator.vocab.stoi
@@ -113,8 +111,7 @@ class KeywordBase:
     #     self.container.receiveUserInput(userInput, structure, title)
     #     PoemRepository.save(self.container)
 
-
-    @timed
+    # @timed
     def fetch(self, n = 0, inputKeywords = []):
         keywordCollections = []
         nmfDim = (0,0)
