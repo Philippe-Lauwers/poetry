@@ -16,5 +16,6 @@ export class Suggestionrefresher extends BaseNode {
 
         super({selector, tag: "div", id, events, buttons});
         // Now `this.el` is set and registered.
+        Suggestionrefresher.instance = this;
     }
 }

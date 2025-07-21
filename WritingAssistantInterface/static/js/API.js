@@ -18,7 +18,7 @@ export class BaseNode {
                     tag = "div",
                     type = "",
                     id = "",
-                    name = "",
+                    name = null,
                     value = "",
                     htmlFor = "",
                     txt = "",
@@ -47,7 +47,7 @@ export class BaseNode {
             el = document.createElement(tag);
             if (type) el.type = type;
             if (id) el.id = id;
-            el.setAttribute("name",name?name:["input","checkbox"].includes(type)?id:type);
+            el.setAttribute("name",name?name:["input","checkbox"].includes(tag)?id:type);
             if (type) el.type = type;
             if (className) el.className = className;
             if (htmlFor) el.setAttribute("for", htmlFor);
@@ -253,7 +253,8 @@ export class BaseNode {
             id = null,
             name = null,
             value = null,
-            className = null// optional stable id
+            className = null,
+            disabled = false// optional stable id
         } = cfg;
 
         const btn = document.createElement("button");
@@ -262,6 +263,7 @@ export class BaseNode {
         btn.id=id?id:"";
         btn.name=name?name:btn.id;
         btn.value=value?value:"";
+        btn.disabled = disabled;
 
         if (typeof onClick === "function") {
             btn.addEventListener("click", onClick);
@@ -319,6 +321,16 @@ export class BaseNode {
         this.el.setAttribute("name",newName) ?? "";
     }
 
+    /**
+     *
+     * @return {string}
+     */
+    get value() {
+        return this.el.value ?? "";
+    }
+    set value(newValue) {
+        this.el.value = newValue ?? "";
+    }
 
     /**
      * Getter and setter for the className of the element

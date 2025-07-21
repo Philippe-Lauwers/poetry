@@ -12,7 +12,7 @@ import {closeSuggestionBox} from "../suggestionboxInteraction.js";
 
 export class Suggestionbox extends BaseNode {
 
-    constructor({selector = "#suggestionbox", verse = null, suggestions = null, events = {}, buttons = {}} = {}) {
+    constructor({selector = "#suggestionbox", verse = null, location=null, refresher_value = 1, suggestions = null, events = {}, buttons = {}} = {}) {
         const id = (typeof selector === "string")
             ? selector.replace(/^#/, "")
             : "suggB-" + verse.id
@@ -21,20 +21,20 @@ export class Suggestionbox extends BaseNode {
         // Now `this.el` is set and registered.
         Suggestionbox.instance = this;
 
-        this.addSuggestionlist({selector:selector.replace("suggB","suggL"), verse: verse, suggestions: suggestions})
-        this.addSuggestionrefresher({verse_id: selector.replace("suggB-",""), verse});
-
-        verse.stanza.append(this);
+        this.addSuggestionlist({selector:selector.replace("suggB","suggL"), suggestions: suggestions})
+        this.addSuggestionrefresher({verse_id: selector.replace("suggB-",""), verse:verse, refresher_value:refresher_value});
+        location.append(this);
     }
 
     /** Adds the box that will contain the list of suggestions */
-    addSuggestionlist({selector, verse: verse, suggestions: suggestions, events = {}, buttons = {}} = {}) {
-        const sl = new Suggestionlist({selector, verse: verse, suggestions:suggestions})
+    addSuggestionlist({selector, suggestions= suggestions, events = {}, buttons = {}} = {}) {
+        const sl = new Suggestionlist({selector, suggestions:suggestions})
+        console.log("sl",sl)
         return this.append(sl);
     }
 
     /** Adds the box that will contain the refresh button */
-    addSuggestionrefresher({verse_id="",verse = None, events = {}, buttons = {}} = {}) {
+    addSuggestionrefresher({verse_id="",verse = None, refresher_value = 1, events = {}, buttons = {}} = {}) {
         const sr = new Suggestionrefresher({
             verse: verse,
             buttons: {
@@ -47,6 +47,7 @@ export class Suggestionbox extends BaseNode {
                 },
                 btn_f5_lst_sug: {
                     id: "btn-f5-lst-sug-" + verse_id,
+                    value: refresher_value,
                     type: "submit",
                     formaction: "/generateVerse",
                     formmethod: "post",

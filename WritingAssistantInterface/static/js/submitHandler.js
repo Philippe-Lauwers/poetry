@@ -30,6 +30,12 @@ export class Submit {
             disableSandbox()
         } else if (e.submitter.id.includes("Keyword")) {
             deactivateKeywordbox(e.submitter.id);
+            if (e.submitter.id == "btn_randomKeywords") {
+                const saveBtn = document.getElementById("btn_saveKeywords");
+                const genBtn = document.getElementById("btn_randomKeywords");
+                saveBtn.style.display = "inline-block";
+                genBtn.style.display = "none";
+            }
         }
     }
 }

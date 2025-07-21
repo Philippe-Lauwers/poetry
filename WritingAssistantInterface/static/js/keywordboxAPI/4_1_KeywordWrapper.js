@@ -14,11 +14,11 @@ export class KeywordWrapper extends BaseNode {
         // Now `this.el` is set and registered
         KeywordWrapper.instance = this;
         this._btn = this.el.firstChild
-        this.addKeyword({selector: this.id.replace("kww-", "kw-"), name:this.id.replace("kww-","kw-")});
+        this.addKeyword({selector: this.id.replace("kww-", "kw-")+"-tmp", id:this.id.replace("kww-","kw-")+"-tmp"});
     }
 
-    addKeyword({selector = "", events = {}, buttons = {}} = {}) {
-        const KW = new Keyword({selector: "kw-1", buttons: buttons})
+    addKeyword({selector = "", id = "", events = {}, buttons = {}} = {}) {
+        const KW = new Keyword({selector: selector, id: id, buttons: buttons})
         if (this._btn) {
             return this.insertBefore(KW, this._btn);
         } else {

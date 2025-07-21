@@ -6,7 +6,6 @@ export class Keyword extends BaseNode {
         const id = (typeof selector === "string")
             ? selector.replace(/^#/, "")
             : "";
-
         super({
             selector: selector, tag: "input", id:id, className:"keyword", events, buttons
         });

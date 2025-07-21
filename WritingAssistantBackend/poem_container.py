@@ -1,6 +1,7 @@
+import keyword
 import re # Regular expressions
 
-from .poem_repository import SuggestionRepository
+from .poem_repository import SuggestionRepository, KeywordRepository
 
 class BaseContainer():
     def __init__(self):
@@ -69,18 +70,42 @@ class Poem(BaseContainer):
         st_order = order if order >= 0 else len(self._stanzas)
         self._stanzas.append(Stanza(stanzaText=stanzaText, order=st_order, id=id))
 
-    def receiveUserInput(self, userInput, structure, title=None):
+    def addKeyword(self, id, keyword):
+        self.keywords.append(Keyword(id=id, text=keyword))
+
+    def receiveUserInput(self, userInput, structure, title=None, poemId=None):
         if title is not None: self.title = title
         if not userInput: # if there's no user input, we can skip this
             return False
-        stanzas = structure["struct-sandbox"].split(',')
-        for s in stanzas:
-            hasVerse = False
-            for vw in structure["struct-"+s].split(','):
-                hasVerse = True
-                break
-            if hasVerse:
-                self._stanzas.append(Stanza(id=s, userInput=userInput, structure=structure))
+        if structure:
+            stanzas = structure["struct-sandbox"].split(',')
+            for s in stanzas:
+                hasVerse = False
+                for vw in structure["struct-"+s].split(','):
+                    hasVerse = True
+                    break
+                if hasVerse:
+                    self._stanzas.append(Stanza(id=s, userInput=userInput, structure=structure))
+        keywordItems = {k: v for k, v in userInput.items() if k.startswith("kw-")}
+        if len(keywordItems) == 1:
+            # If the input contains only one keyword and the keyword is empty,
+            # we know the user requested an entire collection
+            firstKey = list(keywordItems.keys())[0]
+            if firstKey.endswith("-tmp"):
+                self.addKeyword(firstKey, keywordItems[firstKey])
+            else:
+                # Lookup the other keywords in the collection and attach all to the poem
+                keywordStubs = KeywordRepository.lookupKeywordsByPoem(self.id)
+                for id, kw in keywordStubs.items():
+                    self.addKeyword(id, kw['text'])
+        else: # if len(keywordItems) > 1:
+            # If the input contains multiple keywords, we add them to the poem
+            # and store them in the database
+            for id, kw in keywordItems.items():
+                self.addKeyword(id, kw)
+        pass
+
+
 
     @property
     def form(self):
@@ -135,6 +160,7 @@ class Poem(BaseContainer):
     def keywords(self):
         return self._keywords
 
+
     def blacklists(self):
         # titleWords = [w.lower() for w in self.title.split(" ")] if self.title else []
         rhyme = []
@@ -162,7 +188,36 @@ class Poem(BaseContainer):
         if self.title is not None: poem["title"] = self._title
         if self.status is not None: poem["status"] = self._status
         if self.keywords is not None: poem["keywords"] = [k.to_dict() for k in self.keywords]
+
+        if poem["keywords"]:
+            if poem["keywords"][0]["keyword"]["suggestions"]:
+                poem["keywordSuggestions"] = Poem.reorderKeywordSuggestions(poem["keywords"])
         return poem
+
+    @staticmethod
+    def reorderKeywordSuggestions(keywordSuggestions):
+        # 1) Group suggestions by collectionId
+        collections = {}
+        for suggestion in keywordSuggestions:
+            for sg in suggestion['keyword']['suggestions']:
+                s = sg['suggestion']
+                cid = s['collectionId']
+                text = s['suggestion']
+                collections.setdefault(cid, []).append(text)
+        # 2) Create a dictionary with collectionId as key and list of suggestions as value
+        result = {
+            "suggestions": [
+                {
+                    "suggestion": {
+                        "id": cid,
+                        # join with commas; or leave as list if you prefer
+                        "text": ", ".join(words)
+                    }
+                }
+                for cid, words in sorted(collections.items())
+            ]
+        }
+        return result
 
 
 class Stanza(BaseContainer):
@@ -327,12 +382,6 @@ class Keyword(BaseContainer):
         self._suggestions = []
 
     @property
-    def id(self):
-        return self._id
-    @id.setter
-    def id(self, value):
-        self._id = self.__format_Id__(value) if value is not None else None
-    @property
     def text(self):
         return self._text
     @text.setter
@@ -344,13 +393,11 @@ class Keyword(BaseContainer):
 
     def to_dict(self):
         keyword = {
-            "text": self._text
+            "text": self._text,
+            "suggestions": [s.to_dict() for s in self._suggestions]
         }
         if self.id is not None: keyword["id"] = self.id
-        if len(self._suggestions) > 0:
-            collections = {}
-            keyword["suggestions"] = [s.to_dict() for s in self._suggestions]
-        return keyword
+        return {"keyword": keyword}
 
 class KeywordSuggestion(BaseContainer):
     def __init__(self, suggestion = None, id = None):
@@ -379,9 +426,9 @@ class KeywordSuggestion(BaseContainer):
         self._suggestion = value
 
     def to_dict(self):
-        suggestion = {
+        keywordSuggestion = {
             "suggestion": self._suggestion
         }
-        if self.id is not None: suggestion["id"] = self.id
-        if self.collectionId is not None: suggestion["collectionId"] = self.collectionId
-        return suggestion
+        if self.id is not None: keywordSuggestion["id"] = self.id
+        if self.collectionId is not None: keywordSuggestion["collectionId"] = self.collectionId
+        return {"suggestion": keywordSuggestion}

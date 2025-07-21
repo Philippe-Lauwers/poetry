@@ -546,6 +546,7 @@ export function receivePoem(poem) {
                         selector: Verse.formatID({id: id, prefix: "suggB-v-"}),
                         id: Verse.formatID({id: id, prefix: "suggB-v-"}),
                         verse: myVerse,
+                        location: myVerse.stanza,
                         suggestions: suggestions
                     });
                     activateSuggestionbox();}
@@ -587,6 +588,7 @@ export function receivePoem(poem) {
                             selector: Verse.formatID({id: id, prefix: "suggB-v-"}),
                             id: Verse.formatID({id: id, prefix: "suggB-v-"}),
                             verse: myVerse,
+                            location: myVerse.stanza,
                             suggestions: suggestions
                         });
                         activateSuggestionbox();

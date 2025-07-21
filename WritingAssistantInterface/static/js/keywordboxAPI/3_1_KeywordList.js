@@ -18,7 +18,7 @@ export class KeywordList extends BaseNode {
             selector: "kww-1-tmp",
             id: "kww-1-tmp",
             buttons: {
-                btn_generate1Keyword: {
+                btn_random1Keyword: {
                     id: "btn_random1Keyword",
                     value: "kw-1",
                     type: "submit",
@@ -39,14 +39,13 @@ export class KeywordList extends BaseNode {
     disable() {
         for (let kww of this.children) {
             for (let kww_child of kww.children) {
-                console.log(kww_child)
                 if (kww_child.id.startsWith("btn_random")) {
                     kww_child.el.disabled = true;
                 } else if (kww_child.id.startsWith("kw-")) {
                     kww_child.el.readOnly = true;
                 }
                 for(let btn in kww.buttons) {
-                    btn.disabled = true;
+                    document.getElementById(btn).disabled = true;
                 }
             }
         }

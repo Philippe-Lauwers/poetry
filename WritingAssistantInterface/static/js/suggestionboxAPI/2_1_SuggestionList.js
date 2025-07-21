@@ -12,17 +12,18 @@ import {SuggestionWrapper} from "./3_1_SuggestionWrapper.js";
 
 export class Suggestionlist extends BaseNode {
 
-    constructor({selector = "#suggestionlist", verse = null, suggestions=null, events = {}, buttons = {}} = {}) {
+    constructor({selector = "#suggestionlist", suggestions=null, events = {}, buttons = {}} = {}) {
         const id = (typeof selector === "string")
             ? selector.replace(/^#/, "")
             : "";
 
         super({selector, tag: "div", id, events, buttons});
         // Now `this.el` is set and registered.
-        this.addSuggestions({selector:selector.replace("suggL-","suggWr_"), verse: verse, suggestions: suggestions})
+        Suggestionlist.instance = this;
+        this.addSuggestions({selector:selector.replace("suggL-","suggWr_"), suggestions: suggestions})
     }
 
-addSuggestions({selector = "", verse = null, suggestions = [], events = {}, buttons = {}} = {}) {
+addSuggestions({selector = "", suggestions = [], events = {}, buttons = {}} = {}) {
     // Create a wrapper for each suggestion
     suggestions.forEach(suggestion => {
         let firstWrppr = this.firstChild;

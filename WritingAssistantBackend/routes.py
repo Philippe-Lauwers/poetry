@@ -116,17 +116,27 @@ def randomKeywords():
     form = int(data.get("form", "1"))
     nmfDim = convInt(data.get("nmfDim", "random"))
     title = data.get("poemTitle", "")
+    poem_id = data.get("poem_id", None)
+    keywordList = {k: v for (k, v) in data.items() if k.startswith("kw-")}
     if "btn_random1Keyword" in data.keys():
         btn = "btn_random1Keyword"
         keywordList = None
     elif "btn_randomKeywords" in data.keys():
         btn = "btn_randomKeywords"
         n = int(data.get("btn_randomKeywords","1"))
+    else:
+        refresher = [key for key in data if key.startswith("btn-f5-")][0]
+        if refresher:
+            btn = refresher
+            n = int(data.get(btn)[-1])
+            # keywordList = data.get("keywords", [])
 
     if btn == "btn_random1Keyword":
-        return jsonify({"poem":KeywordBase(lang=lang, form=form, nmfDim=nmfDim, title=title).fetch(inputKeywords=keywordList)})
-    elif btn == "btn_randomKeywords":
-        return jsonify({"poem":KeywordBase(lang=lang, form=form, title=title).fetch(n=n)})
+        return jsonify({"keywords": KeywordBase(lang=lang, form=form, nmfDim=nmfDim, title=title,
+                                                poemId=poem_id).fetch(inputKeywords=keywordList)})
+    elif btn == "btn_randomKeywords" or (btn.startswith("btn-f5-") and n > 1):
+        return jsonify({"keywords": KeywordBase(lang=lang, form=form, title=title, poemId=poem_id).fetch(n=n,
+                                                                                                          inputKeywords=keywordList)})
 
 @main_bp.route("/test")
 def index():

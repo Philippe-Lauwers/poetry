@@ -37,7 +37,7 @@ warnings.filterwarnings("ignore")
 
 class KeywordBase:
 
-    def __init__(self, lang, form, nmfDim=0, title=None):
+    def __init__(self, lang, form, nmfDim=0, title=None, poemId=None):
 
         self.lang = lang # store the language for this instance of the PoemBase class
 
@@ -45,9 +45,9 @@ class KeywordBase:
         self.loadNMFData()
         self.generator = VerseGenerator(self.MODEL_FILE, self.entropy_threshold)
         self.loadVocabulary()
-        self._poemContainer = PoemContainer(lang=lang, form=form, nmfDim=nmfDim)
+        self._poemContainer = PoemContainer(lang=lang, form=form, nmfDim=nmfDim, id=poemId)
         if title is not None:
-            PoemContainer.title = title
+            self._poemContainer.title = title
             self._title = title
 
         if not os.path.exists('log'):
@@ -111,16 +111,25 @@ class KeywordBase:
     #     self.container.receiveUserInput(userInput, structure, title)
     #     PoemRepository.save(self.container)
 
-    # @timed
-    def fetch(self, n = 0, inputKeywords = []):
+    @timed
+    def fetch(self, n = 0, inputKeywords = {}):
         keywordCollections = []
         nmfDim = (0,0)
+
+        self.container.receiveUserInput(inputKeywords, [], self._title)
 
         titleWords = []
         if self._title != "":
             titleWords.append(re.sub(r"(?:[^\w\s]|_)+", '', self._title).split(" "))
 
-        if not inputKeywords:
+        if inputKeywords:
+            hasKeywordText = False
+            for kw in inputKeywords.values():
+                if kw != "":
+                    hasKeywordText = True
+                    break
+
+        if not inputKeywords or not hasKeywordText:
             for sugg in range(self.suggestionBatchSize):
                 for i in range(16):
                     keywordCollection = []
@@ -138,8 +147,13 @@ class KeywordBase:
                             nmfDim = tuple(scorelist)
                 keywordCollections.append(keywordCollection)
             for sugg in range(n):
-                kw = Keyword("")
-                self.container.keywords.append(kw)
+                if sugg > len(self.container.keywords) - 1 or ():
+                    kw = Keyword("")
+                    self.container.keywords.append(kw)
+                else:
+                    kw = self.container.keywords[sugg]
+
+
                 for i in range(len(keywordCollections)):
                     kws = KeywordSuggestion(keywordCollections[i][sugg])
                     kw.suggestions.append(kws)

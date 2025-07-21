@@ -14,6 +14,7 @@ export class SuggestionWrapper extends BaseNode {
     constructor({selector="", id="", suggestion = null, events = {}, buttons = {}} = {}) {
         super({selector, id, tag: "div", className:"suggestionWrapper", events, buttons});
         // Now `this.el` is set and registered.
+        SuggestionWrapper.instance = this;
         this.addSuggestion({selector:selector.replace("suggWr","sugg"), suggestion: suggestion});
     }
 

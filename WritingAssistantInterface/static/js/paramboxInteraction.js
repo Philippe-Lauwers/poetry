@@ -96,7 +96,6 @@ export function mockDisableSelect(el) {
 }
 export function mockEnableSelect(el) {
     const myEl = (typeof el ==="string") ? document.getElementById(el) : el;
-    console.log( "mockEnableSelect()",el, myEl)
     myEl.classList.remove('read-only-select');
     myEl.removeAttribute('aria-disabled');
     myEl.removeAttribute('tabindex');
@@ -115,19 +114,27 @@ function preventChange(e) {
  * @param rhymeScheme
  */
 let _poemDesc
+
 export async function receiveRhymeScheme() {
     try {
-    const json = await retrieveRhymeScheme();
-    _poemDesc = json.rhymeScheme ? json : null;
-    if (_poemDesc.rhymeScheme.elements.length === 0) {
+        const json = await retrieveRhymeScheme();
+        _poemDesc = json.rhymeScheme ? json : null;
+        if (_poemDesc.rhymeScheme.elements.length === 0) {
+            document.getElementById("btn_generatePoem").disabled = true;
+        } else {
+            document.getElementById("btn_generatePoem").disabled = false;
+        }
+        // …do something with _poemDesc…
+    } catch (err) {
+        console.error('Failed to get rhyme scheme:', err);
+    }
+    // Disable the generate button if there are no elements in the rhyme scheme
+    if (!_poemDesc.elements || _poemDesc.elements.length === 0) {
         document.getElementById("btn_generatePoem").disabled = true;
     } else {
         document.getElementById("btn_generatePoem").disabled = false;
     }
-    // …do something with _poemDesc…
-  } catch (err) {
-    console.error('Failed to get rhyme scheme:', err);
-  }
+    return _poemDesc;
 }
 export function getRhymeScheme() {
     return _poemDesc !== undefined ?_poemDesc.rhymeScheme: null;

@@ -1,7 +1,8 @@
 /* Stylesheet that controls the general layout of the Writing Assistant Interface */
 
 :root {
-    --borderColor: #003153; /* borderColor blue color */
+    --borderColor: #003153; /* borderColor: Prussian blue */
+    --icon-size: 4rem;
 }
 
 /* Overall container uses column direction */
@@ -27,7 +28,7 @@
     no-repeat;
     background-position: left center,
     left center;
-    background-size: auto 100%,
+    background-size: var(--icon-size) auto,
     100% 250%;
     background-origin: content-box,
     padding-box;
@@ -38,6 +39,13 @@
     border: 1px solid var(--borderColor);
     border-radius: 0.6rem;
     flex: 0 0 auto;
+}
+.top-pane h1 {
+    color: var(--borderColor);
+    margin-bottom: 0;
+    margin-top: 2rem;
+    font-size:2.5rem;
+    padding-left: calc(1rem + var(--icon-size));
 }
 
 /* Bottom area fills remaining space */
@@ -177,6 +185,7 @@ input[type="checkbox"].read-only + label {
 
 
 .btn {
+    flex: 0 0 auto;
     width: 28px;
     height: 28px;
     padding: 0;

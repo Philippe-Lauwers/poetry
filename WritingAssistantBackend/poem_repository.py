@@ -1,5 +1,5 @@
 from .extensions import db
-from sqlalchemy import func
+from sqlalchemy import func, asc
 from .dbModel import Poem as PoemModel, PreviousPoem as PreviousPoemModel, PoemStatus as PoemStatusModel, \
     Stanza as StanzaModel, Verse as VerseModel, PreviousVerse as PreviousVerseModel, Keyword as KeywordModel, \
     PreviousKeyword as PreviousKeywordModel, KeywordSuggestionBatch as KeywordSuggestionBatchModel, \
@@ -359,11 +359,22 @@ class KeywordRepository(BaseRepository):
                 # no re-formatting or logging needed
                 pass
 
-        KeywordRepository.logAction(actionType=actionType, actionTargetType='keyword', targetID=keyword.id)
-
         if keyword.suggestions is not None and len(keyword.suggestions) > 0:
             # save the suggestions
             KeywordSuggestionBatchRepository.save(keywordSuggestions=keyword.suggestions,keyword_id=keyword.id)
+        else:
+            KeywordRepository.logAction(actionType=actionType, actionTargetType='keyword', targetID=keyword.id)
+
+    @staticmethod
+    def lookupKeywordsByPoem(poem_id):
+        orm_keywords4poem = db.session.query(KeywordModel).filter(KeywordModel.poem_id == poem_id).order_by(
+            asc(KeywordModel.id)).all()
+        keywords = {}
+        if orm_keywords4poem:
+            for kw in orm_keywords4poem:
+                keywords[kw.id] = {"id": kw.id, "text": kw.keyword, "suggestions": []}
+        return keywords
+
 
 
 class KeywordSuggestionBatchRepository(BaseRepository):

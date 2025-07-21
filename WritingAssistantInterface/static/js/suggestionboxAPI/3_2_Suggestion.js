@@ -10,9 +10,9 @@ import {BaseNode} from "../API.js";
 export class Suggestion extends BaseNode {
 
     constructor({selector="",suggestion = "", events = {}, buttons = {}} = {}) {
-        super({selector, tag: "label", id:selector, events, className: "suggestion"});
+        super({selector, tag: "label", id: selector, events, className: "suggestion"});
         // Now `this.el` is set and registered.
+        Suggestion.instance = this;
         this.el.innerHTML = suggestion.text;
     }
-
 }

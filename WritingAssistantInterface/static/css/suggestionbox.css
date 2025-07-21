@@ -3,12 +3,13 @@
 [id^="suggB"] {
     background: #f8f8f8; /* white “canvas” */
     border: 1px solid var(--borderColor);
-    border-radius: 0.6rem;
+    border-radius: 0.4rem;
     padding: 0.2rem;
     margin-top: 0.2rem;
     box-sizing: border-box;
     display: flex;
     flex-direction: row;
+    gap:0.1rem;
     flex: 1 1 auto;
     overflow: auto;
     max-width: 100%;
@@ -27,7 +28,7 @@
     margin-right: 0.2rem;
     display: flex;
     border: 1px solid #b4b4b4;
-    border-radius: 0.6rem;
+    border-radius: 0.4rem;
     padding: 0.2rem;
     flex: 1 1 auto;
     flex-direction: column;
@@ -35,10 +36,20 @@
     gap: 0.2rem;
 }
 
+#suggestionlist,
+[id^="suggL"] > *:nth-child(odd) {
+  background-color: #f9f9f9;
+}
+
+#suggestionlist,
+[id^="suggL"] > *:nth-child(even) {
+  background-color: #ffffff;
+}
+
 .suggestionWrapper {
     display: flex;
     flex-direction: row;
-    align-items: center;
+    border-radius:0.4rem;
 }
 
 
@@ -88,9 +99,6 @@
 
 [id^="btn_acceptSuggestion"] {
     background-image: url('../img/btn_SaveVerse.svg');
-    background-repeat: no-repeat;
-    background-position: 0 0;
-    background-size: 86px 28px;
 }
 
 [id^="btn-f5-lst-sug-"] {

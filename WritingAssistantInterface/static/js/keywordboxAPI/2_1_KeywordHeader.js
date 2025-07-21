@@ -24,7 +24,9 @@ export class KeywordHeader extends BaseNode {
     }
 
     disable() {
-        this._btn.disabled = true;
+        for (let btn in this.buttons) {
+            document.getElementById(btn).disabled = true;
+        }
     }
 
 }
