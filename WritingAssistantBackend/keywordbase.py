@@ -111,9 +111,10 @@ class KeywordBase:
     #     self.container.receiveUserInput(userInput, structure, title)
     #     PoemRepository.save(self.container)
 
-    @timed
+    # @timed
     def fetch(self, n = 0, inputKeywords = {}):
         keywordCollections = []
+        nmfDims = []
         nmfDim = (0,0)
 
         self.container.receiveUserInput(inputKeywords, [], self._title)
@@ -146,6 +147,7 @@ class KeywordBase:
                             scorelist[1] = nmfScore
                             nmfDim = tuple(scorelist)
                 keywordCollections.append(keywordCollection)
+                nmfDims.append(nmfDim[0])
             for sugg in range(n):
                 if sugg > len(self.container.keywords) - 1 or ():
                     kw = Keyword("")
@@ -156,6 +158,7 @@ class KeywordBase:
 
                 for i in range(len(keywordCollections)):
                     kws = KeywordSuggestion(keywordCollections[i][sugg])
+                    kws.nmfDim = nmfDims[i]
                     kw.suggestions.append(kws)
             PoemRepository.save(self.container)
         else:

@@ -1,6 +1,7 @@
 import {Suggestionbox} from "./suggestionboxAPI/1_SuggestionBox.js";
 import {enableSandbox, setTitlePlaceholder} from "./sandboxInteraction.js";
 import {BaseNode} from "./API.js";
+import {activateKeywordbox, receiveKeywords} from "./keywordboxInteraction.js";
 
 /**
  *Create a single shared instance of the sandbox */
@@ -41,12 +42,6 @@ export function deactivateSuggestionbox(btnId) {
             });
         }
     });
-    if (verseId) { // If there is no verseID, it means the refresh button was pressed
-        const chosenVrs = document.getElementById("sugg_" + verseId + "_" + suggId).innerHTML;
-        document.getElementById(vwId.replace("vw", "v")).value = chosenVrs;
-        const titleFld = document.getElementById("poemTitle");
-        setTitlePlaceholder(BaseNode.getWrapper(chosenVrs))
-    }
 }
 
 export function activateSuggestionbox() {
@@ -58,35 +53,38 @@ export function activateSuggestionbox() {
       .forEach(label => label.classList.remove('my-class'));
     }
 
-export function closeSuggestionBox({e = null, target = null, YesOrNo = null, verse_id = null} = {}) {
-    if (YesOrNo === false) {
+export function closeSuggestionBox({e = null, target = null, verse = null, keywords = {}} = {}) {
+    if (!verse && !keywords) {
         return false; // Indicates something went wrong when saving the acceptance of the suggestion
     }
 
-    const verseId = target?.id.startsWith("btn-close-box-sug-")
-        ? target.id.replace("btn-close-box-sug-", "")
-        : `v-${verse_id}`;
-
-    let SB = getSuggestionbox();
+   let SB = getSuggestionbox();
     if (SB) {
         SB.remove();
         Suggestionbox.instance = null;
     }
-    let vs = document.getElementById(verseId)
-    vs.readOnly = false;
-    vs.classList.remove("verseEmpty");
-    enableSandbox()
-    vs.focus();
 
+    if (verse || target) {
+        const verseId = target?.id.startsWith("btn-close-box-sug-")
+            ? target.id.replace("btn-close-box-sug-", "")
+            : `v-${verse.suggAccept.verse_id}`;
+        let vs = document.getElementById(verseId)
+        vs.readOnly = false;
+        vs.classList.remove("verseEmpty");
+        enableSandbox();
+        vs.value = verse.suggAccept.verse_text;
+        vs.focus();
 
-    for (let struct of document.querySelectorAll('input[id^="struct-"]')) {
-        if (struct.value.includes("suggB")) {
-            const toCleanup = struct.value;
-            const cleanedup = toCleanup.split(",").filter(item => !item.includes("suggB")).join(",");
-            struct.value = cleanedup;
-            if (struct.value === "") {
-                struct.value = "none";
+        for (let struct of document.querySelectorAll('input[id^="struct-"]')) {
+            if (struct.value.includes("suggB")) {
+                const toCleanup = struct.value;
+                const cleanedup = toCleanup.split(",").filter(item => !item.includes("suggB")).join(",");
+                struct.value = cleanedup;
+                if (struct.value === "") {
+                    struct.value = "none";
+                }
             }
         }
-    }
+    };
+    if (Object.keys(keywords).length > 0) receiveKeywords(keywords);
 }

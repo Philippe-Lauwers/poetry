@@ -295,6 +295,7 @@ class KeywordSuggestionCollection(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     keywordSuggestionBatch_id = db.Column(db.Integer, db.ForeignKey('keywordSuggestionBatches.id', name='fk_keywordCollections_keywordSuggestionBatches_id'), nullable=False)
+    theme_id = db.Column(db.Integer, db.ForeignKey('themes.id', name='fk_keywordCollections_themes_id'), nullable=False)
 
 class KeywordSuggestion(db.Model):
     __tablename__ = 'keywordSuggestions'
@@ -305,8 +306,6 @@ class KeywordSuggestion(db.Model):
     keywordSuggestionCollection_id = db.Column(db.Integer, db.ForeignKey('keywordSuggestionCollections.id', name='fk_keywordSuggestions_keywordSuggestionCollections_id'), nullable=False)
     status = db.Column(db.Integer, nullable=False)
     suggestion = db.Column(db.String(100))
-
-
 
 class SuggestionBatch(db.Model):
     __tablename__ = 'suggestionBatches'

@@ -29,7 +29,6 @@ export class Suggestionbox extends BaseNode {
     /** Adds the box that will contain the list of suggestions */
     addSuggestionlist({selector, suggestions= suggestions, events = {}, buttons = {}} = {}) {
         const sl = new Suggestionlist({selector, suggestions:suggestions})
-        console.log("sl",sl)
         return this.append(sl);
     }
 

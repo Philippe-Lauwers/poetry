@@ -28,5 +28,10 @@ export class KeywordHeader extends BaseNode {
             document.getElementById(btn).disabled = true;
         }
     }
+    enable() {
+        for (let btn in this.buttons) {
+            document.getElementById(btn).disabled = false;
+        }
+    }
 
 }

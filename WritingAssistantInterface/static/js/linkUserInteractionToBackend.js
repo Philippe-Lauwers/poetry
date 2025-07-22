@@ -25,7 +25,7 @@ form.addEventListener('submit', async e => {
             reqRoute = "/generatePoem";
         } else if (s_id === "btn_generateVerse" || s_id.startsWith("btn-f5-lst-sug-v")) {
             reqRoute = "/generateVerse";
-        } else if (s_id.startsWith("btn_acceptSuggestion")) {
+        } else if (s_id.startsWith("btn_acceptSuggestion_v")) {
             reqRoute = "/acceptSuggestion";
         } else if (s_id === "btn_savePoem") {
             reqRoute = "/savePoem";
@@ -35,6 +35,8 @@ form.addEventListener('submit', async e => {
             reqRoute = "/randomKeywords";
         } else if (s_id === "btn_random1Keyword") {
             reqRoute = "/randomKeywords";
+        } else if (s_id.startsWith("btn_acceptSuggestion_kw")) {
+            reqRoute = "/acceptKeywordSuggestion";
         }
         // 2) Route request
         let gen = await fetch(reqRoute, {
@@ -43,20 +45,15 @@ form.addEventListener('submit', async e => {
             body: JSON.stringify(data)
         });
         const json = await gen.json();
-console.log("Response from server: ", json);
         // 3) Display
     json.poem ? receivePoem(json.poem) : json.suggAccept ? closeSuggestionBox({
-        YesOrNo: json.suggAccept,
-        verse_id: json.verse_id
+        verse: json
     }) : json.keywords ? receiveKeywords(json.keywords) : json.kwAccept ? closeSuggestionBox({
-        YesOrNo: json.kwAccept, keyword_id: keyword_id
+        keywords: json
     }) : null;
         document.getElementById("btn_savePoem").removeAttribute("disabled");
-        console.log("before mockEnableSelect");
         mockEnableSelect("form")
-        console.log("after mockEnableSelect");
         if (reqRoute==="/savePoem" || reqRoute==="/editPoem") getParambox().getFinal().addEdit()
-        console.log("Form submitted and processed successfully.");
     });
 
 const formFld = document.getElementById('form');

@@ -172,6 +172,14 @@ def randomKeywords():
                         json=params,
                         headers={'Content-Type':'application/json'})
     return jsonify(resp.json())
+
+@main_bp.route('/acceptKeywordSuggestion', methods=['POST'])
+def acceptKeywordSuggestion():
+    params = request.get_json(force=True)
+    resp = requests.post(f"{BACKEND_URL}/acceptKeywordSuggestion",
+                        json=params,
+                        headers={'Content-Type':'application/json'})
+    return jsonify(resp.json())
 @main_bp.route('/log', methods=['POST'])
 def log():
     data = request.json

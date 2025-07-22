@@ -103,8 +103,6 @@ class Poem(BaseContainer):
             # and store them in the database
             for id, kw in keywordItems.items():
                 self.addKeyword(id, kw)
-        pass
-
 
 
     @property
@@ -404,7 +402,8 @@ class KeywordSuggestion(BaseContainer):
         super().__init__()
         self._suggestion = suggestion
         self.id = id
-        self.batchId = None
+        self._collectionId = None
+        self._nmfDim = None
 
     @property
     def id(self):
@@ -424,6 +423,12 @@ class KeywordSuggestion(BaseContainer):
     @suggestion.setter
     def suggestion(self, value):
         self._suggestion = value
+    @property
+    def nmfDim(self):
+        return self._nmfDim
+    @nmfDim.setter
+    def nmfDim(self, value):
+        self._nmfDim = value
 
     def to_dict(self):
         keywordSuggestion = {

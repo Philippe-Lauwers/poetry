@@ -12,7 +12,7 @@ import {SuggestionWrapper} from "./3_1_SuggestionWrapper.js";
 
 export class Suggestionlist extends BaseNode {
 
-    constructor({selector = "#suggestionlist", suggestions=null, events = {}, buttons = {}} = {}) {
+    constructor({selector = "#suggestionlist", suggestions = null, events = {}, buttons = {}} = {}) {
         const id = (typeof selector === "string")
             ? selector.replace(/^#/, "")
             : "";
@@ -20,38 +20,36 @@ export class Suggestionlist extends BaseNode {
         super({selector, tag: "div", id, events, buttons});
         // Now `this.el` is set and registered.
         Suggestionlist.instance = this;
-        this.addSuggestions({selector:selector.replace("suggL-","suggWr_"), suggestions: suggestions})
+        this.addSuggestions({selector: selector.replace("suggL-", "suggWr_"), suggestions: suggestions})
     }
 
-addSuggestions({selector = "", suggestions = [], events = {}, buttons = {}} = {}) {
-    // Create a wrapper for each suggestion
-    suggestions.forEach(suggestion => {
-        let firstWrppr = this.firstChild;
-        const suggestionWrapper = new SuggestionWrapper({
-            selector: selector+"_sugg-"+suggestion.suggestion.id,
-            id: selector+"_sugg-"+suggestion.suggestion.id,
-            suggestion: suggestion.suggestion,
-            buttons: {
-                btn_acc_sug: {
-                    id: "btn_acceptSuggestion_"+selector.replace("suggWr_","")+"_sugg-"+ suggestion.suggestion.id,
-                    name: "btn_acceptSuggestion",
-                    value:"sugg-"+ suggestion.suggestion.id,
-                    type: "submit",
-                    className: "btn",
-                    alt: "Use this suggestion (click button or double-click label to accept)",
+    addSuggestions({selector = "", suggestions = [], events = {}, buttons = {}} = {}) {
+        // Create a wrapper for each suggestion
+        suggestions.forEach(suggestion => {
+            let firstWrppr = this.firstChild;
+            const suggestionWrapper = new SuggestionWrapper({
+                selector: selector + "_sugg-" + suggestion.suggestion.id,
+                id: selector + "_sugg-" + suggestion.suggestion.id,
+                suggestion: suggestion.suggestion,
+                buttons: {
+                    btn_acc_sug: {
+                        id: "btn_acceptSuggestion_" + selector.replace("suggWr_", "") + "_sugg-" + suggestion.suggestion.id,
+                        name: "btn_acceptSuggestion",
+                        value: "sugg-" + suggestion.suggestion.id,
+                        type: "submit",
+                        className: "btn",
+                        alt: "Use this suggestion (click button or double-click label to accept)",
+                    }
                 }
+            });
+            if (firstWrppr) {
+                this.insertBefore(suggestionWrapper, firstWrppr);
+                if (this.children.length > 6) {
+                    this.children[this.children.length - 1].remove();
+                }
+            } else {
+                this.append(suggestionWrapper);
             }
         });
-        if (firstWrppr) {
-            this.insertBefore(suggestionWrapper, firstWrppr);
-            if (this.children.length > 6) {
-                this.children[this.children.length - 1].remove();
-            }
-        } else {
-            this.append(suggestionWrapper);
-        }
-    });
-}
-
-
+    }
 }

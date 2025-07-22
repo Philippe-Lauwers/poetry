@@ -68,11 +68,11 @@ class BaseRepository:
         # a tmp-id ends with "-tmp" and will generate an error when converted to int
         return isinstance(id, str) and id.endswith("-tmp")
 
-
-
 class PoemRepository(BaseRepository):
     @staticmethod
     def save(poem):
+        KeywordSuggestionRepository.collectionId.clear()
+        KeywordSuggestionBatchRepository.batchId = 0
         try:
             if poem.id is None:
             # new poem -> insert a new poem record
@@ -155,7 +155,6 @@ class PoemRepository(BaseRepository):
 
         db.session.commit()
 
-
 class StanzaRepository(BaseRepository):
     @staticmethod
     def save(stanza, poem_id, isNew=True):
@@ -190,7 +189,6 @@ class StanzaRepository(BaseRepository):
         # save the verses
         for VS in stanza.verses:
             VerseRepository.save(VS, stanza_id=stanza.id)
-
 
 class VerseRepository(BaseRepository):
     @staticmethod
@@ -286,19 +284,20 @@ class SuggestionRepository(BaseRepository):
                 raise ValueError("Verse not found")
 
             orm_verse.verse = orm_suggestion.suggestion
-            orm_suggestion.status = 1
+            orm_suggestion.status = 3 # final/accepted
 
             db.session.add(orm_verse)
             db.session.add(orm_suggestion)
 
             VerseRepository.logAction(actionType='SG_SEL', actionTargets = {'suggestion': suggestion_id, 'verse': verse_id})
 
+            output = {"verse_id": verse_id, "verse_text": orm_suggestion.suggestion}
         except Exception as e:
             print(f"Error accepting suggestion: {e}")
             db.session.rollback()
             raise e
         db.session.commit()
-        return True
+        return output
 
     @staticmethod
     def lookupSuggestionsByVerse(verse_id):
@@ -313,7 +312,6 @@ class SuggestionRepository(BaseRepository):
            return suggestions
         else:
             return None
-
 
 class KeywordRepository(BaseRepository):
     @staticmethod
@@ -375,14 +373,12 @@ class KeywordRepository(BaseRepository):
                 keywords[kw.id] = {"id": kw.id, "text": kw.keyword, "suggestions": []}
         return keywords
 
-
-
 class KeywordSuggestionBatchRepository(BaseRepository):
-    _batchId = 0
+    batchId = 0
     @staticmethod
     def save(keywordSuggestions, keyword_id):
         # Here, the suggestions are grouped in a batch and the creation of the batch is logged
-        if KeywordSuggestionBatchRepository._batchId == 0:
+        if KeywordSuggestionBatchRepository.batchId == 0:
             orm_cntKeywordSuggestionBatches = (db.session.query(KeywordSuggestionBatchModel.keyword_id.label("keyword_id"),
                                                                 func.count(KeywordSuggestionBatchModel.keyword_id).label(
                                                                     "count"))
@@ -392,38 +388,68 @@ class KeywordSuggestionBatchRepository(BaseRepository):
                                                                      batchNo=orm_cntKeywordSuggestionBatches.count + 1)
             db.session.add(orm_keywordSuggestionBatch)
             db.session.flush()
-            KeywordSuggestionBatchRepository._batch_id = orm_keywordSuggestionBatch.id
+            KeywordSuggestionBatchRepository.batch_id = orm_keywordSuggestionBatch.id
+
+            KeywordRepository.logAction(actionType='KWSB_GEN', actionTargetType='keyword_suggestion_batch', targetID=orm_keywordSuggestionBatch.id)
 
         KeywordSuggestionRepository.save(keywordSuggestions=keywordSuggestions, keyword_id=keyword_id,
-                                         keywordBatch_id=KeywordSuggestionBatchRepository._batch_id)
-
+                                         keywordBatch_id=KeywordSuggestionBatchRepository.batch_id)
 
 class KeywordSuggestionRepository(BaseRepository):
-    _collectionId = {}
+    collectionId = {}
 
     @staticmethod
     def save(keywordSuggestions, keyword_id, keywordBatch_id):
         # Here, the suggestions are grouped in collections of n (the number of keywords to generate) keywords
         for suggColl in range(len(keywordSuggestions)):
-            if not suggColl in KeywordSuggestionRepository._collectionId:
+            if not suggColl in KeywordSuggestionRepository.collectionId:
                 orm_keywordSuggestionCollection = KeywordSuggestionCollectionModel(
-                    keywordSuggestionBatch_id=keywordBatch_id)
+                    keywordSuggestionBatch_id=keywordBatch_id, theme_id=keywordSuggestions[suggColl].nmfDim,)
                 db.session.add(orm_keywordSuggestionCollection)
                 db.session.flush()
-                KeywordSuggestionRepository._collectionId[suggColl] = orm_keywordSuggestionCollection.id
+                KeywordSuggestionRepository.collectionId[suggColl] = orm_keywordSuggestionCollection.id
 
             orm_keywordSuggestion = KeywordSuggestionModel(keyword_id=keyword_id,
                                                            keywordSuggestionCollection_id=
-                                                           KeywordSuggestionRepository._collectionId[suggColl],
+                                                           KeywordSuggestionRepository.collectionId[suggColl],
                                                            suggestion=keywordSuggestions[suggColl].suggestion,
                                                            status=2)
             db.session.add(orm_keywordSuggestion)
             db.session.flush()
             keywordSuggestions[suggColl].id = orm_keywordSuggestion.id
-            keywordSuggestions[suggColl].collectionId = KeywordSuggestionRepository._collectionId[suggColl]
+            keywordSuggestions[suggColl].collectionId = KeywordSuggestionRepository.collectionId[suggColl]
 
-            # do not log, all keywords are generated in one batch, the creation of the batch is logged
 
+    @staticmethod
+    def accepKWCollection(suggestionCollection_id):
+        output = {}
+        # 1) lookup the suggestions linked to this collection
+        orm_suggestions4collectionId = db.session.query(KeywordSuggestionModel).filter_by(
+            keywordSuggestionCollection_id = suggestionCollection_id).all()
+        # 2) lookup the collection (theme_id) to which the suggestions belong
+        orm_suggestionCollection = db.session.query(KeywordSuggestionCollectionModel).filter_by(id = suggestionCollection_id).first()
+        # 3) log the action, targets will be logged hereafter
+        actionType = 'KWS_SEL'
+        A = ActionModel(actionType_id=ActionRepository.actionType(actionType=actionType))
+        db.session.add(A)
+        db.session.flush()
+        # 4) update the status of the suggestions: set their value and set the status to 3 (accepted/final)
+        for suggestion in orm_suggestions4collectionId:
+            suggestion.status = 3
+            orm_suggestion = db.session.query(KeywordModel).filter_by(id = suggestion.keyword_id).first()
+            orm_suggestion.suggestion = suggestion.suggestion
+            db.session.add(orm_suggestion)
+            db.session.add(suggestion)
+            db.session.flush()
+
+            BaseRepository.logAction(action=A.id,
+                                     actionTargets={'keyword': suggestion.keyword_id, 'keyword_suggestion': suggestion.id,
+                                                    'keyword_suggestion_collection': suggestionCollection_id})
+
+            output[suggestion.keyword_id] = suggestion.suggestion
+
+        db.session.commit()
+        return {'nmfDim':orm_suggestionCollection.id,'keywords':output}
 
 class ActionRepository(BaseRepository):
     @staticmethod

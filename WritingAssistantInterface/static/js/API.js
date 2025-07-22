@@ -301,6 +301,7 @@ export class BaseNode {
                 return `xxx-${(Math.random() * 100).toString(36).substring(2, 12)}`;
         }
     }
+
     /**
      * Getter and setter for element id
      */

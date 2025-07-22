@@ -11,6 +11,17 @@
   <defs
      id="defs18">
     <linearGradient
+       id="linearGradient6">
+      <stop
+         style="stop-color:#b1c80f;stop-opacity:1;"
+         offset="0"
+         id="stop15" />
+      <stop
+         style="stop-color:#b1c810;stop-opacity:0;"
+         offset="1"
+         id="stop16" />
+    </linearGradient>
+    <linearGradient
        id="linearGradient34">
       <stop
          style="stop-color:#001f35;stop-opacity:1"
@@ -271,6 +282,16 @@
        r="3.1082985"
        gradientTransform="matrix(1,0,0,1.0090773,0,-0.03277979)"
        gradientUnits="userSpaceOnUse" />
+    <radialGradient
+       xlink:href="#linearGradient6"
+       id="radialGradient16"
+       cx="11.377"
+       cy="3.704"
+       fx="11.377"
+       fy="3.704"
+       r="3.7041914"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="translate(-5.3001204e-6,-7.3160466e-5)" />
   </defs>
   <rect
      style="fill:none;stroke-width:4.99999;stroke-linecap:round"
@@ -415,11 +436,11 @@
        id="path40" />
   </g>
   <rect
-     style="fill:none;fill-opacity:0.20177;stroke:#001f35;stroke-width:0.274383;stroke-linecap:round;stroke-dasharray:none;stroke-opacity:1"
+     style="fill:url(#radialGradient16);fill-opacity:0.20177;stroke:#001f35;stroke-width:0.274383;stroke-linecap:round;stroke-dasharray:none;stroke-opacity:1"
      width="7.1339998"
      height="7.1339998"
-     x="7.8099999"
-     y="0.13699999"
+     x="7.8099947"
+     y="0.13692692"
      rx="1.0190001"
      ry="1.0190001"
      id="rect20" />

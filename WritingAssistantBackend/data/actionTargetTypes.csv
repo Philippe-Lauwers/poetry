@@ -9,3 +9,6 @@ pr_verse;For actions that target versioning of a verse
 pr_keyword;For actoins that target versioning of a keyword
 suggestion_batch;For actions that target a batch of generated suggestions for a verse
 suggestion;For actions that target a suggestion
+keyword_suggestion_batch;For actions that target a batch of keyword suggestions
+keyword_suggestion_collection;For actions that target a collection of keyword suggestions
+keyword_suggestion;For actions that target a keyword suggestion

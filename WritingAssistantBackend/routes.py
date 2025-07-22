@@ -3,7 +3,7 @@ from flask import Blueprint, request, jsonify, render_template
 from .keywordbase import KeywordBase
 from .poembase_from_cache import get_poem
 from .poembase_config import PoembaseConfig
-from .poem_repository import PoemRepository, SuggestionRepository
+from .poem_repository import PoemRepository, SuggestionRepository, KeywordSuggestionRepository
 from .poem_container import Poem
 from .poem_rouge import PoemRougeScorer
 
@@ -79,8 +79,8 @@ def accSuggestion():
                     break
                 prevVw = vw
 
-    status = SuggestionRepository.acceptSuggestion(verse_id, suggestion_id)
-    return jsonify({"suggAccept": status, "verse_id": verse_id})
+    feedback = SuggestionRepository.acceptSuggestion(verse_id, suggestion_id)
+    return jsonify({"suggAccept": feedback})
 
 @main_bp.route("/savePoem", methods=["GET", "POST"])
 def savePoem():
@@ -137,6 +137,13 @@ def randomKeywords():
     elif btn == "btn_randomKeywords" or (btn.startswith("btn-f5-") and n > 1):
         return jsonify({"keywords": KeywordBase(lang=lang, form=form, title=title, poemId=poem_id).fetch(n=n,
                                                                                                           inputKeywords=keywordList)})
+
+@main_bp.route("/acceptKeywordSuggestion", methods=["GET", "POST"])
+def accKwSuggestion():
+    data = request.get_json(force=True) or {}
+    suggestionCollection_id = data.get("btn_acceptSuggestion", "1").split("-")[-1]
+    feedback = KeywordSuggestionRepository.accepKWCollection(suggestionCollection_id)
+    return jsonify ({"kwAccept": feedback})
 
 @main_bp.route("/test")
 def index():
