@@ -1,7 +1,7 @@
 import {BaseNode} from "../API.js";
 import {FinalCheckbox} from "./5_2_FinalCheckbox.js";
 import {FinalLabel} from "./5_1_FinalLabel.js";
-import {getParambox, toggleSaveButton, mockDisableSelect} from "../paramboxInteraction.js";
+import {getParambox, mockDisableSelect, toggleSaveButton} from "../paramboxInteraction.js";
 
 export class FinalWrapper extends BaseNode {
 

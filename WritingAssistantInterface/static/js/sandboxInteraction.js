@@ -1,4 +1,4 @@
-import {deactivateParambox, activateParambox, getRhymeScheme} from './paramboxInteraction.js';
+import {activateParambox, deactivateParambox, getRhymeScheme} from './paramboxInteraction.js';
 import {BaseNode} from './API.js';
 import {Poem} from './sandboxAPI/1_Poem.js';
 import {Stanza} from './sandboxAPI/2_Stanza.js';

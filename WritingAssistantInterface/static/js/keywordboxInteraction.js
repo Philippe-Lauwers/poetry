@@ -3,12 +3,132 @@ import {Keywordbox} from "./keywordboxAPI/1_Keywordbox.js";
 import {KeywordWrapper} from "./keywordboxAPI/4_1_KeywordWrapper.js";
 import {Keyword} from "./keywordboxAPI/5_1_Keyword.js";
 import {activateSuggestionbox} from "./suggestionboxInteraction.js";
+import {getSandbox} from "./sandboxInteraction.js";
+import {flashMessage} from "./niftyThings.js";
 
 /**
  * Read-only accessor for any code that merely needs to *use*
  * the existing poem.  Will be `null` until initSandbox() runs.
  */
 export const getKeywordbox = () => Keywordbox.instance;
+
+export function keywordKeydown(e, target) {
+    let actionCaught = false;
+    switch (e.key) {
+        case 'Enter':
+        case 'Tab':
+            actionCaught = createNextKeyword({event: e, target: target});
+            break;
+        case 'ArrowUp':
+            actionCaught = moveKeywordFocus(e, -1)
+            break;
+        case 'ArrowDown':
+            actionCaught = moveKeywordFocus(e, 1)
+            break;
+        default:
+            break;
+    }
+    if (actionCaught) {
+        e.preventDefault();
+    }
+}
+export function keywordKeyup(e, target) {
+    const poem = getSandbox();            // the Poem instance
+    switch (e.key) {
+        case 'Backspace':
+        case 'Delete':
+        case ' ':
+        case 'Enter':
+        case 'Tab':
+        case 'ArrowUp':
+        case 'ArrowDown':
+        default:
+            disableKeywordGenBtn(e);
+            break;
+    }
+}
+
+export function createNextKeyword({event, target}) {
+    const keywordBox = getKeywordbox();
+    const keywordList = keywordBox.list;
+    const targetWrapper = Keyword.getWrapper(target).parent;
+    const targetId = target.id
+
+    let Wr;  // <-- move declaration up so it's visible below
+
+    if (target.value.trim() === "") {
+        flashMessage(targetWrapper, 'Please fill out this keyword first');
+    } else {
+        const numChildren = keywordList.children.length;
+        if (targetWrapper.nextSibling) {
+            moveKeywordFocus(target, 1);
+        } else if(numChildren > 0 && numChildren < keywordBox.n) {
+            Wr = keywordList.addKeywordWrapper({
+                buttons: targetWrapper.buttons,
+                events: targetWrapper.events
+            });
+            const KwId = Wr.firstChild.id;
+            for (const btn of Wr.el.children) {
+                if (btn.id.startsWith("btn_del")) {
+                    btn.value = KwId;
+                    btn.style.display = "inline-block";
+                    btn.disabled = false;
+                } else if (btn.id.startsWith("btn_random")) {
+                    btn.value = KwId;
+                    btn.style.display = "none";
+                }
+            }
+        Wr.firstChild.el.focus()
+        }
+    }
+    return true; // action was caught
+}
+export function moveKeywordFocus(e, direction) {
+    const current = e.target;
+    const currentWrapper = Keyword.getWrapper(current);
+    let nextWrapper;
+
+    if (direction === 1) {
+        nextWrapper = currentWrapper.parent.nextSibling;
+    } else if (direction === -1) {
+        nextWrapper = currentWrapper.parent.previousSibling;
+    }
+
+    if (nextWrapper) {
+        const nextKeyword = nextWrapper.firstChild;
+        nextKeyword.focus();
+        return true; // action was caught
+    } else {
+        return false; // no action taken
+    }
+}
+
+
+export function disableKeywordGenBtn(e) {
+    const keywords = document.querySelectorAll('[id^="kw-"]');
+    let disableGenBtn = true
+    for (const kw of keywords) {
+        if (kw.value.trim() !== "") {
+            disableGenBtn = false
+            break;
+        }
+    }
+    activateKeywordbox({includeGenButton: disableGenBtn})
+    const eventTargetId = e.target.id;
+    const btnGen1 = document.querySelector(`button[id="btn_random1Keyword"][value="${eventTargetId}"]`)
+    const btnDel1 = document.querySelector(`button[id="btn_deleteKeyword"][value="${eventTargetId}"]`)
+    if (disableGenBtn) {
+        btnGen1.disabled = false;
+        btnGen1.style.display = "inline-block";
+        btnDel1.disabled = true;
+        btnDel1.style.display = "none"
+    } else {
+        btnGen1.disabled = true;
+        btnGen1.style.display = "none";
+        btnDel1.disabled = false;
+        btnDel1.style.display = "inline-block"
+    }
+}
 
 export function deactivateKeywordbox () {
     const keywordbox = getKeywordbox();

@@ -118,6 +118,9 @@ def randomKeywords():
     title = data.get("poemTitle", "")
     poem_id = data.get("poem_id", None)
     keywordList = {k: v for (k, v) in data.items() if k.startswith("kw-")}
+    verseList = {k: v for (k, v) in data.items() if k.startswith("v-")}
+    structure = {k: v for (k, v) in data.items() if k.startswith("struct")}
+
     if "btn_random1Keyword" in data.keys():
         btn = "btn_random1Keyword"
         n = 1
@@ -134,10 +137,10 @@ def randomKeywords():
 
     if btn == "btn_random1Keyword" or (btn.startswith("btn-f5-lst-1sug") and n == 1):
         output = jsonify({"keywords": KeywordBase(lang=lang, form=form, nmfDim=nmfDim, title=title, poemId=poem_id)
-                         .fetch(n=n, inputKeywords=keywordList)})
+                         .fetch(n=n, inputKeywords=keywordList, userInput=verseList, structure=structure)})
     elif btn == "btn_randomKeywords" or (btn.startswith("btn-f5-lst-sug") and n > 1):
         output = jsonify({"keywords": KeywordBase(lang=lang, form=form, title=title, poemId=poem_id)
-                         .fetch(n=n,  inputKeywords=keywordList)})
+                         .fetch(n=n,  inputKeywords=keywordList, userInput=verseList, structure=structure)})
     return output
 
 @main_bp.route("/acceptKeywordSuggestion", methods=["GET", "POST"])

@@ -1,7 +1,7 @@
 import {receivePoem} from './sandboxInteraction.js';
 import {getParambox, mockEnableSelect, receiveRhymeScheme} from './paramboxInteraction.js'
 import {closeSuggestionBox} from "./suggestionboxInteraction.js";
-import {receiveKeywords, deleteKeyword, activateKeywordbox, updateNmfDim} from "./keywordboxInteraction.js";
+import {activateKeywordbox, deleteKeyword, receiveKeywords, updateNmfDim} from "./keywordboxInteraction.js";
 
 const form = document.getElementById('poemForm');
 form.addEventListener('submit', async e => {

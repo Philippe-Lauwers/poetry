@@ -1,5 +1,5 @@
 import {deactivateParambox} from "./paramboxInteraction.js";
-import {disableGenBtn, getSandbox, disableSandbox} from "./sandboxInteraction.js";
+import {disableGenBtn, disableSandbox} from "./sandboxInteraction.js";
 import {deactivateSuggestionbox} from "./suggestionboxInteraction.js";
 import {deactivateKeywordbox} from "./keywordboxInteraction.js"
 

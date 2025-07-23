@@ -15,8 +15,6 @@ export class KeywordList extends BaseNode {
         KeywordList.instance = this;
 
         const wrapper = this.addKeywordWrapper({
-            selector: "kww-1-tmp",
-            id: "kww-1-tmp",
             buttons: {
                 btn_random1Keyword: {
                     id: "btn_random1Keyword",
@@ -39,15 +37,16 @@ export class KeywordList extends BaseNode {
                 }
             }
         });
-        for (let el of wrapper.el.children) {
+        for (let el of wrapper.el.querySelectorAll("button")) {
             if (el.id.startsWith("btn_del")) {
                 el.style.display = "none";
             }
+            el.value = wrapper.firstChild.name;
         }
     }
 
     addKeywordWrapper({id = "", value="", buttons:buttons} = {}) {
-        const KWW = new KeywordWrapper({selector:id!==""?id:"kww-1", value:value, buttons:buttons})
+        const KWW = new KeywordWrapper({selector:id, value:value, buttons:buttons})
         return this.append(KWW);
     }
 

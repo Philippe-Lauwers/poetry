@@ -1,5 +1,5 @@
-import {sandboxClick, verseKeydown, verseKeyup, highlightIfEmpty, getSandbox} from "./sandboxInteraction.js";
-import {loadParambox, receiveRhymeScheme, getRhymeScheme} from "./paramboxInteraction.js";
+import {highlightIfEmpty, sandboxClick, verseKeydown, verseKeyup} from "./sandboxInteraction.js";
+import {getRhymeScheme, loadParambox, receiveRhymeScheme} from "./paramboxInteraction.js";
 import {Submit} from "./submitHandler.js";
 import {Poem} from "./sandboxAPI/1_Poem.js";
 import {Parambox} from "./paramboxAPI/1_Parambox.js";

@@ -1,7 +1,6 @@
 /** Add a new stanza and return the Stanza wrapper */
 import {BaseNode} from "../API.js";
 import {VerseWrapper} from "./3_VerseWrapper.js";
-import {Verse} from "./4_Verse.js";
 
 export class Stanza extends BaseNode {
     static #nStanza = 0;

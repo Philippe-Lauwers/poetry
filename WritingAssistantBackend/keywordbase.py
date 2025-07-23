@@ -99,51 +99,69 @@ class KeywordBase:
         self.container.receiveUserInput(allInput, structure, self._title)
 
         # Once the first verse is saved by the user, we don't re-evaluate the NMF dimensions
-        checkNmfDim = True
-        for k in userInput.keys():
-            if k.startswith("v") and not k.endswith("-tmp"):
-                checkNmfDim = False
-        if checkNmfDim:
-            titleWords = self.container.title.split(" ") if self.container.title else []
-            keywords = inputKeywords.values()
-            inputWords = []
-            for vrs in userInput.values():
-                if vrs != "":
-                    # Remove punctuation and split into words
-                    cleaned_vrs = re.sub(r"(?:[^\w\s]|_)+", '', vrs)
-                    inputWords.extend(cleaned_vrs.split(" "))
-            nmfDim = (0,0)
-            for i in range(len(self.nmf_descriptions)):
-                if titleWords:
-                    nmfScore = self.checkNMF(list(set(titleWords) | set(keywords) | set(inputWords)), [i])
-                    if nmfScore > nmfDim[1]:
-                        scorelist = list(nmfDim)
-                        scorelist[0] = i
-                        scorelist[1] = nmfScore
-                        nmfDim = tuple(scorelist)
+        # checkNmfDim = True
+        # for k in userInput.keys():
+        #     if k.startswith("v") and not k.endswith("-tmp"):
+        #         checkNmfDim = False
+        # <--- on second thoughts, we will always change the NMF dimension, according to the title and keywords
+        # if checkNmfDim:
+
+        if self.container.title:
+            titleWords = [w.lower() for w in re.sub(r"(?:[^\w\s]|_)+", '', self.container.title).split(" ")]
+        else:
+            titleWords = []
+        if inputKeywords:
+            keywords = [w.lower() for w in inputKeywords.values()]
+            self.inputKeywordsList = keywords
+        else:
+            keywords = []
+            self.inputKeywordsList = []
+        if userInput:
+            self.inputWordsList = ' '.join(
+                [re.sub(r"(?:[^\w\s]|_)+", '', vrs).lower for vrs in userInput.values() if vrs != ""]).split()
+        else:
+            self.inputWordsList = []
+
+        nmfDim = (0,0)
+        for i in range(len(self.nmf_descriptions)):
+            if titleWords:
+                nmfScore = self.checkNMF(list(set(titleWords) | set(keywords) | set(self.inputWordsList)), [i])
+                if nmfScore > nmfDim[1]:
+                    scorelist = list(nmfDim)
+                    scorelist[0] = i
+                    scorelist[1] = nmfScore
+                    nmfDim = tuple(scorelist)
         self.container.nmfDim = nmfDim[0]
         PoemRepository.save(self.container)
         return {'status':True,'nmfDim':nmfDim[0]}
 
     # @timed
-    def fetch(self, n = 0, inputKeywords = {}):
+    def fetch(self, n = 0, inputKeywords = {}, userInput = {}, structure = []):
+        allInput = {}
+        allInput.update(inputKeywords)
+        allInput.update(userInput)
+
         keywordCollections = []
         nmfDims = []
         nmfDim = (0,0)
 
-        self.container.receiveUserInput(inputKeywords, [], self._title)
+        self.container.receiveUserInput(allInput, structure, self._title)
 
-        titleWords = []
-        if self._title != "":
-            titleWords.append(re.sub(r"(?:[^\w\s]|_)+", '', self._title).split(" "))
-
+        if self.container.title:
+            titleWords = [w.lower() for w in re.sub(r"(?:[^\w\s]|_)+", '', self.container.title).split(" ")]
+        else:
+            titleWords = []
         if inputKeywords:
-            hasKeywordText = False
-            for kw in inputKeywords.values():
-                if kw != "":
-                    hasKeywordText = True
-                    break
-        self.inputKeywordsList = inputKeywords.values()
+            keywords = [w.lower() for w in inputKeywords.values()]
+            self.inputKeywordsList = keywords
+        else:
+            keywords = []
+            self.inputKeywordsList = []
+        if userInput:
+            self.inputWordsList = ' '.join(
+                [re.sub(r"(?:[^\w\s]|_)+", '', vrs).lower for vrs in userInput.values() if vrs != ""]).split()
+        else:
+            self.inputWordsList = []
 
         for sugg in range(self.suggestionBatchSize):
             for i in range(16):
@@ -151,7 +169,7 @@ class KeywordBase:
                 for i in range(n):
                     keywordCollection.append(self.get1Keyword())
                 for j in range(len(self.nmf_descriptions)):
-                    nmfScore = self.checkNMF(list(set(keywordCollection)|set(titleWords)|set(self.inputKeywordsList)), [j])
+                    nmfScore = self.checkNMF(list(set(keywordCollection)|set(titleWords)|set(self.inputWordsList)), [j])
                     if nmfScore > nmfDim[1]:
                         scorelist = list(nmfDim)
                         scorelist[0] = j

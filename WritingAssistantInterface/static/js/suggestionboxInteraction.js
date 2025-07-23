@@ -1,7 +1,6 @@
 import {Suggestionbox} from "./suggestionboxAPI/1_SuggestionBox.js";
-import {enableSandbox, setTitlePlaceholder} from "./sandboxInteraction.js";
-import {BaseNode} from "./API.js";
-import {activateKeywordbox, receiveKeywords} from "./keywordboxInteraction.js";
+import {enableSandbox} from "./sandboxInteraction.js";
+import {receiveKeywords} from "./keywordboxInteraction.js";
 
 /**
  *Create a single shared instance of the sandbox */
@@ -15,7 +14,8 @@ export const getSuggestionbox = () => Suggestionbox.instance;
 
 export function suggestionlabelDblClick(e,target) {
     // Accept the suggestion on double-click
-    document.querySelector('[id^="btn_acceptSuggestion"][value^="sugg-"]').click();
+    const theChosenOne = target.id.split("_")[target.id.split("_").length-1]
+    document.querySelector(`[id^="btn_acceptSuggestion"][value="${theChosenOne}"]`).click();
 }
 
 export function deactivateSuggestionbox(btnId) {
@@ -73,7 +73,6 @@ export function closeSuggestionBox({e = null, target = null, verse = null, keywo
         vs.readOnly = false;
         vs.classList.remove("verseEmpty");
         vs.value = verse?.suggAccept.verse_text??"";
-        console.log("includeGenButton:", (vs.value === ""))
         enableSandbox();
         vs.focus();
 
