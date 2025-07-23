@@ -40,6 +40,14 @@ export class KeywordHeader extends BaseNode {
             const saveBtn = document.getElementById("btn_saveKeywords")
             saveBtn.style.display = "none";
             saveBtn.setAttribute("disabled", "true");
+        } else {
+            const genBtn = document.getElementById("btn_randomKeywords");
+            genBtn.style.display = "none";
+            genBtn.setAttribute("disabled", "true");
+
+            const saveBtn = document.getElementById("btn_saveKeywords")
+            saveBtn.style.display = "inline-block";
+            saveBtn.removeAttribute("disabled");
         }
     }
 

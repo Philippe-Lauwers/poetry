@@ -120,7 +120,8 @@ def randomKeywords():
     keywordList = {k: v for (k, v) in data.items() if k.startswith("kw-")}
     if "btn_random1Keyword" in data.keys():
         btn = "btn_random1Keyword"
-        keywordList = None
+        n = 1
+        # keywordList = None
     elif "btn_randomKeywords" in data.keys():
         btn = "btn_randomKeywords"
         n = int(data.get("btn_randomKeywords","1"))
@@ -131,12 +132,13 @@ def randomKeywords():
             n = int(data.get(btn)[-1])
             # keywordList = data.get("keywords", [])
 
-    if btn == "btn_random1Keyword":
-        return jsonify({"keywords": KeywordBase(lang=lang, form=form, nmfDim=nmfDim, title=title,
-                                                poemId=poem_id).fetch(inputKeywords=keywordList)})
-    elif btn == "btn_randomKeywords" or (btn.startswith("btn-f5-") and n > 1):
-        return jsonify({"keywords": KeywordBase(lang=lang, form=form, title=title, poemId=poem_id).fetch(n=n,
-                                                                                                          inputKeywords=keywordList)})
+    if btn == "btn_random1Keyword" or (btn.startswith("btn-f5-lst-1sug") and n == 1):
+        output = jsonify({"keywords": KeywordBase(lang=lang, form=form, nmfDim=nmfDim, title=title, poemId=poem_id)
+                         .fetch(n=n, inputKeywords=keywordList)})
+    elif btn == "btn_randomKeywords" or (btn.startswith("btn-f5-lst-sug") and n > 1):
+        output = jsonify({"keywords": KeywordBase(lang=lang, form=form, title=title, poemId=poem_id)
+                         .fetch(n=n,  inputKeywords=keywordList)})
+    return output
 
 @main_bp.route("/acceptKeywordSuggestion", methods=["GET", "POST"])
 def accKwSuggestion():

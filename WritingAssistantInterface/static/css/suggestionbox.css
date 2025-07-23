@@ -101,7 +101,8 @@
     background-image: url('../img/btn_SaveVerse.svg');
 }
 
-[id^="btn-f5-lst-sug-"] {
+[id^="btn-f5-lst"]
+{
     background-image: url('../img/btn_GenerateVerseAllOverAgain.svg');
 }
 

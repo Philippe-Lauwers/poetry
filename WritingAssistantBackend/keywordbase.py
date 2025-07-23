@@ -143,54 +143,51 @@ class KeywordBase:
                 if kw != "":
                     hasKeywordText = True
                     break
+        self.inputKeywordsList = inputKeywords.values()
 
-        if not inputKeywords or not hasKeywordText:
-            for sugg in range(self.suggestionBatchSize):
-                for i in range(16):
-                    keywordCollection = []
-                    for i in range(n):
-                        keywordCollection.append(self.get1Keyword())
-                    for j in range(len(self.nmf_descriptions)):
-                        if titleWords:
-                            nmfScore = self.checkNMF(list(set(keywordCollection)|set(titleWords)), [j])
-                        else:
-                            nmfScore = self.checkNMF(keywordCollection, [j])
-                        if nmfScore > nmfDim[1]:
-                            scorelist = list(nmfDim)
-                            scorelist[0] = j
-                            scorelist[1] = nmfScore
-                            nmfDim = tuple(scorelist)
-                keywordCollections.append(keywordCollection)
-                nmfDims.append(nmfDim[0])
-            for sugg in range(n):
-                if sugg > len(self.container.keywords) - 1 or ():
-                    kw = Keyword("")
-                    self.container.keywords.append(kw)
-                else:
-                    kw = self.container.keywords[sugg]
+        for sugg in range(self.suggestionBatchSize):
+            for i in range(16):
+                keywordCollection = []
+                for i in range(n):
+                    keywordCollection.append(self.get1Keyword())
+                for j in range(len(self.nmf_descriptions)):
+                    nmfScore = self.checkNMF(list(set(keywordCollection)|set(titleWords)|set(self.inputKeywordsList)), [j])
+                    if nmfScore > nmfDim[1]:
+                        scorelist = list(nmfDim)
+                        scorelist[0] = j
+                        scorelist[1] = nmfScore
+                        nmfDim = tuple(scorelist)
+            keywordCollections.append(keywordCollection)
+            nmfDims.append(nmfDim[0])
+        for sugg in range(n):
+            if sugg > len(self.container.keywords) - 1 or ():
+                kw = Keyword("")
+                self.container.keywords.append(kw)
+            else:
+                kw = self.container.keywords[sugg]
 
 
-                for i in range(len(keywordCollections)):
-                    kws = KeywordSuggestion(keywordCollections[i][sugg])
-                    kws.nmfDim = nmfDims[i]
-                    kw.suggestions.append(kws)
-            PoemRepository.save(self.container)
-        else:
-            keywordCollections[0] = inputKeywords
+            for i in range(len(keywordCollections)):
+                kws = KeywordSuggestion(keywordCollections[i][sugg])
+                kws.nmfDim = nmfDims[i]
+                kw.suggestions.append(kws)
+        PoemRepository.save(self.container)
 
         return self.container.to_dict()
 
     def get1Keyword(self):
-        cntSyl = 0
         n = 0
-        while cntSyl < 3 or (n > 16 and cntSyl < 2):
+        cntSyl = 0
+
+        while True:
             kw = random.choice(self.i2w)
             n += 1
             cntSyl = count_syllables(kw)[1]
-            pass
-        pass
-        return kw
 
+            if (kw not in self.inputKeywordsList) or (cntSyl < 3 or (n > 16 and cntSyl < 2)):
+                break
+
+        return kw
 
 
     def checkSyllablesScore(self, words, mean, std):

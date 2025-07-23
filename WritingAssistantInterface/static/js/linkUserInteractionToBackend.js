@@ -33,7 +33,7 @@ form.addEventListener('submit', async e => {
             reqRoute = "/savePoem";
         } else if (s_id === "btn_randomKeywords" || s_id.startsWith("btn-f5-lst-sug-kw")) {
             reqRoute = "/randomKeywords";
-        } else if (s_id === "btn_random1Keyword") {
+        } else if (s_id === "btn_random1Keyword" || s_id.startsWith("btn-f5-lst-1sug-kw")) {
             reqRoute = "/randomKeywords";
         } else if (s_id.startsWith("btn_acceptSuggestion_kw")) {
             reqRoute = "/acceptKeywordSuggestion";

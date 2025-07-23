@@ -72,9 +72,9 @@ export function closeSuggestionBox({e = null, target = null, verse = null, keywo
         let vs = document.getElementById(verseId)
         vs.readOnly = false;
         vs.classList.remove("verseEmpty");
-        enableSandbox();
-        activateKeywordbox({includeGenButton: vs.value === ""});
         vs.value = verse?.suggAccept.verse_text??"";
+        console.log("includeGenButton:", (vs.value === ""))
+        enableSandbox();
         vs.focus();
 
         for (let struct of document.querySelectorAll('input[id^="struct-"]')) {

@@ -29,7 +29,7 @@ export function receiveKeywords(input)  {
         if (!document.getElementById("poem_id")) {
             const idFld = document.createElement("input");
             idFld.id = idFld.name = "poem_id"
-            idFld.type = "text"
+            idFld.type = "hidden"
             idFld.value = input.id
             document.getElementsByClassName("top-pane")[0].append(idFld)
         }
@@ -55,6 +55,21 @@ export function receiveKeywords(input)  {
             location: keywordBox.list,
             suggestions: input.keywordSuggestions.suggestions
         });
+
+        let f5Btn
+        if (input.keywordSuggestions.suggestions[0].suggestion.text.split(",").length === 1) {
+            f5Btn = document.querySelector('[id^="btn-f5-lst-sug"]');
+            if (f5Btn) {
+                f5Btn.name = f5Btn.id = f5Btn.name.replace("-sug-", "-1sug-");
+                f5Btn.value = 1
+            }
+        } else {
+            f5Btn = document.querySelector('[id^="btn-f5-lst-1sug"]');
+            if (f5Btn) {
+                f5Btn.name = f5Btn.id = f5Btn.name.replace("-sug-", "-sug-");
+                f5Btn.value = 4
+            }
+        }
         activateSuggestionbox();
     } else if (input.kwAccept) {
         if (input.nmfDim && input.nmfDim > 0) {
@@ -94,7 +109,7 @@ export function receiveKeywords(input)  {
                     btn.style.display = "none";
                 }
             }
-        activateKeywordbox()
+        activateKeywordbox({})
         }
     }
 }
