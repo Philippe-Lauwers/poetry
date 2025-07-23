@@ -1,34 +1,25 @@
 #!/usr/bin/env python
 
-import sys
-import random
-#from countsyl import count_syllables
-import time
-import numpy as np
-import pickle
+import codecs
+import copy
 import os
+import pickle
+import random
 import re
+import sys
+import time
+import warnings
+from datetime import datetime
+
+import kenlm
 import numpy as np
 import scipy.stats
-import kenlm
-from datetime import datetime
-import codecs
-import warnings
-from functools import reduce
-import copy
-
-from .poemutils import count_syllables, hmean
-from pprint import pprint
-import onmt
-import argparse
-import torch
-import json
-import warnings
-
-from .verse_generator import VerseGenerator
-from .poem_container import Poem as PoemContainer, Stanza, Verse # container to store the output in a hierarchy of Poem>>Stanza>>Verse objects
+# container to store the output in a hierarchy of Poem>>Stanza>>Verse>>Suggestion and Keyword>>KeywordSuggestion objects
+from .poem_container import Poem as PoemContainer
+from .poem_repository import PoemRepository
 from .poembase_config import PoembaseConfig
-from .poem_repository import PoemRepository, StanzaRepository, VerseRepository
+from .poemutils import count_syllables, hmean
+from .verse_generator import VerseGenerator
 
 warnings.filterwarnings("ignore")
 
@@ -199,7 +190,7 @@ class PoemBase:
                             self.container.addStanza()
                         addNewStanza = False
                     if nSuggestions == 1: # generating a complete poem: only one suggestion is generated
-                        self.container.stanzas[-1].addVerse(verseText=' '.join(words))
+                        self.container.stanzas[-1].addVerse(verseText=' '.join(words)).capitalizeVerse()
                     else: # generating n suggestions when a single verse is requested
                         self.container.stanzas[-1].verses[-1].suggestions = [' '.join(w) for w in words]
                     # writes the generated verse to stdout and log

@@ -150,7 +150,6 @@ def accKwSuggestion():
     feedback = KeywordSuggestionRepository.accepKWCollection(suggestionCollection_id)
     return jsonify ({"kwAccept": feedback})
 
-
 @main_bp.route("/saveKeywords", methods=["GET", "POST"])
 def saveKeywords():
     data = request.get_json(force=True) or {}
@@ -168,7 +167,6 @@ def saveKeywords():
     status = kwBase.save(inputKeywords=keywordList, userInput=verseList, structure=structure)
 
     return jsonify({"keywordsSaved": status})
-
 
 @main_bp.route("/deleteKeyword", methods=["GET", "POST"])
 def deleteKeyword():

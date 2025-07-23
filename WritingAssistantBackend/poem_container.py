@@ -52,6 +52,15 @@ class BaseContainer():
             except:
                 inValue = idValue
         return inValue
+    def capitalizeVerse(self):
+        # Method to be called for computer generated verses,
+        # The choice to capitalize manually written text is left to the poet,
+        # as is the choice to alter capitalization in general.
+        text = self.text.strip()
+        text = text[0].upper() + text[1:]
+        text = re.sub(r'([.!?]\s*)([a-z])', lambda m: m.group(1) + m.group(2).upper(), text)
+        self.text = text
+
 
 
 class Poem(BaseContainer):
@@ -249,7 +258,9 @@ class Stanza(BaseContainer):
 
     def addVerse(self, order=-1, verseText: str = None, id = None):
         v_order = order if order >= 0 else len(self._verses)
-        self._verses.append(Verse(id=id, verseText=verseText, order=v_order))
+        verse = Verse(id=id, verseText=verseText, order=v_order)
+        self._verses.append(verse)
+        return verse
 
     @property
     def verses(self):
@@ -295,6 +306,7 @@ class Verse(BaseContainer):
         self._order = order
         self.id = id
 
+
     @property
     def suggestions(self):
         return self._suggestions
@@ -311,7 +323,7 @@ class Verse(BaseContainer):
 
     @text.setter
     def text(self, value):
-        _words = self.cleanupText(value) or ""
+        self._words = self.cleanupText(value) or ""
 
     @property
     def order(self):
@@ -351,9 +363,10 @@ class Verse(BaseContainer):
         return {"verse": verse}
     
 class Suggestion(BaseContainer):
-    def __init__(self, text: str = None, id = None):
+    def __init__(self, text: str = None, id=None):
         super().__init__()
         self._words = self.cleanupText(text) or ""
+        self.capitalizeVerse()
         self.id = id
         self.batchId = None
 
