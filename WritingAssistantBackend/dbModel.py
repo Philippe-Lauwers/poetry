@@ -264,6 +264,7 @@ class Keyword(db.Model):
     __table_args__ = (db.PrimaryKeyConstraint('id', name='pk_keywords'),)
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     poem_id = db.Column(db.Integer, db.ForeignKey('poems.id', name='fk_keywords_poem_id'), nullable=False)
+    status = db.Column(db.Integer, nullable=True)
     keyword = db.Column(db.String(100), nullable=False)
 
 class PreviousKeyword(db.Model):

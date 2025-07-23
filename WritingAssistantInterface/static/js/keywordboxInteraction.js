@@ -15,9 +15,9 @@ export function deactivateKeywordbox () {
     keywordbox.header.disable();
     keywordbox.list.disable();
 }
-export function activateKeywordbox () {
+export function activateKeywordbox ({includeGenButton = false} = {}) {
     const keywordbox = getKeywordbox();
-    keywordbox.header.enable();
+    keywordbox.header.enable({includeGenButton});
     keywordbox.list.enable();
 }
 
@@ -99,6 +99,33 @@ export function receiveKeywords(input)  {
     }
 }
 
+export function deleteKeyword (keyword) {
+    const keywordList = getKeywordbox().list;
+    const deletedWrapper = KeywordWrapper.getWrapper(document.getElementById("kww-" + keyword.deleted));
+    let id;
+    const Wr = keywordList.addKeywordWrapper({
+                    selector: id?"kww-" + id:null,
+                    id:id?"kww-"+id:null,
+                    value:"",
+                    buttons: deletedWrapper.buttons,
+                    events: deletedWrapper.events
+                });
+    for (const btn of Wr.el.children) {
+                if (btn.id.startsWith("btn_del")) {
+                    btn.value = Wr.id.replace("kww-", "kw-");
+                    btn.style.display = "none";
+                    btn.disabled = false;
+                } else if (btn.id.startsWith("btn_random")) {
+                    btn.value = Wr.id.replace("kww-", "kw-");
+                    btn.style.display = "inline-block";
+                }
+            }
+    Wr.firstChild.el.focus()
+    deletedWrapper.remove()
+    activateKeywordbox();
+
+}
+
 export function firstEmptyKeyword () {
     const keywordList = getKeywordbox().list;
     for (let kww of keywordList.children) {
@@ -107,4 +134,9 @@ export function firstEmptyKeyword () {
             return kw;
         }
     }
+}
+
+export function updateNmfDim (nmfDim) {
+    const nmfFld = document.getElementById("nmfDim");
+    nmfFld.value = nmfDim;
 }

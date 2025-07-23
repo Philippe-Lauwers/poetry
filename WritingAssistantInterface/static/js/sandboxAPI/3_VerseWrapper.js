@@ -12,6 +12,7 @@ export class VerseWrapper extends BaseNode {
         super({
             id: finalID, tag: "div", className: "verse-wrapper", events, buttons
         }); // Now `this.el` is set and registered.
+        VerseWrapper.instance = this;
     }
 
     /** Add a new verseWrapper and return the verseWrapper wrapper */

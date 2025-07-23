@@ -13,7 +13,8 @@ export class Stanza extends BaseNode {
         super({
             id: finalID, tag: "div", className: "stanza-wrapper", events, buttons
         }); // Now `this.el` is set and registered.
-   }
+        Stanza.instance = this;
+    }
 
     /**
      * Add a new verseWrapper and return the verseWrapper wrapper */

@@ -180,6 +180,21 @@ def acceptKeywordSuggestion():
                         json=params,
                         headers={'Content-Type':'application/json'})
     return jsonify(resp.json())
+
+@main_bp.route('/saveKeywords', methods=['POST'])
+def saveKeywords():
+    params = request.get_json(force=True)
+    resp = requests.post(f"{BACKEND_URL}/saveKeywords",
+                        json=params,
+                        headers={'Content-Type':'application/json'})
+    return jsonify(resp.json())
+@main_bp.route('/deleteKeyword', methods=['POST'])
+def deleteKeyword():
+    params = request.get_json(force=True)
+    resp = requests.post(f"{BACKEND_URL}/deleteKeyword",
+                        json=params,
+                        headers={'Content-Type':'application/json'})
+    return jsonify(resp.json())
 @main_bp.route('/log', methods=['POST'])
 def log():
     data = request.json

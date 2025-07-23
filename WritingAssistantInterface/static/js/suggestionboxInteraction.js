@@ -55,6 +55,7 @@ export function activateSuggestionbox() {
 
 export function closeSuggestionBox({e = null, target = null, verse = null, keywords = {}} = {}) {
     if (!verse && !keywords) {
+        enableSandbox();
         return false; // Indicates something went wrong when saving the acceptance of the suggestion
     }
 
@@ -72,7 +73,8 @@ export function closeSuggestionBox({e = null, target = null, verse = null, keywo
         vs.readOnly = false;
         vs.classList.remove("verseEmpty");
         enableSandbox();
-        vs.value = verse.suggAccept.verse_text;
+        activateKeywordbox({includeGenButton: vs.value === ""});
+        vs.value = verse?.suggAccept.verse_text??"";
         vs.focus();
 
         for (let struct of document.querySelectorAll('input[id^="struct-"]')) {
@@ -86,5 +88,6 @@ export function closeSuggestionBox({e = null, target = null, verse = null, keywo
             }
         }
     };
+    enableSandbox();
     if (Object.keys(keywords).length > 0) receiveKeywords(keywords);
 }

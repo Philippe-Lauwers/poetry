@@ -17,6 +17,7 @@ export class Verse extends BaseNode {
             className: "verse",
             events
         });// Now `this.el` is set and registered.
+        Verse.instance = this;
         this.el.name = this.el.id
     }
 

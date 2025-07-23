@@ -23,6 +23,12 @@ class BaseContainer():
     @property
     def oldId(self):
         return self._oldId
+    @oldId.setter
+    def oldId(self,value):
+        if value is not None:
+            self._oldId = self.__format_Id__(value)
+        else:
+            self._oldId = None
 
     @staticmethod
     def cleanupText(text):
@@ -30,6 +36,7 @@ class BaseContainer():
 
     def __format_Id__(self, idValue):
         prefix = self.__class__.__name__[0].lower()
+        if prefix == "k": prefix = "kw"
         if isinstance(idValue,(int,float)):
             inValue = idValue
         elif isinstance(idValue,(str)):
@@ -50,7 +57,7 @@ class BaseContainer():
 class Poem(BaseContainer):
     def __init__(self, id = None, poem_text: str = None, title: str = None, form=None, nmfDim=0, lang=None, status = 1):
         super().__init__()
-        self._id = id
+        self.id = id
         self._title = title
         self._stanzas = []
         self._form = form
@@ -181,8 +188,8 @@ class Poem(BaseContainer):
             },
             "stanzas": [s.to_dict() for s in self.stanzas]
         }
-        if self.id is not None: poem["id"] = self._id
-        if self.oldId is not None: poem["oldId"] = self._oldId
+        if self.id is not None: poem["id"] = self.id
+        if self.oldId is not None: poem["oldId"] = self.oldId
         if self.title is not None: poem["title"] = self._title
         if self.status is not None: poem["status"] = self._status
         if self.keywords is not None: poem["keywords"] = [k.to_dict() for k in self.keywords]
@@ -223,7 +230,7 @@ class Stanza(BaseContainer):
         super().__init__()
         self._verses = []
         self._order = order
-        self._id = self.__format_Id__(id)
+        self.id = self.__format_Id__(id)
         # If the user has already written some text, there will be at least one stanza
         # Split the stanza on \n into verses and add verses to the stanza-object
         # If no text is given, there will be no stanza object
@@ -271,8 +278,8 @@ class Stanza(BaseContainer):
         stanza = {
             "verses": [v.to_dict() for v in self.verses]
         }
-        if self.id is not None: stanza["id"] = self._id
-        if self.oldId is not None: stanza["oldId"] = self._oldId
+        if self.id is not None: stanza["id"] = self.id
+        if self.oldId is not None: stanza["oldId"] = self.oldId
         return {"stanza": stanza}
 
 
@@ -337,8 +344,8 @@ class Verse(BaseContainer):
         verse = {
             "text": self._words
         }
-        if self.id is not None: verse["id"] = self._id
-        if self._oldId is not None: verse["oldId"] = self._oldId
+        if self.id is not None: verse["id"] = self.id
+        if self.oldId is not None: verse["oldId"] = self.oldId
         if self._suggestions is not None:
             verse["suggestions"] = [s.to_dict() for s in self._suggestions]
         return {"verse": verse}
@@ -376,7 +383,7 @@ class Keyword(BaseContainer):
     def __init__(self, text: str = None, id = None):
         super().__init__()
         self._text = self.cleanupText(text) or ""
-        self._id = id
+        self.id = self.__format_Id__(id)
         self._suggestions = []
 
     @property
@@ -405,12 +412,6 @@ class KeywordSuggestion(BaseContainer):
         self._collectionId = None
         self._nmfDim = None
 
-    @property
-    def id(self):
-        return self._id
-    @id.setter
-    def id(self, value):
-        self._id = self.__format_Id__(value) if value is not None else None
     @property
     def collectionId(self):
         return self._collectionId

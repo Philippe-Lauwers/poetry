@@ -3,7 +3,7 @@ from flask import Blueprint, request, jsonify, render_template
 from .keywordbase import KeywordBase
 from .poembase_from_cache import get_poem
 from .poembase_config import PoembaseConfig
-from .poem_repository import PoemRepository, SuggestionRepository, KeywordSuggestionRepository
+from .poem_repository import PoemRepository, SuggestionRepository, KeywordSuggestionRepository, KeywordRepository
 from .poem_container import Poem
 from .poem_rouge import PoemRougeScorer
 
@@ -144,6 +144,33 @@ def accKwSuggestion():
     suggestionCollection_id = data.get("btn_acceptSuggestion", "1").split("-")[-1]
     feedback = KeywordSuggestionRepository.accepKWCollection(suggestionCollection_id)
     return jsonify ({"kwAccept": feedback})
+
+
+@main_bp.route("/saveKeywords", methods=["GET", "POST"])
+def saveKeywords():
+    data = request.get_json(force=True) or {}
+    lang = int(data.get("lang", "1"))
+    form = int(data.get("form", "1"))
+    nmfDim = convInt(data.get("nmfDim", "random"))
+    title = data.get("poemTitle", "")
+    poem_id = data.get("poem_id", None)
+    keywordList = {k: v for (k, v) in data.items() if k.startswith("kw-")}
+    verseList = {k: v for (k, v) in data.items() if k.startswith("v-")}
+    structure = {k: v for (k, v) in data.items() if k.startswith("struct")}
+
+    kwBase = KeywordBase(lang=lang, form=form, nmfDim=nmfDim, title=title,
+                                            poemId=poem_id)
+    status = kwBase.save(inputKeywords=keywordList, userInput=verseList, structure=structure)
+
+    return jsonify({"keywordsSaved": status})
+
+
+@main_bp.route("/deleteKeyword", methods=["GET", "POST"])
+def deleteKeyword():
+    data = request.get_json(force=True) or {}
+    keyword_id = data.get("btn_deleteKeyword", "1").split("-")[-1]
+    feedback = KeywordRepository.deleteKeyword(keyword_id)
+    return jsonify({"kwDelete": feedback})
 
 @main_bp.route("/test")
 def index():

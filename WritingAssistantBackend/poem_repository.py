@@ -331,6 +331,7 @@ class KeywordRepository(BaseRepository):
             else:
                 actionType = 'KW_WRT'
 
+            KeywordRepository.logAction(actionType=actionType, actionTargetType='keyword', targetID=keyword.id)
         elif str(keyword.id).isnumeric():
             # The keyword already exists in the database, we check whether the user has changed it
             orm_keyword = db.session.query(KeywordModel).filter_by(id=keyword.id).first()
@@ -350,8 +351,10 @@ class KeywordRepository(BaseRepository):
                 db.session.add(orm_keyword)
                 db.session.flush()
 
+                pass
                 KeywordRepository.logAction(action=A.id,
-                                            actionTargets={'keyword': orm_keyword, 'pr_keyword': orm_previousKeyword.id})
+                                            actionTargets={'keyword': orm_keyword.id, 'pr_keyword': orm_previousKeyword.id})
+                pass
             else:
                 # id from the database but the keyword was not returned from the browser,
                 # no re-formatting or logging needed
@@ -360,8 +363,17 @@ class KeywordRepository(BaseRepository):
         if keyword.suggestions is not None and len(keyword.suggestions) > 0:
             # save the suggestions
             KeywordSuggestionBatchRepository.save(keywordSuggestions=keyword.suggestions,keyword_id=keyword.id)
-        else:
-            KeywordRepository.logAction(actionType=actionType, actionTargetType='keyword', targetID=keyword.id)
+
+    @staticmethod
+    def deleteKeyword(keyword_id):
+        orm_keyword = db.session.query(KeywordModel).filter_by(id=keyword_id).first()
+        orm_keyword.status = 0 # deleted
+
+        BaseRepository.logAction(actionType='KW_DEL', actionTargetType='keyword', targetID=keyword_id)
+        db.session.add(orm_keyword)
+        db.session.commit()
+
+        return {"deleted": keyword_id}
 
     @staticmethod
     def lookupKeywordsByPoem(poem_id):
@@ -436,9 +448,9 @@ class KeywordSuggestionRepository(BaseRepository):
         # 4) update the status of the suggestions: set their value and set the status to 3 (accepted/final)
         for suggestion in orm_suggestions4collectionId:
             suggestion.status = 3
-            orm_suggestion = db.session.query(KeywordModel).filter_by(id = suggestion.keyword_id).first()
-            orm_suggestion.suggestion = suggestion.suggestion
-            db.session.add(orm_suggestion)
+            orm_keyword = db.session.query(KeywordModel).filter_by(id = suggestion.keyword_id).first()
+            orm_keyword.keyword = suggestion.suggestion
+            db.session.add(orm_keyword)
             db.session.add(suggestion)
             db.session.flush()
 

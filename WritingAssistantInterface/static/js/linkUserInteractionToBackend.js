@@ -1,7 +1,7 @@
 import {receivePoem} from './sandboxInteraction.js';
 import {getParambox, mockEnableSelect, receiveRhymeScheme} from './paramboxInteraction.js'
 import {closeSuggestionBox} from "./suggestionboxInteraction.js";
-import {receiveKeywords} from "./keywordboxInteraction.js";
+import {receiveKeywords, deleteKeyword, activateKeywordbox, updateNmfDim} from "./keywordboxInteraction.js";
 
 const form = document.getElementById('poemForm');
 form.addEventListener('submit', async e => {
@@ -37,6 +37,10 @@ form.addEventListener('submit', async e => {
             reqRoute = "/randomKeywords";
         } else if (s_id.startsWith("btn_acceptSuggestion_kw")) {
             reqRoute = "/acceptKeywordSuggestion";
+        } else if (s_id === "btn_saveKeywords") {
+            reqRoute = "/saveKeywords";
+        } else if (s_id === "btn_deleteKeyword") {
+            reqRoute = "/deleteKeyword";
         }
         // 2) Route request
         let gen = await fetch(reqRoute, {
@@ -46,13 +50,21 @@ form.addEventListener('submit', async e => {
         });
         const json = await gen.json();
         // 3) Display
-    json.poem ? receivePoem(json.poem) : json.suggAccept ? closeSuggestionBox({
-        verse: json
-    }) : json.keywords ? receiveKeywords(json.keywords) : json.kwAccept ? closeSuggestionBox({
-        keywords: json
-    }) : null;
-        document.getElementById("btn_savePoem").removeAttribute("disabled");
-        mockEnableSelect("form")
+    if (json.poem) {
+        receivePoem(json.poem);
+    } else if (json.suggAccept) {
+        closeSuggestionBox({verse: json});
+    } else if (json.keywords) {
+        receiveKeywords(json.keywords);
+    } else if (json.kwAccept) {
+        closeSuggestionBox({keywords: json});
+    } else if (json.keywordsSaved) {
+        activateKeywordbox();
+        updateNmfDim(json.keywordsSaved.nmfDim);  // <-- now this gets called too
+    } else if (json.kwDelete) {
+        deleteKeyword(json.kwDelete);
+    }
+    mockEnableSelect("form")
         if (reqRoute==="/savePoem" || reqRoute==="/editPoem") getParambox().getFinal().addEdit()
     });
 

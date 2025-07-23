@@ -28,9 +28,18 @@ export class KeywordHeader extends BaseNode {
             document.getElementById(btn).disabled = true;
         }
     }
-    enable() {
+    enable({includeGenButton = false}) {
         for (let btn in this.buttons) {
             document.getElementById(btn).disabled = false;
+        }
+        if (includeGenButton) {
+            const genBtn = document.getElementById("btn_randomKeywords");
+            genBtn.style.display = "inline-block";
+            genBtn.removeAttribute("disabled");
+
+            const saveBtn = document.getElementById("btn_saveKeywords")
+            saveBtn.style.display = "none";
+            saveBtn.setAttribute("disabled", "true");
         }
     }
 

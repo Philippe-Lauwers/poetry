@@ -1,37 +1,23 @@
 #!/usr/bin/env python
-
-import sys
-import random
-import time
-import numpy as np
-import pickle
+import faulthandler; faulthandler.enable()
 import os
+import pickle
+import random
 import re
-import numpy as np
-import scipy.stats
-import kenlm
-from datetime import datetime
-import codecs
-import warnings
-from functools import reduce
-import copy
-
-from .poemutils import count_syllables, hmean
-import re
-from pprint import pprint
-import onmt
-import argparse
-import torch
-import json
-import warnings
-
-from .verse_generator import VerseGenerator
-from .poem_container import Poem as PoemContainer, Stanza, Verse, Keyword, KeywordSuggestion # container to store the output in a hierarchy of Poem>>Stanza>>Verse objects
-from .poembase_config import PoembaseConfig
-from .poem_repository import PoemRepository, StanzaRepository, VerseRepository, KeywordRepository
 import time
+import warnings
+from datetime import datetime
 from functools import wraps
 
+import numpy as np
+import scipy.stats
+
+from .poem_container import Poem as PoemContainer, Keyword, \
+    KeywordSuggestion  # container to store the output in a hierarchy of Poem>>Stanza>>Verse objects
+from .poem_repository import PoemRepository
+from .poembase_config import PoembaseConfig
+from .poemutils import count_syllables
+from .verse_generator import VerseGenerator
 
 warnings.filterwarnings("ignore")
 
@@ -105,11 +91,39 @@ class KeywordBase:
         self.i2w = self.generator.vocab.itos
         self.w2i = self.generator.vocab.stoi
 
-    # def receiveUserInput(self, title=None, form=None, nmfDim=None, userInput=None, structure=None):
-    #     self.initPoemContainer(form=form, nmfDim=nmfDim, lang=self.lang, origin='browser', title=title)
-    #     # Stores a representation of the poem in the database
-    #     self.container.receiveUserInput(userInput, structure, title)
-    #     PoemRepository.save(self.container)
+    def save(self, inputKeywords = {}, userInput ={}, structure = []):
+        # Stores a representation of the poem in the database
+        allInput = {}
+        allInput.update(inputKeywords)
+        allInput.update(userInput)
+        self.container.receiveUserInput(allInput, structure, self._title)
+
+        # Once the first verse is saved by the user, we don't re-evaluate the NMF dimensions
+        checkNmfDim = True
+        for k in userInput.keys():
+            if k.startswith("v") and not k.endswith("-tmp"):
+                checkNmfDim = False
+        if checkNmfDim:
+            titleWords = self.container.title.split(" ") if self.container.title else []
+            keywords = inputKeywords.values()
+            inputWords = []
+            for vrs in userInput.values():
+                if vrs != "":
+                    # Remove punctuation and split into words
+                    cleaned_vrs = re.sub(r"(?:[^\w\s]|_)+", '', vrs)
+                    inputWords.extend(cleaned_vrs.split(" "))
+            nmfDim = (0,0)
+            for i in range(len(self.nmf_descriptions)):
+                if titleWords:
+                    nmfScore = self.checkNMF(list(set(titleWords) | set(keywords) | set(inputWords)), [i])
+                    if nmfScore > nmfDim[1]:
+                        scorelist = list(nmfDim)
+                        scorelist[0] = i
+                        scorelist[1] = nmfScore
+                        nmfDim = tuple(scorelist)
+        self.container.nmfDim = nmfDim[0]
+        PoemRepository.save(self.container)
+        return {'status':True,'nmfDim':nmfDim[0]}
 
     # @timed
     def fetch(self, n = 0, inputKeywords = {}):

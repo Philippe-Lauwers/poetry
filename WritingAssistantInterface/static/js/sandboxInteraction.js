@@ -239,13 +239,29 @@ export function highlightIfEmpty(e) {
 
 export function disableSandbox() {
     const fldSet = document.getElementById("sandboxFields")
-    const fldSetStatus = fldSet.getAttribute('disabled')
-    fldSet.setAttribute('disabled',true)
+    // const fldSetStatus = fldSet.getAttribute('disabled')
+    // fldSet.setAttribute('disabled',true)
+    const elements = fldSet.querySelectorAll('input[id^="v-"], button')
+    elements.forEach(el => {
+        if (el.tagName === 'INPUT') {
+            el.readOnly = true;
+        } else if (el.tagName === 'BUTTON') {
+            el.disabled = true;
+        }
+    });
 }
 export function enableSandbox() {
     const fldSet = document.getElementById("sandboxFields")
-    const fldSetStatus = fldSet.getAttribute('disabled')
-    fldSet.removeAttribute('disabled')
+    // const fldSetStatus = fldSet.getAttribute('disabled')
+    // fldSet.removeAttribute('disabled')
+    const elements = fldSet.querySelectorAll('input[id^="v-"], button')
+    elements.forEach(el => {
+        if (el.tagName === 'INPUT') {
+            el.readOnly = false;
+        } else if (el.tagName === 'BUTTON') {
+            el.disabled = false;
+        }
+    });
 }
 
 /**
