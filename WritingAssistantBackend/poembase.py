@@ -122,11 +122,12 @@ class PoemBase:
         self.container.receiveUserInput(userInput, structure, title)
         PoemRepository.save(self.container)
 
-    def write(self, constraints=('rhyme'), form='sonnet', nmfDim=False, userInput=None, structure=None, title=None):
+    def write(self, constraints=('rhyme'), form='sonnet', nmfDim=False, userInput=None, structure=None, title=None, keywords=None):
         self.form = form
         self.blacklist_words = set()
         self.blacklist = []
         self.previous_sent = None
+        self.keywords = keywords if keywords else []
 
         if userInput is None:
             self.initPoemContainer(form=form, nmfDim=nmfDim, lang=self.lang, origin='GRU', title=None)
@@ -287,7 +288,7 @@ class PoemBase:
         return output
 
     def pickRandomNfromN2(self, n, listIn):
-        N2_topped = min(n**2,12) # no testing required, list contains >> 12 elements
+        N2_topped = min(n**2,12) # no testing required, list contains >> 12 elements/anything beyond 12 is not useful
         N2_list = listIn[:N2_topped]
         listOut = random.sample(N2_list, n)
         return listOut
@@ -379,6 +380,38 @@ class PoemBase:
                 return requestedVerse
 
     def randomRhymeSample(self, cutoff=10, chosenList=None):
+        freq = -1
+        # 1. Determine (randomly) whether we pick a random rhyme or one of the keywords
+        pickKeyword = random.choice([True, False]) if self.keywords else False
+        # 2. If we pick a keyword, we will look for a rhyme that matches the keyword
+        if pickKeyword:
+            rhymeDict = {}
+            for kw in self.keywords:
+                if kw not in self.blacklist_words:
+                    search_kw = kw
+                    rhymeForm = None
+                    # Lookup kw in the rhyme dictionary, drop first letter until a match is found or string is empty
+                    while search_kw:
+                        rhymeForm = self.rhymeDictionary.get(search_kw)
+                        if rhymeForm:
+                            break  # found a match
+                        search_kw = search_kw[1:]
+                    # If found, we store it in a dictionary with it's frequency
+                    if rhymeForm and rhymeForm not in self.blacklist and self.freqRhyme[rhymeForm[1]] >= cutoff:
+                        rhymeDict[rhymeForm[1]] = self.freqRhyme[rhymeForm[1]]
+            if rhymeDict:
+                rhymeDictByFreq = {v: k for k, v in rhymeDict.items()}
+                # If we found the rhymes mathing the keywords, we pick randomly
+                # with a higher chance for the more frequent rhymes
+                freqs = sorted(rhymeDict.values(), reverse=False)
+                weightedFreqs = []
+                while freqs:
+                    weightedFreqs.extend(freqs)
+                    freqs.pop()
+                chosenFreq = random.choice(weightedFreqs)
+                return rhymeDictByFreq[chosenFreq]
+        # 3. If we do not pick a keyword or no appropriate rhyme is found,
+        #    we will randomly select a rhyme from the rhyme dictionary
         freq = -1
         while (freq < cutoff) or rhymeForm in chosenList:
             rhymeForm = random.choice(list(self.freqRhyme.keys()))

@@ -35,10 +35,10 @@ def write_poem():
     pform = data.get("form", "1")
     nmfDim = convInt(data.get("nmfDim", "random"))
     title = data.get("poemTitle")
-    print(f"Writing poem in {lang} with form {pform} and nmfDim {nmfDim}")
+    keywords = [v for (k, v) in data.items() if k.startswith("kw-")]
     # - create the poem object (or get it from cache)
     poem = get_poem(lang=lang)
-    poem.write(form=pform, nmfDim=nmfDim, title=title)
+    poem.write(form=pform, nmfDim=nmfDim, title=title, keywords=keywords)
     PoemRepository.save(poem.container)
     return jsonify({"poem": poem.container.to_dict()})
 
@@ -53,11 +53,12 @@ def write_verse():
     pform = data.get("form", "1")
     title = data.get("poemTitle", "")
     nmfDim = convInt(data.get("nmfDim", "random"))
-    verses = {k:v for (k,v) in data.items() if k.startswith("v-")}
+    verses = {k: v for (k, v) in data.items() if k.startswith("v-")}
+    keywords = [v for (k, v) in data.items() if k.startswith("kw-")]
     structure = {k:v for (k,v) in data.items() if k.startswith("struct")}
 
     poem = get_poem(lang=lang)
-    poem.receiveUserInput(form=pform ,title=title, nmfDim=nmfDim, structure= structure, userInput=verses)
+    poem.receiveUserInput(form=pform ,title=title, keywords=keywords, nmfDim=nmfDim, structure= structure, userInput=verses)
     poem.write(form=pform, nmfDim=nmfDim, structure=structure, userInput=verses)
     PoemRepository.save(poem.container)
     return jsonify({"poem": poem.container.to_dict()})
