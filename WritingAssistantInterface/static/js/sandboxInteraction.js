@@ -7,6 +7,7 @@ import {Verse} from './sandboxAPI/4_Verse.js';
 import {Suggestionbox} from "./suggestionboxAPI/1_SuggestionBox.js";
 import {activateSuggestionbox} from "./suggestionboxInteraction.js";
 import {flashMessage} from './niftyThings.js';
+import {receiveKeywords} from "./keywordboxInteraction.js";
 
 /**
  *Create a single shared instance of the sandbox */
@@ -650,6 +651,9 @@ export function receivePoem(poem) {
     });
     if (poemComplete(sandbox,myVerse,getRhymeScheme())) {
         removeButtons("btn_generateVerse");
+    }
+    if (poem.keywords) {
+        receiveKeywords(poem.keywords)
     }
     activateVerses(getSandbox())
     enableSandbox()

@@ -33,7 +33,7 @@ export function keywordKeydown(e, target) {
     }
 }
 export function keywordKeyup(e, target) {
-    const poem = getSandbox();            // the Poem instance
+    console.log('event:',e,'target:', target, 'key:',e.key)
     switch (e.key) {
         case 'Backspace':
         case 'Delete':
@@ -61,7 +61,7 @@ export function createNextKeyword({event, target}) {
     } else {
         const numChildren = keywordList.children.length;
         if (targetWrapper.nextSibling) {
-            moveKeywordFocus(target, 1);
+            moveKeywordFocus(event, 1);
         } else if(numChildren > 0 && numChildren < keywordBox.n) {
             Wr = keywordList.addKeywordWrapper({
                 buttons: targetWrapper.buttons,
@@ -71,11 +71,11 @@ export function createNextKeyword({event, target}) {
             for (const btn of Wr.el.children) {
                 if (btn.id.startsWith("btn_del")) {
                     btn.value = KwId;
-                    btn.style.display = "inline-block";
+                    btn.style.display = "none";
                     btn.disabled = false;
                 } else if (btn.id.startsWith("btn_random")) {
                     btn.value = KwId;
-                    btn.style.display = "none";
+                    btn.style.display = "inline-block";
                 }
             }
         Wr.firstChild.el.focus()
@@ -87,11 +87,10 @@ export function moveKeywordFocus(e, direction) {
     const current = e.target;
     const currentWrapper = Keyword.getWrapper(current);
     let nextWrapper;
-
     if (direction === 1) {
-        nextWrapper = currentWrapper.parent.nextSibling;
+        nextWrapper = currentWrapper.parent.el.nextSibling;
     } else if (direction === -1) {
-        nextWrapper = currentWrapper.parent.previousSibling;
+        nextWrapper = currentWrapper.parent.el.previousSibling;
     }
 
     if (nextWrapper) {
@@ -154,20 +153,21 @@ export function receiveKeywords(input)  {
             document.getElementsByClassName("top-pane")[0].append(idFld)
         }
 
-        const target = firstEmptyKeyword();
-        let id = target.el.id = "kw-" + input.keywords[0].keyword.id;
-        target.el.setAttribute("name", target.el.id);
-        // Change button values
-        let btn = target.el.nextSibling
-        while (btn) {
-            if (btn.tagName === "BUTTON") {
-                btn.value = id;
+        if (input.keywordSuggestions) { // If there are keyword suggestions, we need to create the suggestionbox
+            const target = firstEmptyKeyword();
+            let id = target.el.id = "kw-" + input.keywords[0].keyword.id;
+            target.el.setAttribute("name", target.el.id);
+            // Change button values
+            let btn = target.el.nextSibling
+            while (btn) {
+                if (btn.tagName === "BUTTON") {
+                    btn.value = id;
+                }
+                btn = btn.nextSibling;
             }
-            btn = btn.nextSibling;
-        }
-        target.el.parentNode.id = id.replace("kw-", "kww-");
+            target.el.parentNode.id = id.replace("kw-", "kww-");
 
-        const SB = new Suggestionbox({
+            const SB = new Suggestionbox({
             selector: Keyword.formatID({id: parseInt(id.split("-")[1]), prefix: "suggB-kw-"}),
             id: Keyword.formatID({id: parseInt(id.split("-")[1]), prefix: "suggB-kw-"}),
             refresher_value: keywordBox.n,
@@ -190,6 +190,25 @@ export function receiveKeywords(input)  {
                 f5Btn.value = 4
             }
         }
+        }
+
+       // after a save, keywords will have an oldId, search the elements by oldId and rename
+       input.keywords.forEach(kw => {
+           if (kw.oldId) {
+               const myFld = Keyword.getWrapper(document.getElementById(kw.oldId));
+               let id = target.el.id = "kw-" + input.keywords[0].keyword.id;
+            target.el.setAttribute("name", target.el.id);
+            // Change button values
+            let btn = target.el.nextSibling
+            while (btn) {
+                if (btn.tagName === "BUTTON") {
+                    btn.value = id;
+                }
+                btn = btn.nextSibling;
+            }
+            target.el.parentNode.id = id.replace("kw-", "kww-");
+           }
+       })
         activateSuggestionbox();
     } else if (input.kwAccept) {
         if (input.nmfDim && input.nmfDim > 0) {

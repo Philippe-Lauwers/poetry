@@ -120,6 +120,9 @@ class PoemBase:
         self.initPoemContainer(form=form, nmfDim=nmfDim, lang=self.lang, origin='browser', title=title)
         # Stores a representation of the poem in the database
         self.container.receiveUserInput(userInput, structure, title)
+
+        test = self.container.blacklists()
+
         PoemRepository.save(self.container)
 
     def write(self, constraints=('rhyme'), form='sonnet', nmfDim=False, userInput=None, structure=None, title=None, keywords=None):
@@ -381,8 +384,8 @@ class PoemBase:
 
     def randomRhymeSample(self, cutoff=10, chosenList=None):
         freq = -1
-        # 1. Determine (randomly) whether we pick a random rhyme or one of the keywords
-        pickKeyword = random.choice([True, False]) if self.keywords else False
+        # 1. Determine (randomly) whether we pick a random rhyme or one of the keywords, we favor the keywords though
+        pickKeyword = random.choice([True, False, True]) if self.keywords else False
         # 2. If we pick a keyword, we will look for a rhyme that matches the keyword
         if pickKeyword:
             rhymeDict = {}

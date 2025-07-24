@@ -133,6 +133,7 @@ class KeywordBase:
                     nmfDim = tuple(scorelist)
         self.container.nmfDim = nmfDim[0]
         PoemRepository.save(self.container)
+        print (self.container.to_dict())
         return {'status':True,'nmfDim':nmfDim[0]}
 
     # @timed

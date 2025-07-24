@@ -139,7 +139,6 @@ class Poem(BaseContainer):
     @property
     def language(self):
         return self._poemLanguage
-
     @language.setter
     def language(self, value):
         self._poemLanguage = value
@@ -147,7 +146,6 @@ class Poem(BaseContainer):
     @property
     def nmfDim(self):
         return self._nmfDim
-
     @nmfDim.setter
     def nmfDim(self, value):
         self._nmfDim = value
@@ -210,6 +208,7 @@ class Poem(BaseContainer):
 
     @staticmethod
     def reorderKeywordSuggestions(keywordSuggestions):
+        # From suggestions per keyword ===> suggestions per collectionId
         # 1) Group suggestions by collectionId
         collections = {}
         for suggestion in keywordSuggestions:
@@ -415,6 +414,7 @@ class Keyword(BaseContainer):
             "suggestions": [s.to_dict() for s in self._suggestions]
         }
         if self.id is not None: keyword["id"] = self.id
+        if self.oldId is not None: keyword["oldId"] = self.oldId
         return {"keyword": keyword}
 
 class KeywordSuggestion(BaseContainer):
