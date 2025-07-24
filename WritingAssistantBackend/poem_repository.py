@@ -289,9 +289,14 @@ class SuggestionRepository(BaseRepository):
             db.session.add(orm_verse)
             db.session.add(orm_suggestion)
 
+            orm_poem = (db.session.query(PoemModel).join(StanzaModel, PoemModel.id == StanzaModel.poem_id)
+                                        .join(VerseModel, StanzaModel.id == VerseModel.stanza_id)
+                                        .filter(VerseModel.id == verse_id).first())
+            nmfDim = orm_poem.theme_id
+
             VerseRepository.logAction(actionType='SG_SEL', actionTargets = {'suggestion': suggestion_id, 'verse': verse_id})
 
-            output = {"verse_id": verse_id, "verse_text": orm_suggestion.suggestion}
+            output = {"verse_id": verse_id, "verse_text": orm_suggestion.suggestion,"nmfDim": nmfDim}
         except Exception as e:
             print(f"Error accepting suggestion: {e}")
             db.session.rollback()

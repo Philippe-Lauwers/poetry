@@ -33,13 +33,13 @@ export function keywordKeydown(e, target) {
     }
 }
 export function keywordKeyup(e, target) {
-    console.log('event:',e,'target:', target, 'key:',e.key)
     switch (e.key) {
+        case 'Enter':
+        case 'Tab':
+            break; // Handled in keydown
         case 'Backspace':
         case 'Delete':
         case ' ':
-        case 'Enter':
-        case 'Tab':
         case 'ArrowUp':
         case 'ArrowDown':
         default:
@@ -71,11 +71,11 @@ export function createNextKeyword({event, target}) {
             for (const btn of Wr.el.children) {
                 if (btn.id.startsWith("btn_del")) {
                     btn.value = KwId;
-                    btn.style.display = "none";
+                    btn.style.setProperty("display", "none", "important");
                     btn.disabled = false;
                 } else if (btn.id.startsWith("btn_random")) {
                     btn.value = KwId;
-                    btn.style.display = "inline-block";
+                    btn.style.setProperty("display", "inline-block", "important");
                 }
             }
         Wr.firstChild.el.focus()
@@ -140,7 +140,7 @@ export function activateKeywordbox ({includeGenButton = false} = {}) {
     keywordbox.list.enable();
 }
 
-export function receiveKeywords(input)  {
+export function receiveKeywords(input) {
     const keywordBox = getKeywordbox();
     const keywordList = keywordBox.list;
 
@@ -168,28 +168,28 @@ export function receiveKeywords(input)  {
             target.el.parentNode.id = id.replace("kw-", "kww-");
 
             const SB = new Suggestionbox({
-            selector: Keyword.formatID({id: parseInt(id.split("-")[1]), prefix: "suggB-kw-"}),
-            id: Keyword.formatID({id: parseInt(id.split("-")[1]), prefix: "suggB-kw-"}),
-            refresher_value: keywordBox.n,
-            verse: Keyword,
-            location: keywordBox.list,
-            suggestions: input.keywordSuggestions.suggestions
-        });
+                selector: Keyword.formatID({id: parseInt(id.split("-")[1]), prefix: "suggB-kw-"}),
+                id: Keyword.formatID({id: parseInt(id.split("-")[1]), prefix: "suggB-kw-"}),
+                refresher_value: keywordBox.n,
+                verse: Keyword,
+                location: keywordBox.list,
+                suggestions: input.keywordSuggestions.suggestions
+            });
 
-        let f5Btn
-        if (input.keywordSuggestions.suggestions[0].suggestion.text.split(",").length === 1) {
-            f5Btn = document.querySelector('[id^="btn-f5-lst-sug"]');
-            if (f5Btn) {
-                f5Btn.name = f5Btn.id = f5Btn.name.replace("-sug-", "-1sug-");
-                f5Btn.value = 1
+            let f5Btn
+            if (input.keywordSuggestions.suggestions[0].suggestion.text.split(",").length === 1) {
+                f5Btn = document.querySelector('[id^="btn-f5-lst-sug"]');
+                if (f5Btn) {
+                    f5Btn.name = f5Btn.id = f5Btn.name.replace("-sug-", "-1sug-");
+                    f5Btn.value = 1
+                }
+            } else {
+                f5Btn = document.querySelector('[id^="btn-f5-lst-1sug"]');
+                if (f5Btn) {
+                    f5Btn.name = f5Btn.id = f5Btn.name.replace("-sug-", "-sug-");
+                    f5Btn.value = 4
+                }
             }
-        } else {
-            f5Btn = document.querySelector('[id^="btn-f5-lst-1sug"]');
-            if (f5Btn) {
-                f5Btn.name = f5Btn.id = f5Btn.name.replace("-sug-", "-sug-");
-                f5Btn.value = 4
-            }
-        }
         }
 
        // after a save, keywords will have an oldId, search the elements by oldId and rename
@@ -211,10 +211,8 @@ export function receiveKeywords(input)  {
        })
         activateSuggestionbox();
     } else if (input.kwAccept) {
-        if (input.nmfDim && input.nmfDim > 0) {
-            if (document.getElementById("nmfDim").value === "random") {
-                document.getElementById("nmfDim").value = input.nmfDim;
-            }
+        if (input.kwAccept.nmfDim && input.kwAccept.nmfDim > 0) {
+            document.getElementById("nmfDim").value = input.kwAccept.nmfDim;
         }
 
         let target = undefined;

@@ -104,6 +104,7 @@ class PoemBase:
         # get the nmfDim: None if the argument is None, a random value if the argument is 'random'
         if nmfDim == 'random':
             self._nmfDim = random.randint(0, self.W.shape[1] - 1)
+            self._firstRun = True
         elif type(nmfDim) == int:
             self._nmfDim  = nmfDim
         else:
@@ -158,10 +159,28 @@ class PoemBase:
             if len(userInput.values()) > 0:
                 self.previous_sent = self.cleanInputVerse(list(userInput.values())[i])
             blacklists = self.container.blacklists()
-            self.blacklist.append([self.rhymeDictionary[w] for w in blacklists["rhyme"] if w != ""])
+            # Rhyme forms
+            rhymeForm = None
+            for w in blacklists["rhyme"]:
+                if w != "":
+                    search_w =w
+                    rhymeForm = None
+                    # Lookup kw in the rhyme dictionary, drop first letter until a match is found or string is empty
+                    while search_w:
+                        rhymeForm = next((value for key, value in self.rhymeDictionary.items() if key.endswith(search_w)), None)
+                        if rhymeForm:
+                            break  # found a match
+                        search_w = search_w[1:]
+                if rhymeForm and rhymeForm not in self.blacklist:
+                        self.blacklist.append(rhymeForm)
+            # All words used
             self.blacklist_words = self.blacklist_words.union(blacklists["words"])
-            pass
-        nmfDim = self._nmfDim
+
+        if not self._firstRun:
+            nmfDim = self.reevaluateNmfDim(title=self.container.title, keywords=self.keywords, userInput=userInput)
+            self._firstRun = False
+        else:
+            nmfDim = self._nmfDim # the value that was stored at initialization of the PoemBase instance
 
         if not nmfDim == None:
             sys.stdout.write('\n' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") +' nmfdim ' + str(nmfDim) + ' (' + ', '.join(self.nmf_descriptions[nmfDim]) + ')\n\n')
@@ -296,6 +315,26 @@ class PoemBase:
         listOut = random.sample(N2_list, n)
         return listOut
 
+    def reevaluateNmfDim(self, title=None, keywords=None, userInput=None):
+        titleWords = title.split(' ') if title else None
+        keywords = [keyword.lower() for keyword in keywords.values()] if keywords else []
+        inputWordsList =  [word.lower()
+                        for sentence in userInput.values() if sentence.strip()
+                        for word in re.sub(r"[^\w\s]", "", sentence).split()
+                        ] if userInput else []
+
+        nmfDim = (0, 0)
+        for i in range(len(self.nmf_descriptions)):
+            nmfScore = self.checkNMF(list(set(titleWords) | set(keywords) | set(inputWordsList)), [i])
+            if nmfScore > nmfDim[1]:
+                scorelist = list(nmfDim)
+                scorelist[0] = i
+                scorelist[1] = nmfScore
+                nmfDim = tuple(scorelist)
+        self.container.nmfDim = nmfDim[0]
+        self._nmfDim = nmfDim[0]
+        return nmfDim[0]
+
 
     def getRhymeStructure(self, cutoff=10, userInput=None):
         if userInput is None:
@@ -395,7 +434,7 @@ class PoemBase:
                     rhymeForm = None
                     # Lookup kw in the rhyme dictionary, drop first letter until a match is found or string is empty
                     while search_kw:
-                        rhymeForm = self.rhymeDictionary.get(search_kw)
+                        rhymeForm =  next((value for key, value in self.rhymeDictionary.items() if key.endswith(search_kw)), None)
                         if rhymeForm:
                             break  # found a match
                         search_kw = search_kw[1:]

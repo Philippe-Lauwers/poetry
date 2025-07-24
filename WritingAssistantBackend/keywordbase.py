@@ -117,8 +117,14 @@ class KeywordBase:
             keywords = []
             self.inputKeywordsList = []
         if userInput:
-            self.inputWordsList = ' '.join(
-                [re.sub(r"(?:[^\w\s]|_)+", '', vrs).lower for vrs in userInput.values() if vrs != ""]).split()
+            # test = [re.sub(r"(?:[^\w\s]|_)+", '', vrs).lower for vrs in userInput.values() if vrs != ""]
+            # test2 = ' '.join(
+            #     [re.sub(r"(?:[^\w\s]|_)+", '', vrs).lower for vrs in userInput.values() if vrs != ""])
+            self.inputWordsList = [word.lower()
+                        for sentence in userInput.values() if sentence.strip()
+                        for word in re.sub(r"[^\w\s]", "", sentence).split()
+                        ] if userInput.values() else []
+            pass
         else:
             self.inputWordsList = []
 
@@ -133,7 +139,6 @@ class KeywordBase:
                     nmfDim = tuple(scorelist)
         self.container.nmfDim = nmfDim[0]
         PoemRepository.save(self.container)
-        print (self.container.to_dict())
         return {'status':True,'nmfDim':nmfDim[0]}
 
     # @timed

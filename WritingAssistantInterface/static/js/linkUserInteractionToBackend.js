@@ -52,8 +52,10 @@ form.addEventListener('submit', async e => {
         // 3) Display
     if (json.poem) {
         receivePoem(json.poem);
+        document.getElementById("nmfDim").value = json.poem.parameters.nmfDim; // <-- now this gets called too
     } else if (json.suggAccept) {
         closeSuggestionBox({verse: json});
+        document.getElementById("nmfDim").value = json.suggAccept.nmfDim; // <-- now this gets called too
     } else if (json.keywords) {
         receiveKeywords(json.keywords);
     } else if (json.kwAccept) {
