@@ -155,8 +155,18 @@ export function receiveKeywords(input) {
 
         if (input.keywordSuggestions) { // If there are keyword suggestions, we need to create the suggestionbox
             const target = firstEmptyKeyword();
-            let id = target.el.id = "kw-" + input.keywords[0].keyword.id;
-            target.el.setAttribute("name", target.el.id);
+            let myKw;
+            let id;
+            for (const kw of input.keywords) {
+                if (kw.keyword.oldId) {
+                    myKw = kw
+                    break;
+                }
+            }
+            if (myKw) {
+                id = target.el.id = `kw-${myKw.keyword.id}`;
+                target.el.setAttribute("name", target.el.id);
+            }
             // Change button values
             let btn = target.el.nextSibling
             while (btn) {
@@ -192,23 +202,25 @@ export function receiveKeywords(input) {
             }
         }
 
-       // after a save, keywords will have an oldId, search the elements by oldId and rename
-       input.keywords.forEach(kw => {
-           if (kw.oldId) {
-               const myFld = Keyword.getWrapper(document.getElementById(kw.oldId));
-               let id = target.el.id = "kw-" + input.keywords[0].keyword.id;
-            target.el.setAttribute("name", target.el.id);
-            // Change button values
-            let btn = target.el.nextSibling
-            while (btn) {
-                if (btn.tagName === "BUTTON") {
-                    btn.value = id;
+       // after a save, some keywords will have an oldId, search the elements by oldId and rename
+        input.keywords.forEach(kw => {
+            if (kw.keyword.oldId) {
+                const myFld = Keyword.getWrapper(document.getElementById(kw.oldId));
+                if (myFld) {
+                    let id = target.el.id = "kw-" + input.keywords[0].keyword.id;
+                    target.el.setAttribute("name", target.el.id);
+                    // Change button values
+                    let btn = target.el.nextSibling
+                    while (btn) {
+                        if (btn.tagName === "BUTTON") {
+                            btn.value = id;
+                        }
+                        btn = btn.nextSibling;
+                    }
+                    target.el.parentNode.id = id.replace("kw-", "kww-");
                 }
-                btn = btn.nextSibling;
             }
-            target.el.parentNode.id = id.replace("kw-", "kww-");
-           }
-       })
+        })
         activateSuggestionbox();
     } else if (input.kwAccept) {
         if (input.kwAccept.nmfDim && input.kwAccept.nmfDim > 0) {

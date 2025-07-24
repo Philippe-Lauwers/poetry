@@ -202,7 +202,7 @@ class Poem(BaseContainer):
         if self.keywords is not None: poem["keywords"] = [k.to_dict() for k in self.keywords]
 
         if poem["keywords"]:
-            if poem["keywords"][0]["keyword"]["suggestions"]:
+            if poem["keywords"][-1]["keyword"]["suggestions"]:
                 poem["keywordSuggestions"] = Poem.reorderKeywordSuggestions(poem["keywords"])
         return poem
 

@@ -183,18 +183,27 @@ class KeywordBase:
                         nmfDim = tuple(scorelist)
             keywordCollections.append(keywordCollection)
             nmfDims.append(nmfDim[0])
-        for sugg in range(n):
-            if sugg > len(self.container.keywords) - 1 or ():
-                kw = Keyword("")
-                self.container.keywords.append(kw)
-            else:
-                kw = self.container.keywords[sugg]
+        pass
+        if n >1:
+            for sugg in range(n):
+                if sugg > len(self.container.keywords) - 1 or ():
+                    kw = Keyword("")
+                    self.container.keywords.append(kw)
+                else:
+                    kw = self.container.keywords[sugg]
 
 
+                for i in range(len(keywordCollections)):
+                    kws = KeywordSuggestion(keywordCollections[i][sugg])
+                    kws.nmfDim = nmfDims[i]
+                    kw.suggestions.append(kws)
+        elif n == 1:
+            kw = self.container.keywords[-1]
             for i in range(len(keywordCollections)):
-                kws = KeywordSuggestion(keywordCollections[i][sugg])
+                kws = KeywordSuggestion(keywordCollections[i][0])
                 kws.nmfDim = nmfDims[i]
                 kw.suggestions.append(kws)
+
         PoemRepository.save(self.container)
 
         return self.container.to_dict()

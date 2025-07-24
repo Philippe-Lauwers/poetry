@@ -176,7 +176,7 @@ class PoemBase:
             # All words used
             self.blacklist_words = self.blacklist_words.union(blacklists["words"])
 
-        if not self._firstRun:
+        if not self._firstRun or self.keywords:
             nmfDim = self.reevaluateNmfDim(title=self.container.title, keywords=self.keywords, userInput=userInput)
             self._firstRun = False
         else:
@@ -316,8 +316,12 @@ class PoemBase:
         return listOut
 
     def reevaluateNmfDim(self, title=None, keywords=None, userInput=None):
-        titleWords = title.split(' ') if title else None
-        keywords = [keyword.lower() for keyword in keywords.values()] if keywords else []
+        # If all arguments are empty, stick to the current nmfDim
+        if title is None and keywords is None and userInput is None:
+            return self._nmfDim
+
+        titleWords = title.split(' ') if title else []
+        keywordsList = [keyword.lower() for keyword in keywords.values()] if keywords else []
         inputWordsList =  [word.lower()
                         for sentence in userInput.values() if sentence.strip()
                         for word in re.sub(r"[^\w\s]", "", sentence).split()
@@ -325,7 +329,7 @@ class PoemBase:
 
         nmfDim = (0, 0)
         for i in range(len(self.nmf_descriptions)):
-            nmfScore = self.checkNMF(list(set(titleWords) | set(keywords) | set(inputWordsList)), [i])
+            nmfScore = self.checkNMF(list(set(titleWords) | set(keywordsList) | set(inputWordsList)), [i])
             if nmfScore > nmfDim[1]:
                 scorelist = list(nmfDim)
                 scorelist[0] = i
@@ -383,8 +387,10 @@ class PoemBase:
                 userInputLastWords.append(self.cleanInputVerse(userInput[k])[-1])
 
         if userInput:
-            for i in range(len(userInputLastWords)):
-                if userInputLastWords[i] == '': # this is the location of the verse we want to generate
+            for i in range(len(userInputLastWords)): # this is the location of the verse we want to generate
+                # if there is text for this verse, there is a last word and thus rhyme
+                # if not, we pick a random rhyme
+                if userInputLastWords[i] == '':
                     if not poemStructureVerses[i] in mapDict:
                         randomSample = self.randomRhymeSample(cutoff=cutoff, chosenList=chosenList)
                         mapDict[poemStructureVerses[i]] = randomSample
@@ -428,7 +434,7 @@ class PoemBase:
         # 2. If we pick a keyword, we will look for a rhyme that matches the keyword
         if pickKeyword:
             rhymeDict = {}
-            for kw in self.keywords:
+            for kw in self.keywords.values():
                 if kw not in self.blacklist_words:
                     search_kw = kw
                     rhymeForm = None
@@ -440,17 +446,22 @@ class PoemBase:
                         search_kw = search_kw[1:]
                     # If found, we store it in a dictionary with it's frequency
                     if rhymeForm and rhymeForm not in self.blacklist and self.freqRhyme[rhymeForm[1]] >= cutoff:
-                        rhymeDict[rhymeForm[1]] = self.freqRhyme[rhymeForm[1]]
+                        if rhymeForm[1] not in rhymeDict:
+                            rhymeDict[rhymeForm[1]] = self.freqRhyme[rhymeForm[1]]
+                        else: # if the rhymeForm is already in the dictionary, we randomly decide whether to replace
+                            if(random.choice([True, False])):
+                                rhymeDict[rhymeForm[1]] = self.freqRhyme[rhymeForm[1]]
             if rhymeDict:
                 rhymeDictByFreq = {v: k for k, v in rhymeDict.items()}
                 # If we found the rhymes mathing the keywords, we pick randomly
                 # with a higher chance for the more frequent rhymes
-                freqs = sorted(rhymeDict.values(), reverse=False)
+                freqs = sorted(rhymeDict.values(), reverse=True)
                 weightedFreqs = []
                 while freqs:
                     weightedFreqs.extend(freqs)
+                    print ("weithtedFreqs", weightedFreqs)
                     freqs.pop()
-                chosenFreq = random.choice(weightedFreqs)
+                chosenFreq = random.choice(list(set(weightedFreqs)))
                 return rhymeDictByFreq[chosenFreq]
         # 3. If we do not pick a keyword or no appropriate rhyme is found,
         #    we will randomly select a rhyme from the rhyme dictionary

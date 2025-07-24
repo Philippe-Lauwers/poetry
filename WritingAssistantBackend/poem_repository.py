@@ -466,7 +466,7 @@ class KeywordSuggestionRepository(BaseRepository):
             output[suggestion.keyword_id] = suggestion.suggestion
 
         db.session.commit()
-        return {'nmfDim':orm_suggestionCollection.id,'keywords':output}
+        return {'nmfDim':orm_suggestionCollection.theme_id,'keywords':output}
 
 class ActionRepository(BaseRepository):
     @staticmethod
