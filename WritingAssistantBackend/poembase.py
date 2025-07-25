@@ -38,6 +38,8 @@ class PoemBase:
         self.loadVocabulary()
 
         self.ngramModel = kenlm.Model(self.NGRAM_FILE)
+        self._rhymeCache = {} # cache for rhymes, to avoid repeated lookups in the rhyme dictionary
+        self._firstRun = True
 
         if not os.path.exists('log'):
             os.makedirs('log')
@@ -450,7 +452,7 @@ class PoemBase:
                             rhymeDict[rhymeForm[1]] = self.freqRhyme[rhymeForm[1]]
                         else: # if the rhymeForm is already in the dictionary, we randomly decide whether to replace
                             if(random.choice([True, False])):
-                                rhymeDict[rhymeForm[1]] = self.freqRhyme[rhymeForm[1]]
+                                rhymeDict[rhymeForm[1][1]] = self.freqRhyme[rhymeForm[1]]
             if rhymeDict:
                 rhymeDictByFreq = {v: k for k, v in rhymeDict.items()}
                 # If we found the rhymes mathing the keywords, we pick randomly
@@ -459,9 +461,10 @@ class PoemBase:
                 weightedFreqs = []
                 while freqs:
                     weightedFreqs.extend(freqs)
-                    print ("weithtedFreqs", weightedFreqs)
                     freqs.pop()
                 chosenFreq = random.choice(list(set(weightedFreqs)))
+                if search_kw in self.rhymeDictionary:
+                    self._rhymeCache[rhymeForm[1]] = search_kw
                 return rhymeDictByFreq[chosenFreq]
         # 3. If we do not pick a keyword or no appropriate rhyme is found,
         #    we will randomly select a rhyme from the rhyme dictionary
@@ -477,9 +480,21 @@ class PoemBase:
     def createRhymeProbVector(self, rhyme):
         probVector = np.empty(len(self.i2w))
         probVector.fill(1e-20)
-        for w in self.rhymeInvDictionary[rhyme]:
-            if not self.rhymeDictionary[w] in self.blacklist:
-                probVector[self.w2i[w]] = 1
+        print(self._rhymeCache, "-", rhyme)
+        if self._rhymeCache:
+            # There is a rhyme cache when we created rhymes from keywords
+            # -> only rhyme probabilities for the chosen keyword
+            if rhyme in self._rhymeCache.keys():
+                probVector[self.w2i[self._rhymeCache[rhyme]]] = 1
+                for n in range(len(probVector)):
+                    if probVector[n] > 1e-20:
+                        print('Rhyme probability for', self.i2w[n], 'is', probVector[n])
+                return probVector / np.sum(probVector)
+        else:
+            for w in self.rhymeInvDictionary[rhyme]:
+                if not self.rhymeDictionary[w] in self.blacklist:
+                    probVector[self.w2i[w]] = 1
+
         return probVector / np.sum(probVector)
 
     def signature(self):
