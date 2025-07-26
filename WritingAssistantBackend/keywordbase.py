@@ -217,7 +217,7 @@ class KeywordBase:
             n += 1
             cntSyl = count_syllables(kw)[1]
 
-            if (kw not in self.inputKeywordsList) or (cntSyl < 3 or (n > 16 and cntSyl < 2)):
+            if kw.isalpha() and ((kw not in self.inputKeywordsList) or (cntSyl < 3 or (n > 16 and cntSyl < 2))):
                 break
 
         return kw

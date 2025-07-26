@@ -79,6 +79,9 @@ export function deactivateParambox(e=null, submitter=null) {
 }
 export function activateParambox() {
     document.getElementById("btn_savePoem").removeAttribute("disabled");
+    if (getSandbox().firstChild.firstChild.firstChild.el.value === "") {
+        document.getElementById("btn_generatePoem").removeAttribute("disabled");
+    }
 }
 export function deactivateFinal() {
     document.getElementById("btn_savePoem").disabled = true;

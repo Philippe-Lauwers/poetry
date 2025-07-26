@@ -33,12 +33,34 @@ class VerseGenerator:
         
         self.batch_size_encoder = opt.batch_size
         self.n_batches_decoder = 32
+        self.n_batches_decoder_default = 32
         self.batch_size_decoder = 32
         self.max_length = 30
+        self.max_length_default = 30
         self.sampling_temp = 0.8
         self.entropy_threshold = entropy_threshold
 
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
+    @property
+    def maxLength(self):
+        return self.max_length
+    @maxLength.setter
+    def maxLength(self, value):
+        if value > 0:
+            self.max_length = value
+        else:
+            self.max_length = self.max_length_default
+
+    @property
+    def nBatchesDecoder(self):
+        return self.n_batches_decoder
+    @nBatchesDecoder.setter
+    def nBatchesDecoder(self, value):
+        if value > 0:
+            self.n_batches_decoder = value
+        else:
+            self.n_batches_decoder = self.n_batches_decoder_default
 
     def generateCandidates(self, previous, rhymePrior, nmfPrior):
         if rhymePrior is not None:

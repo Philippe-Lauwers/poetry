@@ -166,7 +166,7 @@ export function receiveKeywords(input) {
             if (myKw) {
                 id = target.el.id = `kw-${myKw.keyword.id}`;
                 target.el.setAttribute("name", target.el.id);
-            }
+
             // Change button values
             let btn = target.el.nextSibling
             while (btn) {
@@ -176,6 +176,9 @@ export function receiveKeywords(input) {
                 btn = btn.nextSibling;
             }
             target.el.parentNode.id = id.replace("kw-", "kww-");
+            }  else {
+                id = target.el.id
+            }
 
             const SB = new Suggestionbox({
                 selector: Keyword.formatID({id: parseInt(id.split("-")[1]), prefix: "suggB-kw-"}),
@@ -259,6 +262,7 @@ export function receiveKeywords(input) {
                 }
             }
         activateKeywordbox({})
+
         }
     }
 }

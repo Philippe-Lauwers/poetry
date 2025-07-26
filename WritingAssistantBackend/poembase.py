@@ -8,6 +8,7 @@ import random
 import re
 import sys
 import time
+import math
 import warnings
 from datetime import datetime
 
@@ -165,7 +166,7 @@ class PoemBase:
             rhymeForm = None
             for w in blacklists["rhyme"]:
                 if w != "":
-                    search_w =w
+                    search_w = w
                     rhymeForm = None
                     # Lookup kw in the rhyme dictionary, drop first letter until a match is found or string is empty
                     while search_w:
@@ -271,7 +272,103 @@ class PoemBase:
         allProbScores = []
         allEncDecScores = []
 
+        firstPart = []
+        keyword = None
+        try: # try to generate a part of the verse that ends with the keyword
+            # for many keywords, data is too sparse to properly do this, resulting in key errors
+            if self.keywords:
+                allFirstPartCandidates = []
+                allFirstPartScores = []
+                allFirstPartEncDecScores = []
+
+                pickKeyword = 0
+                while pickKeyword < math.ceil(len(self.keywords)/2):
+                    keyword = random.choice(list(self.keywords.values()))
+                    if keyword in self.rhymeCache.values():
+                        break
+                    pickKeyword += 1
+                if keyword != "":
+                    dfltMax_length = self.generator.maxLength
+                    self.generator.maxLength = math.ceil(dfltMax_length / random.randint(4, 6))
+                    dfltNBatches = self.generator.nBatchesDecoder
+                    self.generator.nBatchesDecoder = math.ceil(4 + (dfltNBatches-4)*self.generator.maxLength/dfltMax_length)
+                    # Generate a part of a verse that precedes the keyword
+                    allFirstPartCandidates, allFirstProbScores = self.generator.generateCandidates(previous=previous, rhymePrior=self.createKeywordProbVector(keyword), nmfPrior=nmfPrior)
+                    firstPartScoreList = self.scoreCandidates(allCandidates=allFirstPartCandidates, allProbScores=allFirstProbScores,nmf=nmf, syllables=syllables)
+                    # Take the first candidate that contains the keyword (if in the first 12)
+                    i = 0
+                    while i < 12:
+                        if keyword in firstPartScoreList[i][1]:
+                            firstPart = firstPartScoreList[i][1]
+                            break
+                        i+= 1
+                    if not firstPart:
+                        #If keyword not found, take the best scoring candidate
+                        firstPart = firstPartScoreList[0][1]
+
+                    # Add that to the "previous" variable but drop the first len(firstPart) words
+                    lenFirstPart = len(firstPart)
+                    if previous:
+                        previous = previous[lenFirstPart:] + firstPart
+                    else:
+                        previous = firstPart
+                    # Determine how much of the verse still has to be generated + adapt number of batches accordingly
+                    self.generator.maxLength = dfltMax_length - lenFirstPart
+                    self.generator.nBatchesDecoder = math.ceil(4 + (dfltNBatches-2)*self.generator.maxLength/dfltMax_length)
+        except: # If generating a first part fails, we can continue generating an entire verse
+            # Before we do that, restore the defaults for maxLength and nBatchesDecoder
+            self.generator.maxLength = 0
+            self.generator.nBatchesDecoder = 0
+
         allCandidates, allProbScores = self.generator.generateCandidates(previous=previous,rhymePrior=rhymePrior, nmfPrior=nmfPrior)
+        scoreList = self.scoreCandidates(allCandidates=allCandidates, allProbScores=allProbScores,nmf=nmf, syllables=syllables)
+
+        # restore defaults (value = 0 means the setter in VerseGenerator will ste the values back to default)
+        # ==> ready for the next verse
+        self.generator.maxLength = 0
+        self.generator.nBatchesDecoder = 0
+
+        if n == 1:
+            i = 0
+            if keyword:
+                while i < 12:
+                    if firstPart:
+                        output = firstPart + scoreList[i][1]
+                    else:
+                        output = scoreList[i][1]
+                    if keyword in output:
+                        break
+            if firstPart:
+                output = firstPart + scoreList[0][1]
+            else:
+                output = scoreList[0][1]
+        else:
+            output = []
+            pickedList = []
+            if keyword:
+                i = 0
+                while i < 12 and len(output) < n:
+                    if firstPart:
+                        verse = firstPart + scoreList[i][1]
+                    else:
+                        verse = scoreList[i][1]
+                    if keyword in verse:
+                        output.append(verse)
+                        pickedList.append(i)
+                    i += 1
+            randomList = self.pickRandomNfromN2(n, scoreList)
+            i = 0
+            while i < len(randomList) and len(output) < n:
+                if i not in pickedList: # if the candidate was not already picked because of the keyword
+                    if firstPart:
+                        verse = firstPart + randomList[i][1]
+                    else:
+                        verse = randomList[i][1]
+                output.append(verse)
+                i += 1
+        return output
+
+    def scoreCandidates(self, allCandidates=None, allProbScores=None, nmf=None, syllables=None):
         ngramScores = []
         for ncand, candidate in enumerate(allCandidates):
             try:
@@ -301,15 +398,8 @@ class PoemBase:
 
         scoreList.sort()
         scoreList.reverse()
-        if n == 1:
-            output = scoreList[0][1]
-        else:
-            randomList = self.pickRandomNfromN2(n, scoreList)
-            output = []
-            for i in range(n):
-                output.append(randomList[i][1])
 
-        return output
+        return scoreList
 
     def pickRandomNfromN2(self, n, listIn):
         N2_topped = min(n**2,12) # no testing required, list contains >> 12 elements/anything beyond 12 is not useful
@@ -431,8 +521,8 @@ class PoemBase:
 
     def randomRhymeSample(self, cutoff=10, chosenList=None):
         freq = -1
-        # 1. Determine (randomly) whether we pick a random rhyme or one of the keywords, we favor the keywords though
-        pickKeyword = random.choice([True, False, True]) if self.keywords else False
+        # 1. Determine (randomly) whether we pick a random rhyme or one of the keywords
+        pickKeyword = random.choice([True, False]) if self.keywords else False
         # 2. If we pick a keyword, we will look for a rhyme that matches the keyword
         if pickKeyword:
             rhymeDict = {}
@@ -447,12 +537,14 @@ class PoemBase:
                             break  # found a match
                         search_kw = search_kw[1:]
                     # If found, we store it in a dictionary with it's frequency
-                    if rhymeForm and rhymeForm not in self.blacklist and self.freqRhyme[rhymeForm[1]] >= cutoff:
-                        if rhymeForm[1] not in rhymeDict:
-                            rhymeDict[rhymeForm[1]] = self.freqRhyme[rhymeForm[1]]
-                        else: # if the rhymeForm is already in the dictionary, we randomly decide whether to replace
-                            if(random.choice([True, False])):
-                                rhymeDict[rhymeForm[1][1]] = self.freqRhyme[rhymeForm[1]]
+                    if rhymeForm:
+                        if rhymeForm not in self.blacklist:
+                            if self.freqRhyme[rhymeForm[1]] >= cutoff:
+                                if rhymeForm[1] not in rhymeDict:
+                                    rhymeDict[rhymeForm[1]] = self.freqRhyme[rhymeForm[1]]
+                                else: # if the rhymeForm is already in the dictionary, we randomly decide whether to replace
+                                    if(random.choice([True, False])):
+                                        rhymeDict[rhymeForm[1][1]] = self.freqRhyme[rhymeForm[1]]
             if rhymeDict:
                 rhymeDictByFreq = {v: k for k, v in rhymeDict.items()}
                 # If we found the rhymes mathing the keywords, we pick randomly
@@ -466,7 +558,7 @@ class PoemBase:
                 if search_kw in self.rhymeDictionary:
                     self._rhymeCache[rhymeForm[1]] = search_kw
                 return rhymeDictByFreq[chosenFreq]
-        # 3. If we do not pick a keyword or no appropriate rhyme is found,
+        # 3. If we did not pick a keyword or no appropriate rhyme is found,
         #    we will randomly select a rhyme from the rhyme dictionary
         freq = -1
         while (freq < cutoff) or rhymeForm in chosenList:
@@ -480,15 +572,15 @@ class PoemBase:
     def createRhymeProbVector(self, rhyme):
         probVector = np.empty(len(self.i2w))
         probVector.fill(1e-20)
-        print(self._rhymeCache, "-", rhyme)
         if self._rhymeCache:
             # There is a rhyme cache when we created rhymes from keywords
-            # -> only rhyme probabilities for the chosen keyword
+            # -> little promotion for the words that rhyme with the keyword
+            for w in self.rhymeDictionary[rhyme]:
+                if not self.rhymeDictionary[w] in self.blacklist:
+                    probVector[self.w2i[w]] = probVector[self.w2i[w]] * 10^5
+            # -> maximum rhyme probabilities for the chosen keyword
             if rhyme in self._rhymeCache.keys():
                 probVector[self.w2i[self._rhymeCache[rhyme]]] = 1
-                for n in range(len(probVector)):
-                    if probVector[n] > 1e-20:
-                        print('Rhyme probability for', self.i2w[n], 'is', probVector[n])
                 return probVector / np.sum(probVector)
         else:
             for w in self.rhymeInvDictionary[rhyme]:
@@ -496,6 +588,19 @@ class PoemBase:
                     probVector[self.w2i[w]] = 1
 
         return probVector / np.sum(probVector)
+
+    def createKeywordProbVector(self, keyword):
+        probVector = np.empty(len(self.i2w))
+        probVector.fill(1e-20)
+
+        kwRhyme = self.rhymeDictionary[keyword]
+        if kwRhyme:
+            # If the keyword is in the rhyme dictionary
+            # -> only probabilities for the chosen keyword
+            probVector[self.w2i[keyword]] = 1
+            return probVector / np.sum(probVector)
+        else:
+            return None
 
     def signature(self):
         sys.stdout.write('\n                                     ')
