@@ -73,8 +73,7 @@ form.addEventListener('submit', async e => {
 const formFld = document.getElementById('form');
 formFld.addEventListener('change', async e => {
     const rhymeScheme = receiveRhymeScheme();
-    console.log("Rhyme scheme updated to " , rhymeScheme);
-});
+    });
 
 export async function retrieveRhymeScheme() {
     const langFld = document.getElementById('lang').value;
