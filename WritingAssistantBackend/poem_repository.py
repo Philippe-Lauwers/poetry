@@ -158,6 +158,60 @@ class PoemRepository(BaseRepository):
 
         db.session.commit()
 
+
+
+    @staticmethod
+    def list(user_id, status=None):
+        poems = []
+
+        # Base query, joining Poem → PoemStatus on the status FK
+        query = (
+            db.session
+            .query(PoemModel)
+            .join(PoemStatusModel, PoemStatusModel.id == PoemModel.status)
+            .filter(PoemModel.user_id == user_id)
+        )
+
+        # Add status filter
+        if status is None:
+            query = query.filter(PoemStatusModel.poemStatusNo > 0)
+        else:
+            query = query.filter(PoemStatusModel.poemStatusNo == status)
+
+        # Order and execute
+        orm_list = query.order_by(asc(PoemModel.id)).all()
+
+        # Build result list
+        for pm in orm_list:
+            poem_dict = {
+                "id": pm.id,
+                "key": pm.lookupKey,
+                "title": pm.title,
+                "language": pm.poemLanguage_id,
+                "form": pm.rhymeScheme_id,
+                "status": pm.status,
+                "text": pm.poemText,
+            }
+
+            # If it’s a “stub,” fetch keywords to display
+            if not pm.title and not pm.poemText:
+                orm_keywords = (
+                    db.session
+                    .query(KeywordModel)
+                    .filter(
+                        KeywordModel.poem_id == pm.id,
+                        KeywordModel.status > 0
+                    )
+                    .order_by(asc(KeywordModel.id))
+                    .all()
+                )
+                poem_dict["keywords"] = [{kw.id:kw.keyword} for kw in orm_keywords]
+
+            poems.append(poem_dict)
+
+        return poems
+
+
 class StanzaRepository(BaseRepository):
     @staticmethod
     def save(stanza, poem_id, isNew=True):

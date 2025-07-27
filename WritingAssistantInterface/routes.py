@@ -165,6 +165,15 @@ def savePoem():
         headers={'Content-Type': 'application/json'})
     return jsonify(resp.json())
 
+@main_bp.route("/listPoems", methods=["GET"])
+def listPoems():
+    user_id = request.args.get("user_id")
+    resp = requests.get(f"{BACKEND_URL}/listPoems", params={"user_id": user_id})
+    poems = resp.json()['poems']
+    return poems
+    # return render_template("partials/listPoems.html", poems=poems)
+
+
 @main_bp.route('/randomKeywords', methods=['POST'])
 def randomKeywords():
     params = request.get_json(force=True)

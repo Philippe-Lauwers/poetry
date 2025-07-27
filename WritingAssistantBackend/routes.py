@@ -109,6 +109,12 @@ def savePoem():
     if int(status) == 2: PoemRougeScorer(poem_container).analyze()
     return jsonify({"poem": poem_container.to_dict()})
 
+@main_bp.route("/listPoems", methods=["GET"])
+def listPoems():
+    user_id = request.args.get("user_id", default=None, type=str)
+    poemList = PoemRepository.list(user_id=user_id)
+    return jsonify({"poems":poemList})
+
 @main_bp.route("/randomKeywords", methods=["GET", "POST"])
 def randomKeywords():
     # This endpoint requests random keywords
