@@ -6,7 +6,7 @@ import os
 import pickle
 import random
 import re
-import sys
+import sys, traceback
 import time
 import math
 import warnings
@@ -40,7 +40,6 @@ class PoemBase:
 
         self.ngramModel = kenlm.Model(self.NGRAM_FILE)
         self._rhymeCache = {} # cache for rhymes, to avoid repeated lookups in the rhyme dictionary
-        self._firstRun = True
 
         if not os.path.exists('log'):
             os.makedirs('log')
@@ -97,44 +96,45 @@ class PoemBase:
         self.i2w = self.generator.vocab.itos
         self.w2i = self.generator.vocab.stoi
 
-    def initPoemContainer(self,form=None,nmfDim=None, lang=None, title=None, origin=None):
+    def initPoemContainer(self,id =  None, form=None,nmfDim=None, lang=None, title=None, origin=None):
         #Delete any lingering instances of the PoemBase class
         try:
             obj = self.container
             del obj
         except AttributeError:
             pass
-        # get the nmfDim: None if the argument is None, a random value if the argument is 'random'
-        if nmfDim == 'random':
-            self._nmfDim = random.randint(0, self.W.shape[1] - 1)
-            self._firstRun = True
-        elif type(nmfDim) == int:
-            self._nmfDim  = nmfDim
-        else:
-            self._nmfDim = nmfDim
 
         self.container = PoemContainer()
+        if id is not None: self.container.id = id
         self.container.form = form
         self.container.title = title
-        self.container.nmfDim = self._nmfDim
+        self.container.nmfDim = nmfDim
         self.container.language = lang
         self.container.origin = origin
 
-    def receiveUserInput(self, title=None, form=None, nmfDim=None, userInput=None, structure=None):
-        self.initPoemContainer(form=form, nmfDim=nmfDim, lang=self.lang, origin='browser', title=title)
+    def receiveUserInput(self, id=None, title=None, form=None, nmfDim=None, userInput=None, structure=None):
+        if nmfDim is None or nmfDim == 'random':
+            # get the nmfDim: None if the argument is None, a random value if the argument is 'random'
+            nmfDim = random.randint(0, self.W.shape[1] - 1)
+        elif not isinstance(nmfDim, int):
+            if nmfDim.isdigit():
+                nmfDim = int(nmfDim)
+
+        self.initPoemContainer(id=id, form=form, nmfDim=nmfDim, lang=self.lang, origin='browser', title=title)
         # Stores a representation of the poem in the database
         self.container.receiveUserInput(userInput, structure, title)
 
-        test = self.container.blacklists()
-
         PoemRepository.save(self.container)
 
-    def write(self, constraints=('rhyme'), form='sonnet', nmfDim=False, userInput=None, structure=None, title=None, keywords=None):
+    def write(self, constraints=('rhyme'), form='sonnet', nmfDim=None, userInput=None, structure=None, title=None, keywords=None):
         self.form = form
         self.blacklist_words = set()
         self.blacklist = []
         self.previous_sent = None
         self.keywords = keywords if keywords else []
+
+        if nmfDim is None or nmfDim == 'random':
+            nmfDim = self.container.nmfDim
 
         if userInput is None:
             self.initPoemContainer(form=form, nmfDim=nmfDim, lang=self.lang, origin='GRU', title=None)
@@ -179,9 +179,8 @@ class PoemBase:
             # All words used
             self.blacklist_words = self.blacklist_words.union(blacklists["words"])
 
-        if not self._firstRun or self.keywords:
+        if self.keywords:
             nmfDim = self.reevaluateNmfDim(title=self.container.title, keywords=self.keywords, userInput=userInput)
-            self._firstRun = False
         else:
             nmfDim = self._nmfDim # the value that was stored at initialization of the PoemBase instance
 
@@ -201,6 +200,7 @@ class PoemBase:
                     words = self.getSentence(rhyme=el, syllables = True, nmf=nmfDim, n = nSuggestions)
                 except KeyError as e:
                     print('err', e)
+                    tb_str = traceback.format_exc()
                     continue
                 else:
                     # adds the generated text to the _poemContainer
@@ -220,9 +220,9 @@ class PoemBase:
                     else: # generating n suggestions when a single verse is requested
                         self.container.stanzas[-1].verses[-1].suggestions = [' '.join(w) for w in words]
                     # writes the generated verse to stdout and log
-                    if isinstance(words, str):
-                        sys.stdout.write(' '.join(words) + '\n')
-                        self.log.write(' '.join(words) + '\n')
+                    if isinstance(words[0], str):
+                        sys.stdout.write(' '.join(words[0]) + '\n')
+                        self.log.write(' '.join(words[0]) + '\n')
                     else:
                         sys.stdout.write('Generated ' + str(nSuggestions) + ' suggestions' + '\n')
                         self.log.write('Generated ' + str(nSuggestions) + ' suggestions' + '\n')
@@ -284,10 +284,10 @@ class PoemBase:
                 pickKeyword = 0
                 while pickKeyword < math.ceil(len(self.keywords)/2):
                     keyword = random.choice(list(self.keywords.values()))
-                    if keyword in self.rhymeCache.values():
+                    if keyword in self._rhymeCache.values():
                         break
                     pickKeyword += 1
-                if keyword != "":
+                if keyword != "" and keyword not in self.blacklist_words:
                     dfltMax_length = self.generator.maxLength
                     self.generator.maxLength = math.ceil(dfltMax_length / random.randint(4, 6))
                     dfltNBatches = self.generator.nBatchesDecoder
@@ -319,7 +319,7 @@ class PoemBase:
             # Before we do that, restore the defaults for maxLength and nBatchesDecoder
             self.generator.maxLength = 0
             self.generator.nBatchesDecoder = 0
-
+            previous = self.previous_sent
         allCandidates, allProbScores = self.generator.generateCandidates(previous=previous,rhymePrior=rhymePrior, nmfPrior=nmfPrior)
         scoreList = self.scoreCandidates(allCandidates=allCandidates, allProbScores=allProbScores,nmf=nmf, syllables=syllables)
 
@@ -338,6 +338,7 @@ class PoemBase:
                         output = scoreList[i][1]
                     if keyword in output:
                         break
+                    i += 1
             if firstPart:
                 output = firstPart + scoreList[0][1]
             else:
@@ -524,7 +525,7 @@ class PoemBase:
         # 1. Determine (randomly) whether we pick a random rhyme or one of the keywords
         pickKeyword = random.choice([True, False]) if self.keywords else False
         # 2. If we pick a keyword, we will look for a rhyme that matches the keyword
-        if pickKeyword:
+        if pickKeyword and pickKeyword not in self._rhymeCache.values():
             rhymeDict = {}
             for kw in self.keywords.values():
                 if kw not in self.blacklist_words:
@@ -534,17 +535,18 @@ class PoemBase:
                     while search_kw:
                         rhymeForm =  next((value for key, value in self.rhymeDictionary.items() if key.endswith(search_kw)), None)
                         if rhymeForm:
+                            search_kw = kw # set back to the original keyword for later use
                             break  # found a match
                         search_kw = search_kw[1:]
-                    # If found, we store it in a dictionary with it's frequency
+                    # If found, we store it in a dictionary with its frequency
                     if rhymeForm:
                         if rhymeForm not in self.blacklist:
-                            if self.freqRhyme[rhymeForm[1]] >= cutoff:
-                                if rhymeForm[1] not in rhymeDict:
-                                    rhymeDict[rhymeForm[1]] = self.freqRhyme[rhymeForm[1]]
+                            if rhymeForm[-1] in self.freqRhyme and self.freqRhyme[rhymeForm[-1]] >= cutoff:
+                                if rhymeForm[-1] not in rhymeDict:
+                                    rhymeDict[rhymeForm[-1]] = self.freqRhyme[rhymeForm[-1]]
                                 else: # if the rhymeForm is already in the dictionary, we randomly decide whether to replace
                                     if(random.choice([True, False])):
-                                        rhymeDict[rhymeForm[1][1]] = self.freqRhyme[rhymeForm[1]]
+                                        rhymeDict[rhymeForm[-1]] = self.freqRhyme[rhymeForm[-1]]
             if rhymeDict:
                 rhymeDictByFreq = {v: k for k, v in rhymeDict.items()}
                 # If we found the rhymes mathing the keywords, we pick randomly
@@ -556,7 +558,7 @@ class PoemBase:
                     freqs.pop()
                 chosenFreq = random.choice(list(set(weightedFreqs)))
                 if search_kw in self.rhymeDictionary:
-                    self._rhymeCache[rhymeForm[1]] = search_kw
+                    self._rhymeCache[rhymeForm[-1]] = search_kw
                 return rhymeDictByFreq[chosenFreq]
         # 3. If we did not pick a keyword or no appropriate rhyme is found,
         #    we will randomly select a rhyme from the rhyme dictionary
@@ -574,10 +576,6 @@ class PoemBase:
         probVector.fill(1e-20)
         if self._rhymeCache:
             # There is a rhyme cache when we created rhymes from keywords
-            # -> little promotion for the words that rhyme with the keyword
-            for w in self.rhymeDictionary[rhyme]:
-                if not self.rhymeDictionary[w] in self.blacklist:
-                    probVector[self.w2i[w]] = probVector[self.w2i[w]] * 10^5
             # -> maximum rhyme probabilities for the chosen keyword
             if rhyme in self._rhymeCache.keys():
                 probVector[self.w2i[self._rhymeCache[rhyme]]] = 1

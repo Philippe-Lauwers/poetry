@@ -265,6 +265,52 @@ export function receiveKeywords(input) {
 
         }
     }
+    // @ every round trip, stanzas, verses, ... are updated -> retrieve the new id's
+    if (input.stanzas) {
+        const SB = document.getElementById("struct-sandbox");
+        for (const s of input.stanzas) {
+            if (s.stanza.oldId) {
+                const stanza = document.getElementById(s.stanza.oldId);
+                if (stanza) {
+                    stanza.id = "s-" + s.stanza.id;
+                    SB.value = SB.value.replace(s.stanza.oldId, "s-" + s.stanza.id);
+                    const S = document.getElementById("struct-" + s.stanza.oldId);
+                    S.id = "struct-s-" + s.stanza.id;
+                    S.setAttribute("name", S.id);
+                    if (s.stanza.verses) {
+                        for (const vw of s.stanza.verses) {
+                            if (vw.verse.oldId) {
+                                const verseWrapper = document.getElementById(vw.verse.oldId.replace("v-", "vw-"));
+                                if (verseWrapper) {
+                                    verseWrapper.id = "vw-" + vw.verse.id;
+                                    S.value = S.value.replace(vw.verse.oldId.replace("v-", "vw-"), "vw-" + vw.verse.id);
+                                    const VW = document.getElementById("struct-" + vw.verse.oldId.replace("v-", "vw-"));
+                                    VW.id = "struct-vw-" + vw.verse.id;
+                                    VW.setAttribute("name", VW.id);
+                                    const verse = document.getElementById(vw.verse.oldId);
+                                    if (verse) {
+                                        verse.id = "v-" + vw.verse.id;
+                                        verse.setAttribute("name",verse.id)
+                                        VW.value = VW.value.replace(vw.verse.oldId, "v-" + vw.verse.id);
+                                        const V = document.getElementById("struct-" + vw.verse.oldId)
+                                        V.setAttribute("name", "struct-v-" + vw.verse.id);
+                                        V.id = V.name
+                                    let btn = verseWrapper.firstChild;
+                                        while (btn) {
+                                            if (btn.tagName === "BUTTON") {
+                                                btn.value = verse.id;
+                                            }
+                                            btn = btn.nextSibling;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 export function deleteKeyword (keyword) {

@@ -89,4 +89,7 @@ export function closeSuggestionBox({e = null, target = null, verse = null, keywo
     };
     enableSandbox();
     if (Object.keys(keywords).length > 0) receiveKeywords(keywords);
+    if (verse) {
+        document.getElementById("btn_generateVerse").setAttribute("disabled", true);
+    }
 }

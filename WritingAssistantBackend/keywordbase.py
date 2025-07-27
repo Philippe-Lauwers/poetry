@@ -165,7 +165,7 @@ class KeywordBase:
             self.inputKeywordsList = []
         if userInput:
             self.inputWordsList = ' '.join(
-                [re.sub(r"(?:[^\w\s]|_)+", '', vrs).lower for vrs in userInput.values() if vrs != ""]).split()
+                [re.sub(r"(?:[^\w\s]|_)+", '', vrs).lower() for vrs in userInput.values() if vrs != ""]).split()
         else:
             self.inputWordsList = []
 

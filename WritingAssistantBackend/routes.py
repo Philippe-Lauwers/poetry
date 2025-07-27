@@ -52,6 +52,7 @@ def write_verse():
     # extract your fields (with fallbacks)
     lang = data.get("lang", "1")
     pform = data.get("form", "1")
+    poem_id = data.get("poem_id", None)
     title = data.get("poemTitle", "")
     nmfDim = convInt(data.get("nmfDim", "random"))
     verses = {k: v for (k, v) in data.items() if k.startswith("v-")}
@@ -59,7 +60,7 @@ def write_verse():
     structure = {k: v for (k, v) in data.items() if k.startswith("struct")}
 
     poem = get_poem(lang=lang)
-    poem.receiveUserInput(form=pform ,title=title, nmfDim=nmfDim, structure= structure, userInput=verses|keywords)
+    poem.receiveUserInput(id=poem_id,form=pform ,title=title, nmfDim=nmfDim, structure= structure, userInput=verses|keywords)
     poem.write(form=pform, nmfDim=nmfDim, structure=structure, userInput=verses, keywords=keywords)
     PoemRepository.save(poem.container)
     return jsonify({"poem": poem.container.to_dict()})

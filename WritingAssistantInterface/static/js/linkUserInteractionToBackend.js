@@ -1,5 +1,5 @@
 import {receivePoem} from './sandboxInteraction.js';
-import {getParambox, mockEnableSelect, receiveRhymeScheme} from './paramboxInteraction.js'
+import {activateParambox, getParambox, mockEnableSelect, receiveRhymeScheme} from './paramboxInteraction.js'
 import {closeSuggestionBox} from "./suggestionboxInteraction.js";
 import {activateKeywordbox, deleteKeyword, receiveKeywords, updateNmfDim} from "./keywordboxInteraction.js";
 
@@ -52,17 +52,18 @@ form.addEventListener('submit', async e => {
         // 3) Display
     if (json.poem) {
         receivePoem(json.poem);
-        document.getElementById("nmfDim").value = json.poem.parameters.nmfDim; // <-- now this gets called too
+        document.getElementById("nmfDim").value = json.poem.parameters.nmfDim;
     } else if (json.suggAccept) {
         closeSuggestionBox({verse: json});
-        document.getElementById("nmfDim").value = json.suggAccept.nmfDim; // <-- now this gets called too
+        document.getElementById("nmfDim").value = json.suggAccept.nmfDim;
     } else if (json.keywords) {
         receiveKeywords(json.keywords);
     } else if (json.kwAccept) {
         closeSuggestionBox({keywords: json});
     } else if (json.keywordsSaved) {
         activateKeywordbox();
-        updateNmfDim(json.keywordsSaved.nmfDim);  // <-- now this gets called too
+        activateParambox()
+        updateNmfDim(json.keywordsSaved.nmfDim);
     } else if (json.kwDelete) {
         deleteKeyword(json.kwDelete);
     }
