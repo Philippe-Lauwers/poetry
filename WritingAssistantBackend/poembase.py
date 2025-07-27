@@ -132,6 +132,7 @@ class PoemBase:
         self.blacklist = []
         self.previous_sent = None
         self.keywords = keywords if keywords else []
+        self._numVerses = 0
 
         if nmfDim is None or nmfDim == 'random':
             nmfDim = self.container.nmfDim
@@ -221,8 +222,8 @@ class PoemBase:
                         self.container.stanzas[-1].verses[-1].suggestions = [' '.join(w) for w in words]
                     # writes the generated verse to stdout and log
                     if isinstance(words[0], str):
-                        sys.stdout.write(' '.join(words[0]) + '\n')
-                        self.log.write(' '.join(words[0]) + '\n')
+                        sys.stdout.write(' '.join(words) + '\n')
+                        self.log.write(' '.join(words) + '\n')
                     else:
                         sys.stdout.write('Generated ' + str(nSuggestions) + ' suggestions' + '\n')
                         self.log.write('Generated ' + str(nSuggestions) + ' suggestions' + '\n')
@@ -281,8 +282,12 @@ class PoemBase:
                 allFirstPartScores = []
                 allFirstPartEncDecScores = []
 
-                pickKeyword = 0
-                while pickKeyword < math.ceil(len(self.keywords)/2):
+                # Attempt to spread the keywords evenly, slightly larger chance to pick a keyword
+                if random.choices([True, False], weights=[len(self.keywords)+1,self._numVerses-1])[0]:
+                    pickKeyword = 0
+                else:
+                    pickKeyword = len(self.keywords)
+                while pickKeyword < len(self.keywords):
                     keyword = random.choice(list(self.keywords.values()))
                     if keyword in self._rhymeCache.values():
                         break
@@ -312,11 +317,16 @@ class PoemBase:
                         previous = previous[lenFirstPart:] + firstPart
                     else:
                         previous = firstPart
+                    print('*** First part: "', ' '.join(firstPart), '" generated with max_length', self.generator.maxLength)
                     # Determine how much of the verse still has to be generated + adapt number of batches accordingly
-                    self.generator.maxLength = dfltMax_length - lenFirstPart
-                    self.generator.nBatchesDecoder = math.ceil(4 + (dfltNBatches-2)*self.generator.maxLength/dfltMax_length)
+                    self.generator.maxLength = math.ceil((1 - lenFirstPart/self.generator.maxLength) * dfltMax_length)
+                    self.generator.nBatchesDecoder = 0
+                    print('*** Generating the rest of the verse with max_length: ', self.generator.maxLength)
+                    print('*** Blacklists:', self.blacklist, self.blacklist_words)
         except: # If generating a first part fails, we can continue generating an entire verse
             # Before we do that, restore the defaults for maxLength and nBatchesDecoder
+            tb_str = traceback.format_exc()
+            pass
             self.generator.maxLength = 0
             self.generator.nBatchesDecoder = 0
             previous = self.previous_sent
@@ -444,6 +454,15 @@ class PoemBase:
         mapDict = {}
 
         structure = PoembaseConfig.Poemforms.getElements(form=self.form, lang=self.lang)
+
+        # Store the number of verses for future use
+        poemStructureVerses = ()  # re-create the tuple without the empty lines (to match the user input)
+        for el in structure:
+            if el != '':
+                poemStructureVerses += (el,)
+        # Store the number of verses for future use
+        self._numVerses = len(poemStructureVerses)
+
         for el in set(structure):
             if not el in mapDict:
                 if el != '':
@@ -474,6 +493,9 @@ class PoemBase:
         for el in poemStructure:
             if el != '':
                 poemStructureVerses += (el,)
+        # Store the number of verses for future use
+        self._numVerses = len(poemStructureVerses)
+
         userInputLastWords = []
         if userInput:
             for k in userInput.keys():
@@ -582,7 +604,7 @@ class PoemBase:
                 return probVector / np.sum(probVector)
         else:
             for w in self.rhymeInvDictionary[rhyme]:
-                if not self.rhymeDictionary[w] in self.blacklist:
+                if not self.rhymeDictionary[w] in self.blacklist and not w in self.blacklist_words:
                     probVector[self.w2i[w]] = 1
 
         return probVector / np.sum(probVector)
@@ -591,14 +613,35 @@ class PoemBase:
         probVector = np.empty(len(self.i2w))
         probVector.fill(1e-20)
 
-        kwRhyme = self.rhymeDictionary[keyword]
-        if kwRhyme:
-            # If the keyword is in the rhyme dictionary
-            # -> only probabilities for the chosen keyword
-            probVector[self.w2i[keyword]] = 1
-            return probVector / np.sum(probVector)
+        if keyword in self.rhymeDictionary:
+            kwRhyme = self.rhymeDictionary[keyword]
+            if kwRhyme:
+                # If the keyword is in the rhyme dictionary
+                # -> only probabilities for the chosen keyword
+                probVector[self.w2i[keyword]] = 1
+                return probVector / np.sum(probVector)
+            else:
+                return None
         else:
-            return None
+            # If the keyword is not in the rhyme dictionary, we look for a rhyme that matches the keyword
+            # by dropping the first letter until a match is found or the string is empty
+            searchKW = keyword
+            while searchKW:
+                if searchKW in self.rhymeDictionary:
+                    kwRhyme = self.rhymeDictionary[searchKW]
+                    break
+                searchKW = searchKW[1:]
+            if kwRhyme:
+                # if a rhyme is found for a keyword not in the rhyme dictionary,
+                # set probabilities for all words that rhyme with the keyword
+                if kwRhyme in self.rhymeInvDictionary:
+                    for w in self.rhymeInvDictionary[kwRhyme]:
+                        if not w in self.blacklist_words:
+                            probVector[self.w2i[w]] = 1
+                return probVector / np.sum(probVector)
+            else:
+                return None
+
 
     def signature(self):
         sys.stdout.write('\n                                     ')
