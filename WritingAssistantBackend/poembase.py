@@ -96,7 +96,7 @@ class PoemBase:
         self.i2w = self.generator.vocab.itos
         self.w2i = self.generator.vocab.stoi
 
-    def initPoemContainer(self,id =  None, form=None,nmfDim=None, lang=None, title=None, origin=None):
+    def initPoemContainer(self, id=None, form=None,nmfDim=None, lang=None, title=None, origin=None):
         #Delete any lingering instances of the PoemBase class
         try:
             obj = self.container
@@ -317,12 +317,9 @@ class PoemBase:
                         previous = previous[lenFirstPart:] + firstPart
                     else:
                         previous = firstPart
-                    print('*** First part: "', ' '.join(firstPart), '" generated with max_length', self.generator.maxLength)
                     # Determine how much of the verse still has to be generated + adapt number of batches accordingly
                     self.generator.maxLength = math.ceil((1 - lenFirstPart/self.generator.maxLength) * dfltMax_length)
                     self.generator.nBatchesDecoder = 0
-                    print('*** Generating the rest of the verse with max_length: ', self.generator.maxLength)
-                    print('*** Blacklists:', self.blacklist, self.blacklist_words)
         except: # If generating a first part fails, we can continue generating an entire verse
             # Before we do that, restore the defaults for maxLength and nBatchesDecoder
             tb_str = traceback.format_exc()

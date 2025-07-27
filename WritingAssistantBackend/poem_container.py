@@ -52,6 +52,7 @@ class BaseContainer():
             except:
                 inValue = idValue
         return inValue
+
     def capitalizeVerse(self):
         # Method to be called for computer generated verses,
         # The choice to capitalize manually written text is left to the poet,
@@ -172,6 +173,13 @@ class Poem(BaseContainer):
     def keywords(self):
         return self._keywords
 
+    @property
+    def text(self):
+        stanzas = []
+        for s in self.stanzas:
+            stanzas.append(s.text)
+        return "\n".join(stanzas)
+
 
     def blacklists(self):
         # titleWords = [w.lower() for w in self.title.split(" ")] if self.title else []
@@ -272,6 +280,13 @@ class Stanza(BaseContainer):
     @order.setter
     def order(self, value):
         self._order = value
+
+    @property
+    def text(self):
+        verses = []
+        for v in self.verses:
+            verses.append(v.text)
+        return "\n".join(verses)
 
     def blacklists(self):
         words = set()

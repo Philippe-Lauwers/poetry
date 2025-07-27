@@ -32,13 +32,14 @@ def write_poem():
     data = request.get_json(force=True) or {}
     # extract your fields (with fallbacks)
     lang = data.get("lang", "1")
+    poem_id = data.get("poem_id", None)
     pform = data.get("form", "1")
     nmfDim = convInt(data.get("nmfDim", "random"))
     title = data.get("poemTitle")
     keywords = {k: v for (k, v) in data.items() if k.startswith("kw-")}
     # - create the poem object (or get it from cache)
     poem = get_poem(lang=lang)
-    poem.receiveUserInput(form=pform, title=title, nmfDim=nmfDim, userInput=keywords)
+    poem.receiveUserInput(id=poem_id,form=pform, title=title, nmfDim=nmfDim, userInput=keywords)
     poem.write(form=pform, nmfDim=nmfDim, title=title, keywords=keywords)
     PoemRepository.save(poem.container)
     return jsonify({"poem": poem.container.to_dict()})

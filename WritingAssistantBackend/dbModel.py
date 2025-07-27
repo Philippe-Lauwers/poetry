@@ -2,7 +2,9 @@
 # circular import with app.py -> use .extensions instead
 from .extensions import db
 from sqlalchemy.orm import synonym  # to allow use of synonyms for Columns
-from datetime import datetime, timezone  # needed for timestamps
+from datetime import datetime, timezone # needed for timestamps
+import random
+import string
 
 """
  NOTE:
@@ -201,10 +203,13 @@ class Action(db.Model):
         foreign_keys=[group_id],
     )
 
-
+def random_string(n=16):
+    """Generate a random string of fixed length n."""
+    return ''.join(random.choices(string.ascii_letters + string.digits, k=n))
 class Poem(db.Model):
     __tablename__ = 'poems'
-    __table_args__ = (db.PrimaryKeyConstraint('id', name='pk_poems'),)
+    __table_args__ = (db.PrimaryKeyConstraint('id', name='pk_poems'),
+                      db.UniqueConstraint('user_id', 'lookupKey', name='uq_poems_user_lookupKey'),)
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id', name='fk_poems_user_id'), nullable=False)
@@ -215,6 +220,8 @@ class Poem(db.Model):
     language = synonym('poemLanguage_id')
     theme_id = db.Column(db.Integer, db.ForeignKey('themes.id', name='fk_poems_themes_id'), nullable=False)
     status = db.Column(db.Integer, db.ForeignKey('poemStatuses.id', name='fk_poems_poemStatuses_id'), nullable=False)
+    lookupKey = db.Column(db.String(16), default=lambda:random_string(16), nullable=False)
+    poemText = db.Column(db.Text, nullable=True)
     title = db.Column(db.String(1000))
 
 class PreviousPoem(db.Model):

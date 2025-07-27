@@ -83,7 +83,8 @@ class PoemRepository(BaseRepository):
                                      poemLanguage_id=poem.language,
                                      rhymeScheme_id=poem.form,
                                      theme_id=poem.nmfDim,
-                                     status=orm_status.id)
+                                     status=orm_status.id,
+                                     poemText=poem.text)
                 if poem.title is not None:
                     orm_poem.title = poem.title
                 db.session.add(orm_poem)
@@ -115,6 +116,8 @@ class PoemRepository(BaseRepository):
                         actions.update({'PM_FIN':0})
                     elif int(poem.status) == 1:
                         actions.update({'PM_EDT':0})
+                if orm_poem.poemText != poem.text:
+                    orm_poem.poemText = poem.text
 
                 if savePrevious:
                     # log the action because we need the id for saving the previous version
