@@ -3,7 +3,7 @@
 import os
 import requests
 import random
-from flask import Blueprint, render_template, request, jsonify
+from flask import Blueprint, render_template, request, jsonify, Response
 
 # Load env (optional if already done in app.py)
 from dotenv import load_dotenv
@@ -173,13 +173,11 @@ def savePoem():
         headers={'Content-Type': 'application/json'})
     return jsonify(resp.json())
 
-@main_bp.route("/listPoems", methods=["GET"])
-def listPoems():
-    user_id = request.args.get("user_id")
-    resp = requests.get(f"{BACKEND_URL}/listPoems", params={"user_id": user_id})
-    poems = resp.json()
-    return render_template("partials/index.html", poems=poems)
-
+@main_bp.route('/deletePoem', methods=['GET'])
+def deletePoem():
+    key = request.args.get('key', default=None, type=str)
+    resp = requests.get(f"{BACKEND_URL}/deletePoem", params={"key": key})
+    return Response(resp.content, status=resp.status_code, content_type='application/json')
 
 @main_bp.route('/randomKeywords', methods=['POST'])
 def randomKeywords():

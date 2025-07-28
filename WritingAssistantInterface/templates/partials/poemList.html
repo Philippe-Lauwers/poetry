@@ -10,7 +10,7 @@
                 <div class="poem-link-wrapper">
                     <a href="#"
                        class="poem-link">{{ poem.title or (poem.text.splitlines()[0] if poem.text else poem.keywords|join(', ') or "[untitled]") }}</a>
-                    <button id="btn_deletePoem_{{ poem.key }}" name="btn_deletePoem" value="{{ poem.key }}"
+                    <button type="button" id="btn_deletePoem_{{ poem.key }}" name="btn_deletePoem" value="{{ poem.key }}"
                             title="Delete '{{ poem.title or (poem.text.splitlines()[0] if poem.text else poem.keywords|join(', ') or "[untitled]") }}'"></button>
                 </div>
                 </li>

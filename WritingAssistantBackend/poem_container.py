@@ -178,7 +178,7 @@ class Poem(BaseContainer):
         stanzas = []
         for s in self.stanzas:
             stanzas.append(s.text)
-        return "\n".join(stanzas)
+        return "\n\n".join(stanzas)
 
 
     def blacklists(self):

@@ -211,6 +211,21 @@ class PoemRepository(BaseRepository):
 
         return poems
 
+    @staticmethod
+    def delete(key):
+        # Delete a poem by its key
+        orm_poem = db.session.query(PoemModel).filter_by(lookupKey=key).first()
+        if not orm_poem:
+            return {"error": "Poem not found"}, 404
+
+        # Set status to 0 (deleted)
+        orm_poem.status = 0
+        db.session.commit()
+
+        BaseRepository.logAction(actionType='PM_DEL', actionTargetType='poem', targetID=orm_poem.id)
+
+        return key
+
 
 class StanzaRepository(BaseRepository):
     @staticmethod

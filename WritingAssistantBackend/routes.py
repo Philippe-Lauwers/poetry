@@ -115,6 +115,12 @@ def listPoems():
     poemList = PoemRepository.list(user_id=user_id)
     return jsonify({"poems":poemList})
 
+@main_bp.route("/deletePoem", methods=["GET"])
+def deletePoem():
+    key = request.args.get("key", default=None, type=str)
+    deleted = PoemRepository.delete(key)
+    return jsonify({"deleted":deleted})
+
 @main_bp.route("/randomKeywords", methods=["GET", "POST"])
 def randomKeywords():
     # This endpoint requests random keywords
