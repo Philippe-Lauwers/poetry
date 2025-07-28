@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <title>Poem Generator</title>
     <link rel="stylesheet" href="/static/css/layout.css">
+    <link rel="stylesheet" href="/static/css/poemlist.css">
     <link rel="stylesheet" href="/static/css/sandbox.css">
     <link rel="stylesheet" href="/static/css/suggestionbox.css">
     <link rel="stylesheet" href="/static/css/parambox.css">
@@ -22,38 +23,13 @@
             <input type="hidden" id="user_id" name="user_id" value="1">
         </div>
         <div class="bottom-pane">
-            <div class="left-pane">
-                <div id="keywordbox"></div>
-            </div>
-            <div class="right-pane">
-                <div id="parambox">
-                    {# index.html #}
-                    {% for section in weblists %}
-                        {# each `section` is a dict like {"lang": { … }} or {"form": { … }} #}
-                        {% for list_name, list_data in section.items() %}
-                            <label for="{{ list_name }}">{{ list_data.label }}</label>
-                            <select id="{{ list_name }}" name="{{ list_name }}">
-                                {% for opt in list_data.options %}
-                                    <option id="{{ list_name }}_{{ opt.id }}"
-                                            value="{{ opt.id }}"
-                                            {% if opt.default %}selected{% endif %}>
-                                        {{ opt.label }}
-                                    </option>
-                                {% endfor %}
-                            </select>
-                        {% endfor %}
-                    {% endfor %}
-                </div>
-                <div id="titlebox">
-                    <input type="text" id="poemTitle" name="poemTitle"
-                           placeholder="{{ randomPlaceholder }}"/></div>
-                <fieldset id="sandboxFields"><div id="sandbox"></div></fieldset>
-            </div>
+             {% include 'partials/poemList.html' %}
         </div>
     </div>
 </form>
 
-<script type="module" defer src="{{ url_for('static', filename='js/main.js') }}"></script>
+<!-- <script type="module" defer src="{{ url_for('static', filename='js/main.js') }}"></script> -->
+<script type="module" defer src="{{ url_for('static', filename='js/poemlistInteraction.js') }}"></script>
 <script type="module" src="{{ url_for('static',filename='js/linkUserInteractionToBackend.js') }}"></script>
 <script type="module" src="{{ url_for('static',filename='js/API.js') }}"></script>
 <script type="module" src="{{ url_for('static',filename='js/sandboxInteraction.js') }}"></script>

@@ -2,15 +2,15 @@
 .inline-msg {
   /* make it cover the wrapper 1:1 */
   position: absolute;
-  inset: 0;                      /* likewise */
+  inset: 0;
 
-  display: flex;                    /* center the text */
+  display: flex;
   align-items: center;
   justify-content: left;
-  padding-left: 0.2rem; /* space inside the input field          */
+  padding-left: 0.2rem;
 
 
-  background: rgba(255, 249, 196, 0.95); /* light yellow */
+  background: rgba(255, 249, 196, 0.95);
   border: 1px solid #ffe58f;
   border-radius: 4px;
   color: #664d03;

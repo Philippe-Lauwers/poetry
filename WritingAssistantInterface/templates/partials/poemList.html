@@ -1,0 +1,22 @@
+<div class="poem-overview">
+    <div id="poem-list-pane" class="poem-list-pane">
+        <ul id="poem-list" class="poem-list">
+            {% for poem in poems %}
+                <li class="poem-entry"
+                    data-key="{{ poem.key }}"
+                    data-title="{{ poem.title or '' }}"
+                    data-text="{{ poem.text or '' }}"
+                    data-keywords="{{ poem.keywords | join(', ') if poem.keywords else '' }}">
+                <div class="poem-link-wrapper">
+                    <a href="#"
+                       class="poem-link">{{ poem.title or (poem.text.splitlines()[0] if poem.text else poem.keywords|join(', ') or "[untitled]") }}</a>
+                    <button id="btn_deletePoem_{{ poem.key }}" name="btn_deletePoem" value="{{ poem.key }}"
+                            title="Delete '{{ poem.title or (poem.text.splitlines()[0] if poem.text else poem.keywords|join(', ') or "[untitled]") }}'"></button>
+                </div>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+    <div class="poem-preview-pane" id="poemPreview">
+    </div>
+</div>

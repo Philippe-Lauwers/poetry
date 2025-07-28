@@ -1,0 +1,27 @@
+<div class="left-pane">
+                <div id="keywordbox"></div>
+            </div>
+            <div class="right-pane">
+                <div id="parambox">
+                    {# index.html #}
+                    {% for section in weblists %}
+                        {# each `section` is a dict like {"lang": { … }} or {"form": { … }} #}
+                        {% for list_name, list_data in section.items() %}
+                            <label for="{{ list_name }}">{{ list_data.label }}</label>
+                            <select id="{{ list_name }}" name="{{ list_name }}">
+                                {% for opt in list_data.options %}
+                                    <option id="{{ list_name }}_{{ opt.id }}"
+                                            value="{{ opt.id }}"
+                                            {% if opt.default %}selected{% endif %}>
+                                        {{ opt.label }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        {% endfor %}
+                    {% endfor %}
+                </div>
+                <div id="titlebox">
+                    <input type="text" id="poemTitle" name="poemTitle"
+                           placeholder="{{ randomPlaceholder }}"/></div>
+                <fieldset id="sandboxFields"><div id="sandbox"></div></fieldset>
+            </div>

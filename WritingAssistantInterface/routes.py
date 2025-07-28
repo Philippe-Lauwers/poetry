@@ -25,12 +25,14 @@ def home():
     resp = requests.get(f"{BACKEND_URL}/webLists")
     weblists = resp.json()['weblists']
 
-    # Look for the 'form' section of the json input
+    # Look for the 'form' section of the json input -> render
     weblists_form = None
     for section in weblists:
         if 'form' in section.keys(): # section will only have one key anyway
             weblists_form = section['form']
             break
+
+    # Look for the 'lang' section of the json input -> render
     dfltLang = None
     for it in weblists:
         if 'lang' in it.keys():
@@ -40,8 +42,14 @@ def home():
                     break;
             if dfltLang == None:
                 dfltLang = it['lang']['options'][0]['label'][0:2].lower()
+
+    #Fetch the list of poems from the backend
+    user_id = request.args.get("user_id", "1")
+    poems_resp = requests.get(f"{BACKEND_URL}/listPoems", params={"user_id": user_id})
+    poems = poems_resp.json().get("poems", [])
+
     return render_template('index.html', weblists=weblists, weblists_form=weblists_form,
-                           randomPlaceholder=pickPlaceholder(dfltLang))
+                           randomPlaceholder=pickPlaceholder(dfltLang), poems=poems, dfltLang=dfltLang)
 
 
 def pickPlaceholder(lang):
@@ -169,9 +177,8 @@ def savePoem():
 def listPoems():
     user_id = request.args.get("user_id")
     resp = requests.get(f"{BACKEND_URL}/listPoems", params={"user_id": user_id})
-    poems = resp.json()['poems']
-    return poems
-    # return render_template("partials/listPoems.html", poems=poems)
+    poems = resp.json()
+    return render_template("partials/index.html", poems=poems)
 
 
 @main_bp.route('/randomKeywords', methods=['POST'])
