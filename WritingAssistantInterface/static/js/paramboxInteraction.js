@@ -1,6 +1,7 @@
 import {Parambox} from './paramboxAPI/1_Parambox.js';
 import {retrieveRhymeScheme} from "./linkUserInteractionToBackend.js";
 import {firstEmptyVerse, getSandbox} from "./sandboxInteraction.js";
+import {initPoemListInteraction} from "./poemlistInteraction.js";
 
 export const getParambox = () => Parambox.instance;
 
@@ -176,6 +177,7 @@ async function loadPoemList() {
         const res = await fetch(`/listPoems?user_id=${encodeURIComponent(user_id)}`);
         const html = await res.text();
         document.querySelector('.bottom-pane').innerHTML = html;
+        initPoemListInteraction();
     } catch (err) {
         console.error('Failed to load info:', err);
     }

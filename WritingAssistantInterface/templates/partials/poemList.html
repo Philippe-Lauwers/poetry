@@ -15,7 +15,7 @@
                     data-text="{{ poem.text or '' }}"
                     data-keywords="{{ poem.keywordsText or '' }}">
                     <div class="poem-link-wrapper">
-                        <a href="#"
+                        <a href="javascript:void(0)"
                            class="poem-link">{{ poem.title or (poem.text.splitlines()[0] if poem.text else poem.keywordsText or "[untitled]") }}</a>
                         <button type="button" id="{{ 'btn_unlockPoem_' + poem.key
                                                     if poem.status == 2
