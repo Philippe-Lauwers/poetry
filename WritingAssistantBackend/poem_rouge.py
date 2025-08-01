@@ -52,7 +52,7 @@ class BaseRouge:
             if scoreType =='rouge':
                 for rougeType in scores.keys():
                     RougeScore = RougeScoreModel(poem_id=poem_id, verse_id=verse_id, rougeMetric_id=scores[rougeType]['rougeMetric_id'], precision=scores[rougeType]['p'], recall=scores[rougeType]['r'], f1=scores[rougeType]['f'] )
-                    db.session.add(RougeScore)
+                    db.session.merge(RougeScore)
                     db.session.flush()
             elif scoreType == 'distance':
                 for distanceType in scores.keys():
@@ -60,7 +60,7 @@ class BaseRouge:
                         DistanceScore = DistanceScoreModel(poem_id=poem_id, verse_id=verse_id, distanceMetric_id=scores[distanceType]['distanceMetric_id'], distance=scores[distanceType]['distance'], similarity=scores[distanceType]['similarity'])
                     else:
                         DistanceScore = DistanceScoreModel(poem_id=poem_id, verse_id=verse_id, distanceMetric_id=scores[distanceType]['distanceMetric_id'], similarity=scores[distanceType]['similarity'])
-                    db.session.add(DistanceScore)
+                    db.session.merge(DistanceScore)
                     db.session.flush()
 
 

@@ -2,6 +2,7 @@ import {BaseNode} from "../API.js";
 import {FinalCheckbox} from "./5_2_FinalCheckbox.js";
 import {FinalLabel} from "./5_1_FinalLabel.js";
 import {getParambox, mockDisableSelect, toggleSaveButton} from "../paramboxInteraction.js";
+import {editorProtected} from "../editorInteraction.js";
 
 export class FinalWrapper extends BaseNode {
 
@@ -35,7 +36,7 @@ export class FinalWrapper extends BaseNode {
         const parambox = getParambox();
         const checkbox = document.getElementById("chckBx_final");
         if (this.firstChild.el.checked && !document.getElementById("btn_editPoem")) {
-            this.addButton({
+            const btn =this.addButton({
                     id: "btn_editPoem",
                     value: 1,
                     type: "submit",
@@ -45,11 +46,12 @@ export class FinalWrapper extends BaseNode {
                     alt: "Edit poem"
                 }
             )
+            btn.addEventListener('click', e => {editorProtected({disable: false})})
             document.getElementById("btn_savePoem").style.display = "none";
             for (let el of parambox.children) {
-                if (el.id!=="btn_editPoem" && el.id!=="chckBx_final" && el.id!=="final") {
-                    if (el.nodeName.toLowerCase()=="select") {
-                        mockDisableSelect(el)
+                if (el.el.id!=="btn_editPoem" && el.el.id!=="chckBx_final" && el.el.id!=="final") {
+                    if (el.el.nodeName.toLowerCase()=="select") {
+                        mockDisableSelect(el.el)
                     }
                 }
             }

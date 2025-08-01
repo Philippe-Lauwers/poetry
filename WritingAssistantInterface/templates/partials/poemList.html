@@ -1,20 +1,34 @@
 <div class="poem-overview">
     <div id="poem-list-pane" class="poem-list-pane">
         <ul id="poem-list" class="poem-list">
-            {% for poem in poems %}
+        <div class="poem-creator-wrapper">
+                <a href="#"
+                   class="poem-creator-link">Create a new poem</a>
+                <button type="button" id="btn_createPoem" name="btn_createPoem"
+                        value=""
+                        title=Create a new poem"></button>
+            </div>
+            {%- for poem in poems %}
                 <li class="poem-entry"
                     data-key="{{ poem.key }}"
                     data-title="{{ poem.title or '' }}"
                     data-text="{{ poem.text or '' }}"
-                    data-keywords="{{ poem.keywords | join(', ') if poem.keywords else '' }}">
-                <div class="poem-link-wrapper">
-                    <a href="#"
-                       class="poem-link">{{ poem.title or (poem.text.splitlines()[0] if poem.text else poem.keywords|join(', ') or "[untitled]") }}</a>
-                    <button type="button" id="btn_deletePoem_{{ poem.key }}" name="btn_deletePoem" value="{{ poem.key }}"
-                            title="Delete '{{ poem.title or (poem.text.splitlines()[0] if poem.text else poem.keywords|join(', ') or "[untitled]") }}'"></button>
-                </div>
+                    data-keywords="{{ poem.keywordsText or '' }}">
+                    <div class="poem-link-wrapper">
+                        <a href="#"
+                           class="poem-link">{{ poem.title or (poem.text.splitlines()[0] if poem.text else poem.keywordsText or "[untitled]") }}</a>
+                        <button type="button" id="{{ 'btn_unlockPoem_' + poem.key
+                                                    if poem.status == 2
+                                                    else 'btn_editLoadPoem_' + poem.key }}"
+                                name="btn_editLoadPoem"
+                                value="{{ poem.key }}"
+                                title="Edit '{{ poem.title or (poem.text.splitlines()[0] if poem.text else poem.keywords|join(', ') or "[untitled]") }}'"></button>
+                        <button type="button" id="btn_deletePoem_{{ poem.key }}" name="btn_deletePoem"
+                                value="{{ poem.key }}"
+                                title="Delete '{{ poem.title or (poem.text.splitlines()[0] if poem.text else poem.keywords|join(', ') or "[untitled]") }}'"></button>
+                    </div>
                 </li>
-            {% endfor %}
+            {%- endfor %}
         </ul>
     </div>
     <div class="poem-preview-pane" id="poemPreview">

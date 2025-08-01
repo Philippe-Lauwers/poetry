@@ -1,4 +1,5 @@
 import {BaseNode} from "../API.js";
+import {rhymeSchemes} from "../editorInteraction.js"; // Assuming this is where rhymeSchemes is defined
 
 export class Option extends BaseNode {
 

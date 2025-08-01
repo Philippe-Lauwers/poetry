@@ -1,4 +1,5 @@
 from .extensions import db
+from typing import Optional, overload, TYPE_CHECKING
 from sqlalchemy import func, asc
 from .dbModel import Poem as PoemModel, PreviousPoem as PreviousPoemModel, PoemStatus as PoemStatusModel, \
     Stanza as StanzaModel, Verse as VerseModel, PreviousVerse as PreviousVerseModel, Keyword as KeywordModel, \
@@ -6,6 +7,7 @@ from .dbModel import Poem as PoemModel, PreviousPoem as PreviousPoemModel, PoemS
     KeywordSuggestionCollection as KeywordSuggestionCollectionModel, KeywordSuggestion as KeywordSuggestionModel, \
     Action as ActionModel, ActionType as ActionTypeModel, ActionTarget as ActionTargetModel, \
     ActionTargetType as ActionTargetTypeModel, SuggestionBatch as SuggestionBatchModel, Suggestion as SuggestionModel
+from .poem_container import Poem
 
 _actionType_id = {}
 _id_actionType = {}
@@ -31,10 +33,10 @@ class BaseRepository:
         # Lookup, (create,) and cache of action-related ID's
         if not 'action' in logArgs.keys():
             if not arg_actionType in _actionType_id:
-                 _actionType_id[arg_actionType] = ActionRepository.actionType(arg_actionType)
+                _actionType_id[arg_actionType] = ActionRepository.actionType(arg_actionType)
         if arg_actionTargetType is not None:
             if not arg_actionTargetType in _actionTargetType_id:
-               _actionTargetType_id[arg_actionTargetType] = ActionRepository.actionTarget(arg_actionTargetType)
+                _actionTargetType_id[arg_actionTargetType] = ActionRepository.actionTarget(arg_actionTargetType)
         elif arg_actionTargets is not None:
             for target in arg_actionTargets.keys():
                 if not target in _actionTargetType_id:
@@ -51,22 +53,34 @@ class BaseRepository:
         if arg_actionTargetType is not None:
             id_actionTargetType = _actionTargetType_id[arg_actionTargetType]
             ATt = ActionTargetModel(action_id=action_id, actionTargetType_id=id_actionTargetType,
-                              target_id=logArgs['targetID'])
+                                    target_id=logArgs['targetID'])
             db.session.add(ATt)
         elif arg_actionTargets is not None:
             for target, targetID in arg_actionTargets.items():
                 ATt = ActionTargetModel(action_id=action_id, actionTargetType_id=_actionTargetType_id[target],
-                                  target_id=targetID)
+                                        target_id=targetID)
                 db.session.add(ATt)
 
         db.session.flush()
         return action_id
 
-
     @staticmethod
     def isTmpId(id):
         # a tmp-id ends with "-tmp" and will generate an error when converted to int
         return isinstance(id, str) and id.endswith("-tmp")
+
+
+if TYPE_CHECKING:
+    # Static type definitions only for mypy/pylance.
+    class PoemRepository:
+        @overload
+        @staticmethod
+        def fetch(*, key: str, id: None = ...) -> Poem: ...
+
+        @overload
+        @staticmethod
+        def fetch(*, id: int, key: None = ...) -> Poem: ...
+
 
 class PoemRepository(BaseRepository):
     @staticmethod
@@ -74,8 +88,8 @@ class PoemRepository(BaseRepository):
         KeywordSuggestionRepository.collectionId.clear()
         KeywordSuggestionBatchRepository.batchId = 0
         try:
-            if poem.id is None:
-            # new poem -> insert a new poem record
+            if poem.id is None or poem.id == '':
+                # new poem -> insert a new poem record
                 # look up the id of the status
                 orm_status = db.session.query(PoemStatusModel).filter_by(poemStatusNo=poem.status).first()
                 # create the poem record
@@ -94,10 +108,62 @@ class PoemRepository(BaseRepository):
 
                 if poem.origin == 'GRU':
                     actionType = 'PM_GEN'
-                else: #if poem.origin == 'browser'
+                elif poem.isStub():
+                    actionType = 'PM_STB'
+                else:  # if poem.origin == 'browser'
                     actionType = 'PM_WRT'
                 PoemRepository.logAction(actionType=actionType, actionTargetType='poem', targetID=orm_poem.id)
+            elif poem.isStub():
+                orm_poemAction = (db.session.query(ActionModel)
+                                    .join(
+                                        ActionTargetModel,
+                                        ActionTargetModel.action_id == ActionModel.id)
+                                    .filter(  # 3
+                                        ActionTargetModel.target_id == poem.id,
+                                        ActionTargetModel.actionTargetType_id ==
+                                        ActionRepository.actionTarget('poem'),
+                                        ActionModel.actionType_id ==
+                                        ActionRepository.actionType('PM_STB'))
+                                    .first())
+
+                orm_poem = db.session.query(PoemModel).filter_by(id=poem.id).first()
+                orm_poem.title = poem.title
+                orm_poem.rhymeScheme_id = poem.form
+                orm_poem.poemText = poem.text
+
+                # No logging required, we do not need to log the action, there is an action record, referring to
+                # the poem, which was created when the stub was created, we only change the actionType_id to the
+                # action corresponding to the poem origin
+                if poem.origin is None:
+                    pass
+                elif poem.origin == 'GRU': # This is set at the start of generating a poem
+                    orm_poemAction.actionType_id = ActionRepository.actionType('PM_GEN')
+                elif poem.origin == 'browser': # This is set at the start of generating a verse (write with user input)
+                    orm_poemAction.actionType_id = ActionRepository.actionType('PM_WRT')
+
             else:
+                # if the poem is not a stub and we arrive here, it is the result of a save
+                # in that case, if the type of the first action is 'PM_STB', we still have to
+                # set the actionType_id of the first action to 'PM_WRT' because the poem was
+                # (at least partially) written by the user, not generated
+                orm_poemAction = (db.session.query(ActionModel)
+                                  .join(
+                    ActionTargetModel,
+                    ActionTargetModel.action_id == ActionModel.id)
+                                  .filter(  # 3
+                    ActionTargetModel.target_id == poem.id,
+                    ActionTargetModel.actionTargetType_id ==
+                    ActionRepository.actionTarget('poem'),
+                    ActionModel.actionType_id ==
+                    ActionRepository.actionType('PM_STB'))
+                                  .first())
+                if poem.origin is None:
+                    pass
+                elif poem.origin == 'GRU':  # This is set at the start of generating a poem
+                    orm_poemAction.actionType_id = ActionRepository.actionType('PM_GEN')
+                elif poem.origin == 'browser':  # This is set at the start of generating a verse (write with user input)
+                    orm_poemAction.actionType_id = ActionRepository.actionType('PM_WRT')
+
                 savePrevious = False
                 actions = {}
                 # lookup status id
@@ -106,16 +172,16 @@ class PoemRepository(BaseRepository):
                 orm_poem = db.session.query(PoemModel).filter_by(id=poem.id).first()
                 if orm_poem.title != poem.title:
                     savePrevious = True
-                    actions.update({'PM_UPD_TIT':0})
+                    actions.update({'PM_UPD_TIT': 0})
                 if orm_poem.rhymeScheme_id != int(poem.form):
                     savePrevious = True
-                    actions.update({'PM_UPD_FRM':0})
+                    actions.update({'PM_UPD_FRM': 0})
                 if orm_poem.status != int(orm_status.id):
                     savePrevious = True
                     if int(poem.status) == 2:
-                        actions.update({'PM_FIN':0})
+                        actions.update({'PM_FIN': 0})
                     elif int(poem.status) == 1:
-                        actions.update({'PM_EDT':0})
+                        actions.update({'PM_EDT': 0})
                 if orm_poem.poemText != poem.text:
                     orm_poem.poemText = poem.text
 
@@ -125,7 +191,8 @@ class PoemRepository(BaseRepository):
                     db.session.add(AGroup)
                     db.session.flush()
                     for action in actions.keys():
-                        A = ActionModel(actionType_id=ActionRepository.actionType(actionType=action),group_id=AGroup.id)
+                        A = ActionModel(actionType_id=ActionRepository.actionType(actionType=action),
+                                        group_id=AGroup.id)
                         db.session.add(A)
                         db.session.flush()
                         actions.update({action: A.id})
@@ -158,8 +225,6 @@ class PoemRepository(BaseRepository):
 
         db.session.commit()
 
-
-
     @staticmethod
     def list(user_id, status=None):
         poems = []
@@ -167,7 +232,14 @@ class PoemRepository(BaseRepository):
         # Base query, joining Poem → PoemStatus on the status FK
         query = (
             db.session
-            .query(PoemModel)
+            .query(
+                PoemModel.id,
+                PoemModel.lookupKey,
+                PoemModel.title,
+                PoemModel.poemLanguage_id,
+                PoemModel.rhymeScheme_id,
+                PoemModel.poemText,
+                PoemStatusModel.poemStatusNo.label("poemStatusNo"))
             .join(PoemStatusModel, PoemStatusModel.id == PoemModel.status)
             .filter(PoemModel.user_id == user_id)
         )
@@ -189,7 +261,7 @@ class PoemRepository(BaseRepository):
                 "title": pm.title,
                 "language": pm.poemLanguage_id,
                 "form": pm.rhymeScheme_id,
-                "status": pm.status,
+                "status": pm.poemStatusNo,
                 "text": pm.poemText,
             }
 
@@ -205,7 +277,8 @@ class PoemRepository(BaseRepository):
                     .order_by(asc(KeywordModel.id))
                     .all()
                 )
-                poem_dict["keywords"] = [{kw.id:kw.keyword} for kw in orm_keywords]
+                poem_dict["keywords"] = [{kw.id: kw.keyword} for kw in orm_keywords]
+                poem_dict["keywordsText"] = ", ".join([kw.keyword for kw in orm_keywords])
 
             poems.append(poem_dict)
 
@@ -225,6 +298,62 @@ class PoemRepository(BaseRepository):
         BaseRepository.logAction(actionType='PM_DEL', actionTargetType='poem', targetID=orm_poem.id)
 
         return key
+
+    @staticmethod
+    @overload
+    def fetch(*, key: str, id: None = ...) -> Poem:
+        ...
+
+    @staticmethod
+    @overload
+    def fetch(*, id: int, key: None = ...) -> Poem:
+        ...
+
+    @staticmethod
+    def fetch(*, key: Optional[str] = None, id: Optional[int] = None):
+
+        from .poem_container import Poem
+        # Fetch a poem from the database by its key
+        orm_poem = (db.session
+                    .query(PoemModel.id.label("id"),
+                           PoemModel.rhymeScheme_id.label("form"),
+                           PoemModel.poemLanguage_id.label("lang"),
+                           PoemModel.theme_id.label("nmfDim"),
+                           PoemModel.status,
+                           PoemModel.title,
+                           StanzaModel.id.label("stanza_id"))
+                    .outerjoin(StanzaModel, StanzaModel.poem_id == PoemModel.id))
+
+        if key is not None:
+            orm_poem = orm_poem.filter(PoemModel.lookupKey == key)
+        elif id is not None:
+            orm_poem = orm_poem.filter(PoemModel.id == id)
+        orm_poem = orm_poem.all()
+
+        if not orm_poem:
+            return {"error": "Poem not found"}, 404
+
+        orm_status = db.session.query(PoemStatusModel).filter_by(id=orm_poem[0].status).first()
+
+        # Create a Poem container object
+        poemContainer = Poem(id=orm_poem[0].id, title=orm_poem[0].title, form=orm_poem[0].form, lang=orm_poem[0].lang,
+                             status=orm_status.poemStatusNo, nmfDim=orm_poem[0].nmfDim)
+
+        # Add stanzas to the poem object
+        for stanza in orm_poem:
+            stanza_id = stanza.stanza_id
+            stanzaContainer = StanzaRepository.fetch(stanza_id=stanza_id)
+            poemContainer.addStanza(stanza=stanzaContainer)
+
+        # Add keywords to the poem object (if any)
+        orm_keywords = (db.session.query(KeywordModel.id, KeywordModel.keyword).
+                        filter(KeywordModel.poem_id == poemContainer.id).
+                        filter(KeywordModel.status > 1).all())
+        for kw in orm_keywords:
+            poemContainer.addKeyword(id=kw.id, keyword=kw.keyword)
+
+        # Return the poem object
+        return poemContainer
 
 
 class StanzaRepository(BaseRepository):
@@ -262,6 +391,27 @@ class StanzaRepository(BaseRepository):
         for VS in stanza.verses:
             VerseRepository.save(VS, stanza_id=stanza.id)
 
+    @staticmethod
+    def fetch(stanza_id):
+        from .poem_container import Stanza
+        orm_stanza = (db.session.query(StanzaModel.id, StanzaModel.order, VerseModel.id.label("verse_id"), )
+                      .join(VerseModel, StanzaModel.id == VerseModel.stanza_id)
+                      .filter(StanzaModel.id == stanza_id).all())
+        if not orm_stanza:
+            return {"error": "Stanza not found"}, 404
+
+        # Create a Stanza container object
+        stanza = Stanza(id=orm_stanza[0].id)
+        stanza.order = orm_stanza[0].order
+        # Append verses to the stanza object
+        for verse in orm_stanza:
+            verse_id = verse.verse_id
+            verseContainer = VerseRepository.fetch(verse_id=verse_id)
+            stanza.addVerse(verse=verseContainer)
+
+        return stanza
+
+
 class VerseRepository(BaseRepository):
     @staticmethod
     def save(verse, stanza_id, isNew=True):
@@ -269,13 +419,13 @@ class VerseRepository(BaseRepository):
         if verse.id is None or str(verse.id).endswith("-tmp"):
             # create the verse record
             orm_verse = VerseModel(stanza_id=stanza_id, order=verse.order,
-                                   status=1, verse=verse.text)
+                                   status=2, verse=verse.text)
             db.session.add(orm_verse)
             db.session.flush()
 
             if verse.suggestions is not None and len(verse.suggestions) > 0:
                 actionType = 'VRS_SUG'
-            elif verse.text == '': # an empty stub was created to attach suggestions to
+            elif verse.text == '':  # an empty stub was created to attach suggestions to
                 doLog = False
             else:
                 actionType = 'VRS_WRT'
@@ -287,13 +437,13 @@ class VerseRepository(BaseRepository):
             # The verse already exists in the database, we check whether the user has changed it
 
             orm_verse = db.session.query(VerseModel).filter_by(id=verse.id).first()
-            if orm_verse.verse != verse.text:
+            if orm_verse.verse != verse.text and orm_verse.verse != "":
                 # Log the action first because we will need the id of the action
-                actionType = 'VRS_UPD'
+                if verse.origin == 'GRU':
+                    actionType = 'VRS_GEN'
+                else:
+                    actionType = 'VRS_UPD'
                 actionType_id = ActionRepository.actionType(actionType=actionType)
-
-                if orm_verse.verse=="":
-                    print("verse accepted, yet action type is vrs_upd")
 
                 A = ActionModel(actionType_id=actionType_id)
                 db.session.add(A)
@@ -311,6 +461,12 @@ class VerseRepository(BaseRepository):
                                           actionTargets={'verse': verse.id, 'pr_verse': orm_previousVerse.id})
 
             else:
+                if orm_verse.verse == "":
+                    # The verse record was created as a stub to attach suggestions to it
+                    # The new text was generated automatically in the context of an entire poem
+                    # Acceptation of a suggestion is handled in SuggestionRepository
+                    orm_verse.verse = verse.text
+                    db.session.add(orm_verse)
                 # id from the database but the verse was not returned from the browser,
                 # no re-formatting or logging needed
                 doLog = False
@@ -321,14 +477,26 @@ class VerseRepository(BaseRepository):
             # save the suggestions
             SuggestionRepository.save(suggestions=verse.suggestions, verse_id=verse.id)
 
+    @staticmethod
+    def fetch(verse_id):
+        from .poem_container import Verse
+        orm_verse = (db.session.query(VerseModel.id, VerseModel.verse)
+                     .filter(VerseModel.id == verse_id).first())
+        if not orm_verse:
+            return {"error": "Verse not found"}, 404
+        # Create and return a Verse container object
+        verse = Verse(id=orm_verse.id, verseText=orm_verse.verse)
+        return verse
+
+
 class SuggestionRepository(BaseRepository):
     @staticmethod
-    def save(suggestions = None, verse_id = None):
+    def save(suggestions=None, verse_id=None):
         # First save a batch-stub for the suggestions
         orm_cntSuggestionBatches = (db.session.query(SuggestionBatchModel.verse_id.label("verse_id"),
-                                                    func.count(SuggestionBatchModel.verse_id).label("count"))
-                                                        .filter(SuggestionBatchModel.verse_id == verse_id)
-                                                        .one_or_none())
+                                                     func.count(SuggestionBatchModel.verse_id).label("count"))
+                                    .filter(SuggestionBatchModel.verse_id == verse_id)
+                                    .one_or_none())
         orm_suggestionBatch = SuggestionBatchModel(verse_id=verse_id, batchNo=orm_cntSuggestionBatches.count + 1)
         db.session.add(orm_suggestionBatch)
         db.session.flush()
@@ -356,19 +524,20 @@ class SuggestionRepository(BaseRepository):
                 raise ValueError("Verse not found")
 
             orm_verse.verse = orm_suggestion.suggestion
-            orm_suggestion.status = 3 # final/accepted
+            orm_suggestion.status = 3  # final/accepted
 
             db.session.add(orm_verse)
             db.session.add(orm_suggestion)
 
             orm_poem = (db.session.query(PoemModel).join(StanzaModel, PoemModel.id == StanzaModel.poem_id)
-                                        .join(VerseModel, StanzaModel.id == VerseModel.stanza_id)
-                                        .filter(VerseModel.id == verse_id).first())
+                        .join(VerseModel, StanzaModel.id == VerseModel.stanza_id)
+                        .filter(VerseModel.id == verse_id).first())
             nmfDim = orm_poem.theme_id
 
-            VerseRepository.logAction(actionType='SG_SEL', actionTargets = {'suggestion': suggestion_id, 'verse': verse_id})
+            VerseRepository.logAction(actionType='SG_SEL',
+                                      actionTargets={'suggestion': suggestion_id, 'verse': verse_id})
 
-            output = {"verse_id": verse_id, "verse_text": orm_suggestion.suggestion,"nmfDim": nmfDim}
+            output = {"verse_id": verse_id, "verse_text": orm_suggestion.suggestion, "nmfDim": nmfDim}
         except Exception as e:
             print(f"Error accepting suggestion: {e}")
             db.session.rollback()
@@ -382,20 +551,21 @@ class SuggestionRepository(BaseRepository):
         suggestions = []
 
         orm_suggestions = (db.session.query(SuggestionModel)
-                          .join(SuggestionBatchModel, SuggestionModel.suggestionBatch_id == SuggestionBatchModel.id)
-                          .filter(SuggestionBatchModel.verse_id == verse_id).all())
+                           .join(SuggestionBatchModel, SuggestionModel.suggestionBatch_id == SuggestionBatchModel.id)
+                           .filter(SuggestionBatchModel.verse_id == verse_id).all())
         if orm_suggestions:
-           suggestions.extend([{"id":sugg.id,"suggestion":sugg.suggestion} for sugg in orm_suggestions])
-           return suggestions
+            suggestions.extend([{"id": sugg.id, "suggestion": sugg.suggestion} for sugg in orm_suggestions])
+            return suggestions
         else:
             return None
+
 
 class KeywordRepository(BaseRepository):
     @staticmethod
     def save(keyword, poem_id):
         if keyword.id is None or str(keyword.id).endswith("-tmp"):
             # create the keyword record
-            orm_keyword = KeywordModel(poem_id=poem_id, keyword=keyword.text)
+            orm_keyword = KeywordModel(poem_id=poem_id, keyword=keyword.text, status=2)  # status 2 = active/draft
             db.session.add(orm_keyword)
             db.session.flush()
 
@@ -420,7 +590,7 @@ class KeywordRepository(BaseRepository):
                 db.session.flush()
 
                 orm_previousKeyword = PreviousKeywordModel(action_id=A.id, keyword_id=keyword.id,
-                                                        previousKeyword=orm_keyword.keyword)
+                                                           previousKeyword=orm_keyword.keyword)
                 db.session.add(orm_previousKeyword)
                 db.session.flush()
 
@@ -430,7 +600,8 @@ class KeywordRepository(BaseRepository):
 
                 pass
                 KeywordRepository.logAction(action=A.id,
-                                            actionTargets={'keyword': orm_keyword.id, 'pr_keyword': orm_previousKeyword.id})
+                                            actionTargets={'keyword': orm_keyword.id,
+                                                           'pr_keyword': orm_previousKeyword.id})
                 pass
             else:
                 # id from the database but the keyword was not returned from the browser,
@@ -439,12 +610,12 @@ class KeywordRepository(BaseRepository):
 
         if keyword.suggestions is not None and len(keyword.suggestions) > 0:
             # save the suggestions
-            KeywordSuggestionBatchRepository.save(keywordSuggestions=keyword.suggestions,keyword_id=keyword.id)
+            KeywordSuggestionBatchRepository.save(keywordSuggestions=keyword.suggestions, keyword_id=keyword.id)
 
     @staticmethod
     def deleteKeyword(keyword_id):
         orm_keyword = db.session.query(KeywordModel).filter_by(id=keyword_id).first()
-        orm_keyword.status = 0 # deleted
+        orm_keyword.status = 0  # deleted
 
         BaseRepository.logAction(actionType='KW_DEL', actionTargetType='keyword', targetID=keyword_id)
         db.session.add(orm_keyword)
@@ -462,27 +633,32 @@ class KeywordRepository(BaseRepository):
                 keywords[kw.id] = {"id": kw.id, "text": kw.keyword, "suggestions": []}
         return keywords
 
+
 class KeywordSuggestionBatchRepository(BaseRepository):
     batchId = 0
+
     @staticmethod
     def save(keywordSuggestions, keyword_id):
         # Here, the suggestions are grouped in a batch and the creation of the batch is logged
         if KeywordSuggestionBatchRepository.batchId == 0:
-            orm_cntKeywordSuggestionBatches = (db.session.query(KeywordSuggestionBatchModel.keyword_id.label("keyword_id"),
-                                                                func.count(KeywordSuggestionBatchModel.keyword_id).label(
-                                                                    "count"))
-                                               .filter(KeywordSuggestionBatchModel.keyword_id == keyword_id)
-                                               .one_or_none())
+            orm_cntKeywordSuggestionBatches = (
+                db.session.query(KeywordSuggestionBatchModel.keyword_id.label("keyword_id"),
+                                 func.count(KeywordSuggestionBatchModel.keyword_id).label(
+                                     "count"))
+                .filter(KeywordSuggestionBatchModel.keyword_id == keyword_id)
+                .one_or_none())
             orm_keywordSuggestionBatch = KeywordSuggestionBatchModel(keyword_id=keyword_id,
                                                                      batchNo=orm_cntKeywordSuggestionBatches.count + 1)
             db.session.add(orm_keywordSuggestionBatch)
             db.session.flush()
             KeywordSuggestionBatchRepository.batch_id = orm_keywordSuggestionBatch.id
 
-            KeywordRepository.logAction(actionType='KWSB_GEN', actionTargetType='keyword_suggestion_batch', targetID=orm_keywordSuggestionBatch.id)
+            KeywordRepository.logAction(actionType='KWSB_GEN', actionTargetType='keyword_suggestion_batch',
+                                        targetID=orm_keywordSuggestionBatch.id)
 
         KeywordSuggestionRepository.save(keywordSuggestions=keywordSuggestions, keyword_id=keyword_id,
                                          keywordBatch_id=KeywordSuggestionBatchRepository.batch_id)
+
 
 class KeywordSuggestionRepository(BaseRepository):
     collectionId = {}
@@ -493,7 +669,7 @@ class KeywordSuggestionRepository(BaseRepository):
         for suggColl in range(len(keywordSuggestions)):
             if not suggColl in KeywordSuggestionRepository.collectionId:
                 orm_keywordSuggestionCollection = KeywordSuggestionCollectionModel(
-                    keywordSuggestionBatch_id=keywordBatch_id, theme_id=keywordSuggestions[suggColl].nmfDim,)
+                    keywordSuggestionBatch_id=keywordBatch_id, theme_id=keywordSuggestions[suggColl].nmfDim, )
                 db.session.add(orm_keywordSuggestionCollection)
                 db.session.flush()
                 KeywordSuggestionRepository.collectionId[suggColl] = orm_keywordSuggestionCollection.id
@@ -508,15 +684,15 @@ class KeywordSuggestionRepository(BaseRepository):
             keywordSuggestions[suggColl].id = orm_keywordSuggestion.id
             keywordSuggestions[suggColl].collectionId = KeywordSuggestionRepository.collectionId[suggColl]
 
-
     @staticmethod
     def accepKWCollection(suggestionCollection_id):
         output = {}
         # 1) lookup the suggestions linked to this collection
         orm_suggestions4collectionId = db.session.query(KeywordSuggestionModel).filter_by(
-            keywordSuggestionCollection_id = suggestionCollection_id).all()
+            keywordSuggestionCollection_id=suggestionCollection_id).all()
         # 2) lookup the collection (theme_id) to which the suggestions belong
-        orm_suggestionCollection = db.session.query(KeywordSuggestionCollectionModel).filter_by(id = suggestionCollection_id).first()
+        orm_suggestionCollection = db.session.query(KeywordSuggestionCollectionModel).filter_by(
+            id=suggestionCollection_id).first()
         # 3) log the action, targets will be logged hereafter
         actionType = 'KWS_SEL'
         A = ActionModel(actionType_id=ActionRepository.actionType(actionType=actionType))
@@ -525,20 +701,22 @@ class KeywordSuggestionRepository(BaseRepository):
         # 4) update the status of the suggestions: set their value and set the status to 3 (accepted/final)
         for suggestion in orm_suggestions4collectionId:
             suggestion.status = 3
-            orm_keyword = db.session.query(KeywordModel).filter_by(id = suggestion.keyword_id).first()
+            orm_keyword = db.session.query(KeywordModel).filter_by(id=suggestion.keyword_id).first()
             orm_keyword.keyword = suggestion.suggestion
             db.session.add(orm_keyword)
             db.session.add(suggestion)
             db.session.flush()
 
             BaseRepository.logAction(action=A.id,
-                                     actionTargets={'keyword': suggestion.keyword_id, 'keyword_suggestion': suggestion.id,
+                                     actionTargets={'keyword': suggestion.keyword_id,
+                                                    'keyword_suggestion': suggestion.id,
                                                     'keyword_suggestion_collection': suggestionCollection_id})
 
             output[suggestion.keyword_id] = suggestion.suggestion
 
         db.session.commit()
-        return {'nmfDim':orm_suggestionCollection.theme_id,'keywords':output}
+        return {'nmfDim': orm_suggestionCollection.theme_id, 'keywords': output}
+
 
 class ActionRepository(BaseRepository):
     @staticmethod

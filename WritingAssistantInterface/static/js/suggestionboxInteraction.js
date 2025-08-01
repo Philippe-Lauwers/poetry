@@ -1,6 +1,7 @@
 import {Suggestionbox} from "./suggestionboxAPI/1_SuggestionBox.js";
 import {enableSandbox} from "./sandboxInteraction.js";
 import {receiveKeywords} from "./keywordboxInteraction.js";
+import {activateParambox} from "./paramboxInteraction.js";
 
 /**
  *Create a single shared instance of the sandbox */
@@ -92,4 +93,5 @@ export function closeSuggestionBox({e = null, target = null, verse = null, keywo
     if (verse) {
         document.getElementById("btn_generateVerse").setAttribute("disabled", true);
     }
+    activateParambox()
 }

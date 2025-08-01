@@ -351,7 +351,9 @@ class RougeMetric(db.Model):
 
 class RougeScore(db.Model):
     __tablename__ = 'rougeScores'
-    __table_args__ = (db.PrimaryKeyConstraint('id', name='pk_rougeScores'),)
+    __table_args__ = (db.PrimaryKeyConstraint('id', name='pk_rougeScores'),
+                    db.UniqueConstraint('poem_id', 'verse_id', 'rougeMetric_id',
+                                    name='uq_rougeScores_poem_verse_metric'),)
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     poem_id = db.Column(db.Integer, db.ForeignKey('poems.id', name='fk_rougeScores_poems_id'))

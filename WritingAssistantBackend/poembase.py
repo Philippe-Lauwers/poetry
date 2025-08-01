@@ -104,13 +104,16 @@ class PoemBase:
         except AttributeError:
             pass
 
-        self.container = PoemContainer()
-        if id is not None: self.container.id = id
-        self.container.form = form
-        self.container.title = title
-        self.container.nmfDim = nmfDim
-        self.container.language = lang
-        self.container.origin = origin
+        if not id is None:
+            self.container = PoemRepository.fetch(id=id)
+        else:
+            self.container = PoemContainer()
+            if id is not None: self.container.id = id
+            self.container.form = form
+            self.container.title = title
+            self.container.nmfDim = nmfDim
+            self.container.language = lang
+            self.container.origin = origin
 
     def receiveUserInput(self, id=None, title=None, form=None, nmfDim=None, userInput=None, structure=None):
         if nmfDim is None or nmfDim == 'random':
@@ -126,7 +129,7 @@ class PoemBase:
 
         PoemRepository.save(self.container)
 
-    def write(self, constraints=('rhyme'), form='sonnet', nmfDim=None, userInput=None, structure=None, title=None, keywords=None):
+    def write(self, constraints=('rhyme'), id=None, form='sonnet', nmfDim=None, userInput=None, structure=None, title=None, keywords=None):
         self.form = form
         self.blacklist_words = set()
         self.blacklist = []
@@ -137,8 +140,14 @@ class PoemBase:
         if nmfDim is None or nmfDim == 'random':
             nmfDim = self.container.nmfDim
 
-        if userInput is None:
-            self.initPoemContainer(form=form, nmfDim=nmfDim, lang=self.lang, origin='GRU', title=None)
+        if userInput is None and keywords is None:
+            self.initPoemContainer(id=None, form=form, nmfDim=nmfDim, lang=self.lang, origin='GRU', title=None)
+
+        if self.container.isStub():
+            if userInput is None:
+                self.container.origin = 'GRU'
+            else:
+                self.container.origin = 'browser'
 
         if title is not None and title != '' and title != self.container.title:
             self.container.title = title
@@ -215,7 +224,22 @@ class PoemBase:
                         #     self.container.addStanza(id=stanzaID)
                         if userInput is None:
                             self.container.addStanza()
-                        addNewStanza = False
+                            addNewStanza = False
+                        elif self.container.id is not None:
+                            # if the container has no stanza's at this moment, we come from an empty screen
+                            # if this was a previously created stub, we have to look for stanza/verse of the stub
+                            poemStub = PoemRepository.fetch(id=self.container.id)
+                            stanzaStub = poemStub.stanzas[-1]
+                            verseStub = stanzaStub.verses[-1]
+                            # attach the values (text/suggestions) to the verse stub
+                            if nSuggestions == 1:  # generating a complete poem: only one suggestion is generated
+                               verseStub.verseText=' '.join(words)
+                               verseStub.capitalizeVerse()
+                            else:  # generating n suggestions when a single verse is requested
+                               verseStub.suggestions = [' '.join(w) for w in words]
+                            # add the stubs to the container
+                            self.container.addStanza(stanza=stanzaStub if stanzaStub else None)
+                            self.container.stanzas[0].addVerse(verse=verseStub if verseStub else None)
                     if nSuggestions == 1: # generating a complete poem: only one suggestion is generated
                         self.container.stanzas[-1].addVerse(verseText=' '.join(words)).capitalizeVerse()
                     else: # generating n suggestions when a single verse is requested

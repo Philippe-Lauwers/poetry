@@ -1,4 +1,5 @@
 actionType;actionTypeDescription
+PM_STB;A stub was created to attach keywords to
 PM_GEN;Automatic creation of an (entire) poem
 PM_WRT;The poem has been (partially) written by the user
 PM_UPD;The poem was changed (groups poem actions)
@@ -18,7 +19,7 @@ VRS_ACC;The user accepted this suggestion for the verse
 VRS_UPD;The verse has been changed
 VRS_DEL;The verse has been deleted
 KW_GEN;The keyword was suggested by the computer
-KW_WRT;The keyword was provied by the user
+KW_WRT;The keyword was provided by the user
 KW_UPD;The keyword has been changed
 KW_DEL;The keyword has been deleted
 SGB_GEN;The batch of suggestions has been generated

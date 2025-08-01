@@ -3,7 +3,6 @@ import {Keywordbox} from "./keywordboxAPI/1_Keywordbox.js";
 import {KeywordWrapper} from "./keywordboxAPI/4_1_KeywordWrapper.js";
 import {Keyword} from "./keywordboxAPI/5_1_Keyword.js";
 import {activateSuggestionbox} from "./suggestionboxInteraction.js";
-import {getSandbox} from "./sandboxInteraction.js";
 import {flashMessage} from "./niftyThings.js";
 
 /**
@@ -32,6 +31,7 @@ export function keywordKeydown(e, target) {
         e.preventDefault();
     }
 }
+
 export function keywordKeyup(e, target) {
     switch (e.key) {
         case 'Enter':
@@ -62,7 +62,7 @@ export function createNextKeyword({event, target}) {
         const numChildren = keywordList.children.length;
         if (targetWrapper.nextSibling) {
             moveKeywordFocus(event, 1);
-        } else if(numChildren > 0 && numChildren < keywordBox.n) {
+        } else if (numChildren > 0 && numChildren < keywordBox.n) {
             Wr = keywordList.addKeywordWrapper({
                 buttons: targetWrapper.buttons,
                 events: targetWrapper.events
@@ -78,11 +78,12 @@ export function createNextKeyword({event, target}) {
                     btn.style.setProperty("display", "inline-block", "important");
                 }
             }
-        Wr.firstChild.el.focus()
+            Wr.firstChild.el.focus()
         }
     }
     return true; // action was caught
 }
+
 export function moveKeywordFocus(e, direction) {
     const current = e.target;
     const currentWrapper = Keyword.getWrapper(current);
@@ -129,12 +130,13 @@ export function disableKeywordGenBtn(e) {
     }
 }
 
-export function deactivateKeywordbox () {
+export function deactivateKeywordbox() {
     const keywordbox = getKeywordbox();
     keywordbox.header.disable();
     keywordbox.list.disable();
 }
-export function activateKeywordbox ({includeGenButton = false} = {}) {
+
+export function activateKeywordbox({includeGenButton = false} = {}) {
     const keywordbox = getKeywordbox();
     keywordbox.header.enable({includeGenButton});
     keywordbox.list.enable();
@@ -145,12 +147,9 @@ export function receiveKeywords(input) {
     const keywordList = keywordBox.list;
 
     if (input.keywords) {
-        if (!document.getElementById("poem_id")) {
-            const idFld = document.createElement("input");
-            idFld.id = idFld.name = "poem_id"
-            idFld.type = "hidden"
-            idFld.value = input.id
-            document.getElementsByClassName("top-pane")[0].append(idFld)
+        const idFld = document.getElementById("poem_id")
+        if (idFld.value=="") {
+            idFld.value = input.id;
         }
 
         if (input.keywordSuggestions) { // If there are keyword suggestions, we need to create the suggestionbox
@@ -167,19 +166,20 @@ export function receiveKeywords(input) {
                 id = target.el.id = `kw-${myKw.keyword.id}`;
                 target.el.setAttribute("name", target.el.id);
 
-            // Change button values
-            let btn = target.el.nextSibling
-            while (btn) {
-                if (btn.tagName === "BUTTON") {
-                    btn.value = id;
+                // Change button values
+                let btn = target.el.nextSibling
+                while (btn) {
+                    if (btn.tagName === "BUTTON") {
+                        btn.value = id;
+                    }
+                    btn = btn.nextSibling;
                 }
-                btn = btn.nextSibling;
-            }
-            target.el.parentNode.id = id.replace("kw-", "kww-");
-            }  else {
+                target.el.parentNode.id = id.replace("kw-", "kww-");
+            } else {
                 id = target.el.id
             }
 
+            document.getElementById("btn_generatePoem").setAttribute("disabled", true);
             const SB = new Suggestionbox({
                 selector: Keyword.formatID({id: parseInt(id.split("-")[1]), prefix: "suggB-kw-"}),
                 id: Keyword.formatID({id: parseInt(id.split("-")[1]), prefix: "suggB-kw-"}),
@@ -203,14 +203,24 @@ export function receiveKeywords(input) {
                     f5Btn.value = 4
                 }
             }
+            activateSuggestionbox();
+        }
+        if (input.keywords && input.keywords.length > 0) {
+            keywordBox.header.disable()
+            keywordBox.header.enable({includeGenButton: false})
         }
 
-       // after a save, some keywords will have an oldId, search the elements by oldId and rename
+        const firstWr = keywordList.firstChild;
+        let Wr;
+        let previousWr;
         input.keywords.forEach(kw => {
+            // after a save, some keywords will have an oldId, search the elements by oldId and rename
             if (kw.keyword.oldId) {
                 const myFld = Keyword.getWrapper(document.getElementById(kw.oldId));
+                console.log("renaming keyword", myFld);
                 if (myFld) {
                     let id = target.el.id = "kw-" + input.keywords[0].keyword.id;
+                    consol.log("new id/name", id);
                     target.el.setAttribute("name", target.el.id);
                     // Change button values
                     let btn = target.el.nextSibling
@@ -222,9 +232,37 @@ export function receiveKeywords(input) {
                     }
                     target.el.parentNode.id = id.replace("kw-", "kww-");
                 }
+            } else if (!input.keywordSuggestions) {
+                // There is no oldId, we are rendering a poem from the database and create objects for each keyword
+                // But only when there is no suggestionbox to render
+                const id = kw.keyword.id;
+                if (firstWr && !previousWr) {
+                    Wr = firstWr
+                    Wr.id = "kww-" + id;
+                    Wr.firstChild.value = kw.keyword.text;
+                    Wr.firstChild.id = Wr.firstChild.name = "kw-" + id;
+                } else {
+                    Wr = keywordList.addKeywordWrapper({
+                        selector: "kww-" + id,
+                        id: "kww-" + id,
+                        value: kw.keyword.text,
+                        buttons: previousWr.buttons,
+                        events: previousWr.events
+                    });
+                }
+                for (const btn of Wr.el.children) {
+                    if (btn.id.startsWith("btn_del")) {
+                        btn.value = "kw-" + id
+                        btn.style.display = "inline-block";
+                        btn.disabled = false;
+                    } else if (btn.id.startsWith("btn_random")) {
+                        btn.value = "kw-" + id;
+                        btn.style.display = "none";
+                    }
+                }
+                previousWr = Wr
             }
         })
-        activateSuggestionbox();
     } else if (input.kwAccept) {
         if (input.kwAccept.nmfDim && input.kwAccept.nmfDim > 0) {
             document.getElementById("nmfDim").value = input.kwAccept.nmfDim;
@@ -242,8 +280,8 @@ export function receiveKeywords(input) {
             } else {
                 Wr = keywordList.addKeywordWrapper({
                     selector: "kww-" + id,
-                    id:"kww-"+id,
-                    value:text,
+                    id: "kww-" + id,
+                    value: text,
                     buttons: previousWr.buttons,
                     events: previousWr.events
                 });
@@ -253,16 +291,15 @@ export function receiveKeywords(input) {
 
             for (const btn of Wr.el.children) {
                 if (btn.id.startsWith("btn_del")) {
-                    btn.value = "kw-"+id
+                    btn.value = "kw-" + id
                     btn.style.display = "inline-block";
                     btn.disabled = false;
                 } else if (btn.id.startsWith("btn_random")) {
-                    btn.value = "kw-"+id;
+                    btn.value = "kw-" + id;
                     btn.style.display = "none";
                 }
             }
-        activateKeywordbox({})
-
+            activateKeywordbox({})
         }
     }
     // @ every round trip, stanzas, verses, ... are updated -> retrieve the new id's
@@ -290,12 +327,12 @@ export function receiveKeywords(input) {
                                     const verse = document.getElementById(vw.verse.oldId);
                                     if (verse) {
                                         verse.id = "v-" + vw.verse.id;
-                                        verse.setAttribute("name",verse.id)
+                                        verse.setAttribute("name", verse.id)
                                         VW.value = VW.value.replace(vw.verse.oldId, "v-" + vw.verse.id);
                                         const V = document.getElementById("struct-" + vw.verse.oldId)
                                         V.setAttribute("name", "struct-v-" + vw.verse.id);
                                         V.id = V.name
-                                    let btn = verseWrapper.firstChild;
+                                        let btn = verseWrapper.firstChild;
                                         while (btn) {
                                             if (btn.tagName === "BUTTON") {
                                                 btn.value = verse.id;
@@ -313,34 +350,46 @@ export function receiveKeywords(input) {
     }
 }
 
-export function deleteKeyword (keyword) {
-    const keywordList = getKeywordbox().list;
+export function deleteKeyword(keyword) {
+    const keywordBox = getKeywordbox();
+    const keywordList = keywordBox.list;
     const deletedWrapper = KeywordWrapper.getWrapper(document.getElementById("kww-" + keyword.deleted));
+    const deletedKeywordEL = deletedWrapper.firstChild.el;
     let id;
-    const Wr = keywordList.addKeywordWrapper({
-                    selector: id?"kww-" + id:null,
-                    id:id?"kww-"+id:null,
-                    value:"",
-                    buttons: deletedWrapper.buttons,
-                    events: deletedWrapper.events
-                });
-    for (const btn of Wr.el.children) {
-                if (btn.id.startsWith("btn_del")) {
-                    btn.value = Wr.id.replace("kww-", "kw-");
-                    btn.style.display = "none";
-                    btn.disabled = false;
-                } else if (btn.id.startsWith("btn_random")) {
-                    btn.value = Wr.id.replace("kww-", "kw-");
-                    btn.style.display = "inline-block";
-                }
+
+    // Look for the first empty keyword
+    const kwFields = document.querySelectorAll('input[id^="kw-"]');
+    const emptyKwFields = Array.from(kwFields).filter(el => el.value.trim() === "");
+    if (emptyKwFields.length > 0 && !(emptyKwFields.length ===1 && emptyKwFields[0].id === deletedKeywordEL.id)) {
+        emptyKwFields[0].focus();
+    } else { // If no empty keyword field is found, we can create a new field
+        const Wr = keywordList.addKeywordWrapper({
+            selector: id ? "kww-" + id : null,
+            id: id ? "kww-" + id : null,
+            value: "",
+            buttons: deletedWrapper.buttons,
+            events: deletedWrapper.events
+        });
+        for (const btn of Wr.el.children) {
+            if (btn.id.startsWith("btn_del")) {
+                btn.value = Wr.id.replace("kww-", "kw-");
+                btn.style.display = "none";
+                btn.disabled = false;
+            } else if (btn.id.startsWith("btn_random")) {
+                btn.value = Wr.id.replace("kww-", "kw-");
+                btn.style.display = "inline-block";
             }
-    Wr.firstChild.el.focus()
+        }
+        Wr.firstChild.el.focus()
+    }
     deletedWrapper.remove()
     activateKeywordbox();
-
+    if ( document.querySelectorAll('input[id^="kw-"]').length === 1){
+        keywordBox.header.enable();
+    }
 }
 
-export function firstEmptyKeyword () {
+export function firstEmptyKeyword() {
     const keywordList = getKeywordbox().list;
     for (let kww of keywordList.children) {
         let kw = kww.firstChild;
@@ -350,7 +399,7 @@ export function firstEmptyKeyword () {
     }
 }
 
-export function updateNmfDim (nmfDim) {
+export function updateNmfDim(nmfDim) {
     const nmfFld = document.getElementById("nmfDim");
     nmfFld.value = nmfDim;
 }

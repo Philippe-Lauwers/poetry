@@ -13,12 +13,18 @@ export function loadParambox() {
     const paramboxEL = parambox.el;
 
     paramboxEL.querySelectorAll("select").forEach(selectEl => {
-        const sel = parambox.addSelect({ selector: selectEl });
+        const sel = parambox.addSelect({selector: selectEl});
         sel.el.addEventListener("change", e => {
             firstEmptyVerse(getSandbox())?.el.focus();
         });
+    if (sel.name == "form") { // When another form is selected, we need to update the rhyme scheme
+            sel.el.addEventListener("change", async (e) => {
+                // Wait for the scheme to arrive
+                const poemDesc = await receiveRhymeScheme();
+            });
+        }
         Array.from(selectEl.options).forEach(optEl => {
-        sel.addOption({ selector: optEl })
+            sel.addOption({selector: optEl})
         });
     });
     // Add a submit button and a checkbox to indicate the poem is final

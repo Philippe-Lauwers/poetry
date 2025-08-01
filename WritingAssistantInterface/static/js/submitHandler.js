@@ -36,6 +36,9 @@ export class Submit {
                 saveBtn.style.display = "inline-block";
                 genBtn.style.display = "none";
             }
+            if (e.submitter.id.startsWith("btn_deleteKeyword")) {
+                document.getElementById(e.submitter.value).value = "";
+            }
         }
     }
 }

@@ -23,9 +23,10 @@
     padding-left: 1.5rem;
     font-size: 1.25rem;
     color: var(--borderColor); /* use `color`, not `font-color` */
-    opacity: 0;                       /* start hidden */
+    opacity: 0; /* start hidden */
     transition: opacity 200ms ease;
 }
+
 .poem-preview-pane.show {
     opacity: 1;
 }
@@ -46,8 +47,32 @@
     overflow: auto;
 }
 
+.poem-creator-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #f5f5f5;
+    border-radius: 0.4rem;
+    margin-bottom: 0.2rem;
+    font-size: 1.5rem;
+    font-weight:bold;
+    padding: 0.2rem 0rem 0.3rem 0.2rem;
+    color: var(--borderColor);
+}
+.poem-creator-wrapper:hover {
+    background-color: #f0f0f0;
+}
+.poem-creator-wrapper .poem-creator-link  {
+    border:none;
+    flex-grow: 1;
+    text-decoration: none;
+    color: var(--borderColor);
+    font-size: 1.5rem;
+    transition: color 0.2s;
+}
+
+
 .poem-entry {
-    border-bottom: 1px solid #fafafa;
     border-radius: 0.4rem;
     transition: background-color 0.2s;
 }
@@ -60,6 +85,7 @@
 }
 
 .poem-link {
+    border-bottom: 1px solid #f0f0f0;
     padding: 0.3rem 0.3rem 0.5rem 0.3rem;
     flex-grow: 1;
     text-decoration: none;
@@ -70,14 +96,17 @@
 
 .poem-entry:hover .poem-link {
     background-color: #f5f5f5;
-    border-radius:0.4rem;
+    border-radius: 0.4rem;
     font-weight: normal; /* ensure no bold on hover */
 }
 
-[id^="btn_deletePoem"] {
+#btn_createPoem,
+[id^="btn_deletePoem"],
+[id^="btn_editLoadPoem"],
+[id^="btn_unlockPoem"] {
     width: 34px;
     height: 34px;
-    background-image: url('../img/btn_DelPoem.svg');
+    background-image: url('../img/btn_createPoem.svg');
     background-position: 0 0;
     background-repeat: no-repeat;
     background-size: auto;
@@ -86,11 +115,29 @@
     padding: 0;
 }
 
+#btn_createPoem {
+    background-image: url('../img/btn_createPoem.svg');
+}
+
+[id^="btn_deletePoem"] {
+    background-image: url('../img/btn_DelPoem.svg');
+}
+
+[id^="btn_unlockPoem"] {
+    background-image: url('../img/btn_unlockPoem.svg');
+}
+
 /* Use the entry wrapper instead */
-.poem-entry:hover [id^="btn_deletePoem"] {
+.poem-creator-wrapper:hover #btn_createPoem,
+.poem-entry:hover [id^="btn_deletePoem"],
+.poem-entry:hover [id^="btn_editLoadPoem"],
+.poem-entry:hover [id^="btn_unlockPoem"]{
     background-position: -35px 0;
 }
 
-[id^="btn_deletePoem"]:disabled {
+.poem-creator-wrapper:disabled #btn_createPoem,
+.poem-entry:disabled [id^="btn_deletePoem"],
+.poem-entry:disabled [id^="btn_editLoadPoem"],
+.poem-entry:disabled [id^="btn_unlockPoem"] {
     background-position: -70px 0;
 }

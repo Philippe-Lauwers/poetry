@@ -8,6 +8,7 @@ import {Suggestionbox} from "./suggestionboxAPI/1_SuggestionBox.js";
 import {activateSuggestionbox} from "./suggestionboxInteraction.js";
 import {flashMessage} from './niftyThings.js';
 import {receiveKeywords} from "./keywordboxInteraction.js";
+import {editorProtected} from "./editorInteraction.js";
 
 /**
  *Create a single shared instance of the sandbox */
@@ -71,14 +72,16 @@ export function verseKeydown(e) {
         e.preventDefault();
     }
 }
+
 export function setTitlePlaceholder(myFld) {
     const poem = getSandbox();
     if (poem.firstChild.firstChild.firstChild === BaseNode.getWrapper(myFld)) {
-                if (document.getElementById('poemTitle').value.trim() === '') {
-                    document.getElementById('poemTitle').placeholder = myFld.value;
-                }
+        if (document.getElementById('poemTitle').value.trim() === '') {
+            document.getElementById('poemTitle').placeholder = myFld.value;
+        }
     }
 }
+
 export function verseKeyup(e) {
     const poem = getSandbox();            // the Poem instance
     switch (e.key) {
@@ -102,9 +105,11 @@ export function verseKeyup(e) {
 export function verseAccept({myEvent = null, myVerse = null}) {
     let verse;
     if (myEvent) {
-        verse = BaseNode.getWrapper(myEvent.target);}   // assuming BaseNode.registry
+        verse = BaseNode.getWrapper(myEvent.target);
+    }   // assuming BaseNode.registry
     else if (myVerse) {
-        verse = myVerse;}
+        verse = myVerse;
+    }
     const poem = getSandbox();                // Poem instance
     let stanza = poem.findStanzaOf(verse);
     const wrapper = verse.parent;                  // VerseWrapper instance
@@ -135,9 +140,9 @@ export function verseAccept({myEvent = null, myVerse = null}) {
             }
             const newVerse = stanza.addVerse({
                 events:
-                    // keydown: verseKeydown,
-                    // change: highlightIfEmpty
-                    verse.events
+                // keydown: verseKeydown,
+                // change: highlightIfEmpty
+                verse.events
 
             });
             // When we create a new verse, we move the "generate verse" button from the current to the new verse
@@ -224,6 +229,7 @@ function moveFocus(e, direction) {
  * @param e target of an event, called at the change event of a field
  */
 let _paramboxActive = true;
+
 export function highlightIfEmpty(e) {
     if (e.target.value.trim() === '') {
         e.target.classList.add('verseEmpty');
@@ -251,6 +257,7 @@ export function disableSandbox() {
         }
     });
 }
+
 export function enableSandbox() {
     const fldSet = document.getElementById("sandboxFields")
     // const fldSetStatus = fldSet.getAttribute('disabled')
@@ -283,8 +290,8 @@ export function disableGenBtn(e, {includeFld = false} = {}) {
         val = "Clicked a submit button";
     }
     // Activate/desactivate the "generate verse" button according to the content of the verse field
-    if(fld.nextSibling) {
-        if(fld.nextSibling.id.startsWith("btn_generateVerse")) {
+    if (fld.nextSibling) {
+        if (fld.nextSibling.id.startsWith("btn_generateVerse")) {
             fld.nextElementSibling.disabled = (val !== '')
             if (includeFld) fld.readOnly = (val !== '')
         }
@@ -358,16 +365,18 @@ export function locateInRhymeScheme(poem, verse) {
 }
 
 export function poemComplete(poem, verse, rhymeScheme = getRhymeScheme()) {
-    if(rhymeScheme.elements.length == 0) {
+    if (rhymeScheme.elements.length == 0) {
         document.getElementById("btn_savePoem").removeAttribute("disabled");
         document.getElementById("chckBx_final").removeAttribute("disabled");
         return false;
-    };
+    }
+    ;
     // -1 because we compare indexes with a length
-    if(locateInRhymeScheme(poem, verse) < rhymeScheme.elements.length - 1) {
+    if (locateInRhymeScheme(poem, verse) < rhymeScheme.elements.length - 1) {
         document.getElementById("btn_savePoem").removeAttribute("disabled");
         return false;
-    };
+    }
+    ;
     document.getElementById("btn_savePoem").removeAttribute("disabled");
     document.getElementById("chckBx_final").removeAttribute("disabled");
     return true;
@@ -434,7 +443,7 @@ function nextVerse(verse) {
  * This function enables disabled verses
  * - first verse = when a draft poem was automatically generated, generate verse button can be ditched
  * - last verse = when a single verse was requested
-**/
+ **/
 function activateVerses(poem) {
     for (const stanza of poem.children.filter(s => (s.constructor.name === "VerseWrapper"))) {
         for (const wrapper of stanza.children) {
@@ -488,12 +497,10 @@ export function receivePoem(poem) {
     let myStructVw;
     let myStructV;
 
-    if (!document.getElementById("poem_id")) {
-        const idFld = document.createElement("input");
-        idFld.id = idFld.name = "poem_id"
-        idFld.type="hidden"
-        idFld.value = poem.id
-        document.getElementsByClassName("top-pane")[0].append(idFld)
+    const idFld = document.getElementById("poem_id")
+    idFld.value = poem.id
+    if (poem.title) {
+        document.getElementById("poemTitle").value = poem.title;
     }
 
     // If the first verse is also the first empty verse, we know a full poem or a requested first verse is received
@@ -517,7 +524,7 @@ export function receivePoem(poem) {
                 // If the stanza is the first stanza of a full poem, we need to update the id and the struct fields
                 const oldStzId = myStanza.id;
                 myStanza.id = Stanza.formatID({id: id, prefix: "s-"});
-                myStructStz = document.getElementById("struct-"+oldStzId);
+                myStructStz = document.getElementById("struct-" + oldStzId);
                 myStructPoem.value = myStructPoem.value.replace(oldStzId, myStanza.id);
                 myStructStz.id = "struct-" + myStanza.id;
                 myStructStz.name = myStructStz.id
@@ -559,6 +566,7 @@ export function receivePoem(poem) {
                 setTitlePlaceholder(verseEl)
 
                 if (suggestions) {
+                    deactivateParambox()
                     const SB = new Suggestionbox({
                         selector: Verse.formatID({id: id, prefix: "suggB-v-"}),
                         id: Verse.formatID({id: id, prefix: "suggB-v-"}),
@@ -566,7 +574,8 @@ export function receivePoem(poem) {
                         location: myVerse.stanza,
                         suggestions: suggestions
                     });
-                    activateSuggestionbox();}
+                    activateSuggestionbox();
+                }
                 if (isFullPoem && stanzaIndex === 0 && verseIndex === 0) {
                     oldId = myVerse.id
                     const oldVwId = myVerse.parent.id;
@@ -590,7 +599,7 @@ export function receivePoem(poem) {
                 // 2. If the verse is not found by id or oldId,the user might have clicked the "generate verse" button
                 //    which only is accessible when the verse is empty
                 if (!verseEl) {
-                    verseEl = firstEmptyVerse(sandbox)?.el??null;
+                    verseEl = firstEmptyVerse(sandbox)?.el ?? null;
                 }
 
                 if (verseEl) { // The verse was found by the oldId, so we need to update the id and the struct fields
@@ -601,6 +610,7 @@ export function receivePoem(poem) {
                     myVerse.name = myVerse.id;
                     myVerse.value = (myVerse.value !== text) ? text : myVerse.value;
                     if (suggestions) {
+                        deactivateParambox()
                         const SB = new Suggestionbox({
                             selector: Verse.formatID({id: id, prefix: "suggB-v-"}),
                             id: Verse.formatID({id: id, prefix: "suggB-v-"}),
@@ -611,7 +621,7 @@ export function receivePoem(poem) {
                         activateSuggestionbox();
                     }
                     // Update the verse wrapper id
-                    let  myVerseWrapper = myVerse.parent;
+                    let myVerseWrapper = myVerse.parent;
                     let oldVwId = myVerseWrapper.id;
                     myVerseWrapper.id = VerseWrapper.formatID({id: id, prefix: "vw-"});
                     // Update the structure fields
@@ -625,38 +635,50 @@ export function receivePoem(poem) {
                     myStructV.id = "struct-" + myVerse.id;
                     myStructV.name = myStructV.id;
                 } else { // The verse can neither be found by id, nor by oldId
-                      // This scenario occurs when we are loading a full poem and are beyond the first verse
-                        let events = myVerse.events || {};
-                        // Look for the generate verse button in the verse wrapper
-                        let myBtn
-                        for (let btn of myVerse.parent.el.childNodes) {
-                            if (btn.id.startsWith("btn_generateVerse")) {
-                                myBtn = btn;
-                                break;
-                            }
+                    // This scenario occurs when we are loading a full poem and are beyond the first verse
+                    let events = myVerse.events || {};
+                    // Look for the generate verse button in the verse wrapper
+                    let myBtn
+                    for (let btn of myVerse.parent.el.childNodes) {
+                        if (btn.id.startsWith("btn_generateVerse")) {
+                            myBtn = btn;
+                            break;
                         }
-                        const myNewVerse = myStanza.addVerse({
-                            id: id,
-                            value: text,
-                            events: events,
-                        });
-                        // Move the generate verse button to the new verse wrapper
-                        if (myBtn) {
-                            sandbox.moveButton(myBtn, myVerse.parent, myNewVerse);
-                        }
-                        myVerse = myNewVerse;
+                    }
+                    const myNewVerse = myStanza.addVerse({
+                        id: id,
+                        value: text,
+                        events: events,
+                    });
+                    // Move the generate verse button to the new verse wrapper
+                    if (myBtn) {
+                        sandbox.moveButton(myBtn, myVerse.parent, myNewVerse);
+                    }
+                    myVerse = myNewVerse;
                 }
             }
         });
     });
-    if (poemComplete(sandbox,myVerse,getRhymeScheme())) {
+    if (poemComplete(sandbox, myVerse, getRhymeScheme())) {
         removeButtons("btn_generateVerse");
     }
     if (poem.keywords) {
-        receiveKeywords(poem.keywords)
+        receiveKeywords(poem)
     }
-    activateVerses(getSandbox())
-    enableSandbox()
-    activateParambox()
-    verseAccept({myVerse: myVerse})
+
+    const isFinal = document.querySelectorAll(`input[name="chckBx_final"]`)
+    if (isFinal[0].checked) {
+        if (isFinal[0].classList.contains("read-only")) {
+            // This is when we load a final poem,
+            // if the poem is un-finaled by the user "read-only" is removed from the classList
+            editorProtected({disable: true});
+        }
+    } else {
+        activateVerses(getSandbox())
+        enableSandbox()
+        activateParambox()
+        if (myVerse) { // If there is no "myVerse," it means we are opening a stub (possibly with some keywords)
+            verseAccept({myVerse: myVerse})
+        }
+    }
 }

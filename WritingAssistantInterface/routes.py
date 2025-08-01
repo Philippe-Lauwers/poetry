@@ -22,34 +22,11 @@ main_bp = Blueprint(
 
 @main_bp.route('/')
 def home():
-    resp = requests.get(f"{BACKEND_URL}/webLists")
-    weblists = resp.json()['weblists']
-
-    # Look for the 'form' section of the json input -> render
-    weblists_form = None
-    for section in weblists:
-        if 'form' in section.keys(): # section will only have one key anyway
-            weblists_form = section['form']
-            break
-
-    # Look for the 'lang' section of the json input -> render
-    dfltLang = None
-    for it in weblists:
-        if 'lang' in it.keys():
-            for l in it['lang']['options']:
-                if 'default' in l.keys():
-                    dfltLang = l['label'][0:2].lower()
-                    break;
-            if dfltLang == None:
-                dfltLang = it['lang']['options'][0]['label'][0:2].lower()
-
     #Fetch the list of poems from the backend
     user_id = request.args.get("user_id", "1")
     poems_resp = requests.get(f"{BACKEND_URL}/listPoems", params={"user_id": user_id})
     poems = poems_resp.json().get("poems", [])
-
-    return render_template('index.html', weblists=weblists, weblists_form=weblists_form,
-                           randomPlaceholder=pickPlaceholder(dfltLang), poems=poems, dfltLang=dfltLang)
+    return render_template('index.html', poems=poems)
 
 
 def pickPlaceholder(lang):
@@ -179,6 +156,46 @@ def deletePoem():
     resp = requests.get(f"{BACKEND_URL}/deletePoem", params={"key": key})
     return Response(resp.content, status=resp.status_code, content_type='application/json')
 
+@main_bp.route('/loadEditPoem', methods=['GET'])
+def loadEditPoem():
+    # 1) Fetch the poem by key
+    key = request.args.get('key', default=None, type=str)
+    if key != "null":
+        resp = requests.get(f"{BACKEND_URL}/fetchPoemByKey", params={"key": key})
+        poem = resp.json().get("poem", None)
+    else: # in case of a new poem, we need to create a blank one but still need to fetch the parameter lists below
+        poem = None
+
+    # ... and since we are loading a new pane, we need some extra data to make the interface work:
+    # 2) Fetch all the webLists
+    resp_wl = requests.get(f"{BACKEND_URL}/webLists")
+    weblists = resp_wl.json().get('weblists', [])
+    # ... and render the poem forms
+    weblists_form = next(
+        (section['form'] for section in weblists if 'form' in section),
+        []
+    )
+
+    # 3) Extract the 'lang' section and determine the default language
+    dfltLang = None
+    for section in weblists:
+        if 'lang' in section:
+            opts = section['lang']['options']
+            default_opt = next((o for o in opts if o.get('default')), opts[0])
+            dfltLang = default_opt['label'][:2].lower()
+            break
+    # 4) Pick a random placeholder for the title field
+    randomPlaceholder = pickPlaceholder(dfltLang)
+    # 5) Render the editor partial with everything it expects
+    return render_template(
+        "partials/editor.html",
+        poem=poem,
+        weblists=weblists,
+        weblists_form=weblists_form,
+        dfltLang=dfltLang,
+        randomPlaceholder=randomPlaceholder
+    )
+
 @main_bp.route('/randomKeywords', methods=['POST'])
 def randomKeywords():
     params = request.get_json(force=True)
@@ -209,6 +226,7 @@ def deleteKeyword():
                         json=params,
                         headers={'Content-Type':'application/json'})
     return jsonify(resp.json())
+
 @main_bp.route('/log', methods=['POST'])
 def log():
     data = request.json
