@@ -1,6 +1,7 @@
 import {BaseNode} from "../API.js";
 import {Select} from "./2_Select.js";
 import {FinalWrapper} from "./4_FinalWrapper.js";
+import {GoListWrapper} from "./6_GoListWrapper.js";
 
 export class Parambox extends BaseNode {
      constructor({selector = "#parambox", addButtons = false, events = {}, buttons = {}} = {}) {
@@ -26,6 +27,11 @@ export class Parambox extends BaseNode {
     }
     getFinal() {
          return this._finalWrapper
+    }
+
+    addGoList({selector = null, id = null, events = {}, buttons = {}} = {}) {
+        const goListWrapper = new GoListWrapper({selector, id, events, buttons});
+        return this.append(goListWrapper);
     }
 
 }

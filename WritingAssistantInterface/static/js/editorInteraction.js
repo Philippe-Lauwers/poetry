@@ -107,14 +107,13 @@ export async function initializeEditor({poem = null, parameters = null} = {}) {
 }
 
 export function editorProtected({disable = None}) {
-    console.log("editorProtected, disable=", disable)
     // Input fields that should read-only (all except for the ones starting with "struct")
     const inputs = document.querySelectorAll(
         'input:not([id^="struct"]):not([name^="struct"])'
     );
     inputs.forEach(input => {
         input.readOnly = disable;
-        if (input.type=="checkbox") {
+        if (input.type == "checkbox") {
             if (disable) {
                 input.classList.add("read-only");
             } else {
@@ -126,7 +125,8 @@ export function editorProtected({disable = None}) {
     const firstFieldEmpty = getSandbox().firstChild.firstChild.firstChild.value === "";
     const buttons = document.querySelectorAll(
         'button' +
-        ':not(#btn_editPoem):not([name="btn_editPoem"])');
+        ':not(#btn_editPoem):not([name="btn_editPoem"])' +
+        ':not(#btn_goList):not([name="btn_goList"])');
     buttons.forEach(btn => {
         if ((btn.id !== "btn_generatePoem" || firstFieldEmpty) || disable) {
             // btn_generatePoem has to be disabled and [not enabled again if there is text in the first verse]

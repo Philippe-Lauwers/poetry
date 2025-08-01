@@ -27,7 +27,7 @@
     opacity: 1;
 }
 
-#final {
+#final, #goList {
     display: flex;
     gap: 1rem;
     flex: 0 0 auto;
@@ -36,13 +36,22 @@
     align-items: center
 }
 
+#goList {
+    margin-left: auto;
+}
+#goList, #label_goList, btn_goList{
+    cursor: pointer;
+}
+
 #parambox label,
-#final label {
+#final label,
+#goList label {
     font-weight: 600;
     color: var(--borderColor);
 }
 
-#final label {
+#final label,
+#goList label {
     margin-right: 0.5rem
 }
 
@@ -66,4 +75,8 @@
 
 #btn_editPoem {
     background-image: url('../img/btn_EditPoem.svg');
+}
+
+#btn_goList {
+    background-image: url('../img/btn_ListPoems.svg');
 }

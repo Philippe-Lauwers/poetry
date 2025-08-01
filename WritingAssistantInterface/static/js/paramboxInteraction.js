@@ -17,7 +17,7 @@ export function loadParambox() {
         sel.el.addEventListener("change", e => {
             firstEmptyVerse(getSandbox())?.el.focus();
         });
-    if (sel.name == "form") { // When another form is selected, we need to update the rhyme scheme
+        if (sel.name == "form") { // When another form is selected, we need to update the rhyme scheme
             sel.el.addEventListener("change", async (e) => {
                 // Wait for the scheme to arrive
                 const poemDesc = await receiveRhymeScheme();
@@ -29,18 +29,31 @@ export function loadParambox() {
     });
     // Add a submit button and a checkbox to indicate the poem is final
     parambox.addFinal({
-        id: "final", label:"Final", buttons: {
+        id: "final", label: "Final", buttons: {
             btn_finalPoem: {
                 id: "btn_savePoem",
                 type: "submit",
                 formaction: "/savePoem",
                 formmethod: "post",
-                value:1,
+                value: 1,
                 className: "btn",
                 alt: "Save the draft"
             }
         }
     })
+    parambox.addGoList({
+        id: "goList", label: "My overview", buttons: {
+            btn_goList: {
+                id: "btn_goList",
+                type: "button",
+                className: "btn",
+                alt: "Go to my overview"
+            }
+        }
+    })
+    document.getElementById("btn_goList").addEventListener("click", loadPoemList);
+    document.getElementById("goList").addEventListener("dblclick", loadPoemList);
+
     document.getElementById("btn_savePoem").disabled = true;
 }
 
@@ -50,7 +63,7 @@ export function loadParambox() {
  * @param e
  * @param submitter
  */
-export function deactivateParambox(e=null, submitter=null) {
+export function deactivateParambox(e = null, submitter = null) {
     const parambox = getParambox();
     let hasPersistentOption;
     // loop through selects
@@ -66,51 +79,56 @@ export function deactivateParambox(e=null, submitter=null) {
                     opt.el.disabled = true;
                 }
             }
-        }
-        // If there are no persistent options, don't disable the select but remove the non-persistent options
-        if (!hasPersistentOption) {
-            mockDisableSelect(sel.el);
-        } else {
-            for (let opt of sel.children) {
-                if (!opt.persistence && sel.el.value !== opt.el.value) {
-                    opt.remove();
+            // If there are no persistent options, don't disable the select but remove the non-persistent options
+            if (!hasPersistentOption) {
+                mockDisableSelect(sel.el);
+            } else {
+                for (let opt of sel.children) {
+                    if (!opt.persistence && sel.el.value !== opt.el.value) {
+                        opt.remove();
+                    }
                 }
             }
-        }
-        if (submitter) {
-            submitter.disabled = true;
+            if (submitter) {
+                submitter.disabled = true;
+            }
         }
     }
     document.getElementById("btn_generatePoem").disabled = true;
 }
+
 export function activateParambox() {
     document.getElementById("btn_savePoem").removeAttribute("disabled");
     if (getSandbox().firstChild.firstChild.firstChild.el.value === "") {
         document.getElementById("btn_generatePoem").removeAttribute("disabled");
     }
 }
+
 export function deactivateFinal() {
     document.getElementById("btn_savePoem").disabled = true;
     document.getElementById("chckBx_final").el.disabled = false;
     deactivateParambox()
     getParambox()
 }
+
 export function mockDisableSelect(el) {
-    const myEl = (typeof el ==="string") ? document.getElementById(el) : el;
+    const myEl = (typeof el === "string") ? document.getElementById(el) : el;
     myEl.classList.add('read-only-select');
     myEl.setAttribute('aria-disabled', 'true');
     myEl.setAttribute('tabindex', '-1');
     myEl.addEventListener('keydown', preventChange);
     myEl.addEventListener('focus', preventChange);
 }
+
 export function mockEnableSelect(el) {
-    const myEl = (typeof el ==="string") ? document.getElementById(el) : el;
+    const myEl = (typeof el === "string") ? document.getElementById(el) : el;
     myEl.classList.remove('read-only-select');
     myEl.removeAttribute('aria-disabled');
     myEl.removeAttribute('tabindex');
     myEl.removeEventListener('keydown', preventChange);
     myEl.removeEventListener('focus', preventChange);
 }
+
 function preventChange(e) {
     e.stopImmediatePropagation();
     e.preventDefault();
@@ -140,8 +158,9 @@ export async function receiveRhymeScheme() {
     }
     return _poemDesc;
 }
+
 export function getRhymeScheme() {
-    return _poemDesc !== undefined ?_poemDesc.rhymeScheme: null;
+    return _poemDesc !== undefined ? _poemDesc.rhymeScheme : null;
 }
 
 /**
@@ -149,4 +168,15 @@ export function getRhymeScheme() {
 export function toggleSaveButton(e, target, {saveBtn = null}) {
     saveBtn.alt = saveBtn.title === "Save the draft" ? "Save the final version" : "Save the draft";
     saveBtn.title = saveBtn.title === "Save the draft" ? "Save the final version" : "Save the draft";
+}
+
+async function loadPoemList() {
+    try {
+        const user_id = document.getElementById("user_id").value;
+        const res = await fetch(`/listPoems?user_id=${encodeURIComponent(user_id)}`);
+        const html = await res.text();
+        document.querySelector('.bottom-pane').innerHTML = html;
+    } catch (err) {
+        console.error('Failed to load info:', err);
+    }
 }
