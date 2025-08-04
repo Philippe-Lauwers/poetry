@@ -58,6 +58,12 @@ export function initPoemListInteraction() {
             disableList();
         });
     });
+
+    preview = document.getElementById("poemPreview");
+    let currentKey = null;
+    let clearTimeoutId = null;
+
+    initPoemPreview();
 }
 
 // Load the editor pane when the user clicks a poem entry (or the button next to it)
@@ -66,6 +72,7 @@ function loadEditor(poemKey) {
         .then(res => res.text())
         .then(html => {
             const container = document.querySelector(".bottom-pane");
+            console.log("inner html of loadEditPoem:", html);
             container.innerHTML = html;
             // Grabbing the poem-related data as found at the bottom of the editor subtemplate
             const scriptPoem = container.querySelector("#poem-data");
@@ -86,25 +93,29 @@ function loadEditor(poemKey) {
         });
 }
 
-/** HANDLING THE POEM PREVIEW */
-const preview = document.getElementById("poemPreview");
+// Variables needed for proper operation of the poem preview
+let preview;
 let currentKey = null;
 let clearTimeoutId = null;
 
-// Set up preview entry hover
-document.querySelectorAll(".poem-entry").forEach((el) => {
-    el.addEventListener("mouseenter", () => {
-        clearTimeout(clearTimeoutId);
-        showPreview(el);
-    });
-    el.addEventListener("mouseleave", scheduleClearPreview);
-});
+export function initPoemPreview() {
+    /** HANDLING THE POEM PREVIEW */
 
-// Keep preview on hover
-preview.addEventListener("mouseenter", () => {
-    clearTimeout(clearTimeoutId);
-});
-preview.addEventListener("mouseleave", scheduleClearPreview);
+    // Set up preview entry hover
+    document.querySelectorAll(".poem-entry").forEach((el) => {
+        el.addEventListener("mouseenter", () => {
+            clearTimeout(clearTimeoutId);
+            showPreview(el);
+        });
+        el.addEventListener("mouseleave", scheduleClearPreview);
+    });
+
+    // Keep preview on hover
+    preview.addEventListener("mouseenter", () => {
+        clearTimeout(clearTimeoutId);
+    });
+    preview.addEventListener("mouseleave", scheduleClearPreview);
+}
 
 function showPreview(entry) {
     const text = entry.dataset.text || "";
@@ -183,5 +194,35 @@ function enableList() {
         list.forEach((btn) => {
             btn.disabled = false;
         });
+    }
+}
+
+export async function loadPoemList() {
+    // If any struct- fields linger (from a previously reviewed poem), remove them
+    const form = document.getElementById("poemForm");
+    if (form) {
+        const structInputs = form.querySelectorAll('input[id^="struct-"]');
+        if (structInputs.length > 0) {
+            structInputs.forEach(input => input.remove());
+        }
+    }
+
+    try {
+        const res = await fetch('/listPoems', {
+            method: 'POST',                 // ← explicitly POST
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json',  // if you need to send a body
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            // body: JSON.stringify({ /* whatever data you need */ })
+        });
+
+        if (!res.ok) throw new Error(res.statusText);
+        const html = await res.text();
+        document.querySelector('.bottom-pane').innerHTML = html;
+        initPoemListInteraction();
+    } catch (err) {
+        console.error('Failed to load poems:', err);
     }
 }

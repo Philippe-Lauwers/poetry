@@ -20,6 +20,7 @@ dependencies = [
     "nltk (>=3.9.1,<4.0.0)",
     "rouge-metric (>=1.0.1,<2.0.0)",
     "jellyfish (>=1.2.0,<2.0.0)",
+    "flask-login (>=0.6.3,<0.7.0)",
 ]
 
 [tool.poetry]

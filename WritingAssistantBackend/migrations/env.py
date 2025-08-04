@@ -21,15 +21,17 @@ fileConfig(context.config.config_file_name)
 
 # add your model's MetaData object here
 # for 'autogenerate' support
-from WritingAssistantBackend.app import app
-from WritingAssistantBackend.app import db
-import WritingAssistantBackend.dbModel  # ensure the models are registered
+from WritingAssistantBackend.app import create_app
+from WritingAssistantBackend.extensions import db
+import WritingAssistantBackend.dbModel
 
 # Tell alembic what the DB URL is from the Flask config file
+app = create_app()
 context.config.set_main_option(
-    'sqlalchemy.url',
-    app.config['SQLALCHEMY_DATABASE_URI']
+    "sqlalchemy.url",
+    app.config["SQLALCHEMY_DATABASE_URI"]
 )
+target_metadata = db.metadata
 target_metadata = db.metadata
 # right after you set target_metadata
 print(">>> TARGET METADATA TABLES:", list(target_metadata.tables.keys()))

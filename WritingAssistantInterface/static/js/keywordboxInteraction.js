@@ -217,10 +217,8 @@ export function receiveKeywords(input) {
             // after a save, some keywords will have an oldId, search the elements by oldId and rename
             if (kw.keyword.oldId) {
                 const myFld = Keyword.getWrapper(document.getElementById(kw.oldId));
-                console.log("renaming keyword", myFld);
                 if (myFld) {
                     let id = target.el.id = "kw-" + input.keywords[0].keyword.id;
-                    consol.log("new id/name", id);
                     target.el.setAttribute("name", target.el.id);
                     // Change button values
                     let btn = target.el.nextSibling

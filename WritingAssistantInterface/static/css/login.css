@@ -1,0 +1,95 @@
+.login-wrapper {
+    box-sizing: border-box;
+    max-height: 100%;
+    margin: 0.4rem;
+    background: white;
+    border: 1px solid var(--borderColor);
+    border-radius: 0.6rem;
+    padding: 1rem;
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.login-fields-wrapper {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--borderColor);
+    border-radius: 0.6rem;
+    padding: 1rem;
+    flex: 0 1 auto;
+    background: #fafafa;
+    min-width: 20rem;
+    max-width: 30rem;
+}
+
+.login-fields-wrapper h1 {
+    font-size: 1.5rem;
+    color: var(--borderColor);
+    font-weight: bold;
+    margin: 0 0 1rem 0;
+    border-bottom: 1px solid var(--borderColor);
+}
+
+.login-identifier-wrapper,
+.login-identifier-wrapper,
+.login-password-wrapper {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 0.5rem;
+}
+
+.login-identifier-wrapper label,
+.login-password-wrapper label {
+    width: 100%;
+    box-sizing: border-box;
+    font-size: 1.25rem;
+    color: var(--borderColor);
+    font-weight: bold;
+}
+
+
+.login-identifier-wrapper input,
+.login-password-wrapper input {
+    width: 100%;
+    box-sizing: border-box;
+    font-size: 1.25rem;
+    border: 1px solid var(--borderColor);
+    border-radius: 0.2rem;
+    outline: none;
+}
+
+.login-button-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.2rem;
+}
+
+#loginError {
+    color: #8B001F;
+    font-size: 1.25rem;
+    margin: 0;
+}
+
+#btn_login {
+    width: 34px;
+    height: 34px;
+    background-image: url('../img/btn_login.svg');
+    background-position: 0 0;
+    background-repeat: no-repeat;
+    background-size: auto;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+}
+
+#btn_login:hover {
+    background-position: -35px 0;
+}
+
+#btn_login:disabled {
+    background-position: -70px 0;
+}

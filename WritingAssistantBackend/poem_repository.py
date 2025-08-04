@@ -182,7 +182,7 @@ class PoemRepository(BaseRepository):
                         actions.update({'PM_FIN': 0})
                     elif int(poem.status) == 1:
                         actions.update({'PM_EDT': 0})
-                if orm_poem.poemText != poem.text:
+                if orm_poem.poemText =="" or orm_poem.poemText != poem.text:
                     orm_poem.poemText = poem.text
 
                 if savePrevious:

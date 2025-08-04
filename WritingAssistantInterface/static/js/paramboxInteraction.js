@@ -1,7 +1,7 @@
 import {Parambox} from './paramboxAPI/1_Parambox.js';
 import {retrieveRhymeScheme} from "./linkUserInteractionToBackend.js";
 import {firstEmptyVerse, getSandbox} from "./sandboxInteraction.js";
-import {initPoemListInteraction} from "./poemlistInteraction.js";
+import {loadPoemList} from "./poemlistInteraction.js";
 
 export const getParambox = () => Parambox.instance;
 
@@ -171,14 +171,3 @@ export function toggleSaveButton(e, target, {saveBtn = null}) {
     saveBtn.title = saveBtn.title === "Save the draft" ? "Save the final version" : "Save the draft";
 }
 
-async function loadPoemList() {
-    try {
-        const user_id = document.getElementById("user_id").value;
-        const res = await fetch(`/listPoems?user_id=${encodeURIComponent(user_id)}`);
-        const html = await res.text();
-        document.querySelector('.bottom-pane').innerHTML = html;
-        initPoemListInteraction();
-    } catch (err) {
-        console.error('Failed to load info:', err);
-    }
-}

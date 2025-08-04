@@ -29,7 +29,10 @@ with app.app_context():
     print("-> Creating admin user")
     admin = db.session.query(User).filter_by(name="admin").first()
     if not admin:
-        admin = User(name="admin")
+        password = input("Please enter a password for the admin user: ")
+        email = input("Please enter an email address for the admin user: ")
+        admin = User(name="admin", email=email)
+        admin.set_password(password)C0
         db.session.add(admin)
         db.session.commit()
         db.session.expunge(admin)

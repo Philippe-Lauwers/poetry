@@ -497,6 +497,8 @@ export function receivePoem(poem) {
     let myStructVw;
     let myStructV;
 
+    console.log("receivePoem",poem)
+
     const idFld = document.getElementById("poem_id")
     idFld.value = poem.id
     if (poem.title) {

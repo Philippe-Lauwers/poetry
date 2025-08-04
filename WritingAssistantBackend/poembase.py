@@ -104,7 +104,7 @@ class PoemBase:
         except AttributeError:
             pass
 
-        if not id is None:
+        if not id is None and id != '':
             self.container = PoemRepository.fetch(id=id)
         else:
             self.container = PoemContainer()
@@ -341,8 +341,9 @@ class PoemBase:
                         previous = previous[lenFirstPart:] + firstPart
                     else:
                         previous = firstPart
-                    # Determine how much of the verse still has to be generated + adapt number of batches accordingly
-                    self.generator.maxLength = math.ceil((1 - lenFirstPart/self.generator.maxLength) * dfltMax_length)
+                    # Determine how much of the verse still has to be generated (factor 2 is based on the observation
+                    # that, when using a "first part" of a verse, getSentence genrally generates verses taht are too lon
+                    self.generator.maxLength = math.ceil((1 - 2*lenFirstPart/self.generator.maxLength) * dfltMax_length)
                     self.generator.nBatchesDecoder = 0
         except: # If generating a first part fails, we can continue generating an entire verse
             # Before we do that, restore the defaults for maxLength and nBatchesDecoder

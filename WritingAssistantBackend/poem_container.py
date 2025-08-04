@@ -102,6 +102,7 @@ class Poem(BaseContainer):
         if not userInput: # if there's no user input, we can skip this
             return False
         if structure:
+            print ("structure", structure)
             stanzas = structure["struct-sandbox"].split(',')
             for s in stanzas:
                 hasVerse = False
@@ -202,7 +203,9 @@ class Poem(BaseContainer):
         return {"rhyme": rhyme, "words": words}
 
     def isStub(self):  # Detects when a complete poem is being generated from a stub to which keywords are attached
-        if len(self.stanzas) > 1 :
+        if not self.stanzas:
+            return True
+        elif len(self.stanzas) > 1 :
             return False
         elif (self.stanzas[0].verses and len(self.stanzas[0].verses) > 1):
             return False

@@ -2,55 +2,59 @@ import {receivePoem} from './sandboxInteraction.js';
 import {activateParambox, getParambox, mockEnableSelect, receiveRhymeScheme} from './paramboxInteraction.js'
 import {closeSuggestionBox} from "./suggestionboxInteraction.js";
 import {activateKeywordbox, deleteKeyword, receiveKeywords, updateNmfDim} from "./keywordboxInteraction.js";
+import {handleLogin} from "./loginInteraction.js";
 
 const form = document.getElementById('poemForm');
 form.addEventListener('submit', async e => {
-        e.preventDefault();
+    e.preventDefault();
 
-        // grab data from the form
-        const frmData = new FormData(form);
-        frmData.append(e.submitter.name, e.submitter.value);
-        const data = Object.fromEntries(frmData.entries());
+    // grab data from the form
+    const frmData = new FormData(form);
+    frmData.append(e.submitter.name, e.submitter.value);
+    const data = Object.fromEntries(frmData.entries());
 
-        // 1) Log the submission on your frontend Python
-        await fetch('/log', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(data)
-        });
 
-        let reqRoute = ""
-        const s_id = e.submitter.id
-        if (s_id === "btn_generatePoem") {
-            reqRoute = "/generatePoem";
-        } else if (s_id === "btn_generateVerse" || s_id.startsWith("btn-f5-lst-sug-v")) {
-            reqRoute = "/generateVerse";
-        } else if (s_id.startsWith("btn_acceptSuggestion_v")) {
-            reqRoute = "/acceptSuggestion";
-        } else if (s_id === "btn_savePoem") {
-            reqRoute = "/savePoem";
-        } else if (s_id === "btn_editPoem") {
-            reqRoute = "/savePoem";
-        } else if (s_id === "btn_randomKeywords" || s_id.startsWith("btn-f5-lst-sug-kw")) {
-            reqRoute = "/randomKeywords";
-        } else if (s_id === "btn_random1Keyword" || s_id.startsWith("btn-f5-lst-1sug-kw")) {
-            reqRoute = "/randomKeywords";
-        } else if (s_id.startsWith("btn_acceptSuggestion_kw")) {
-            reqRoute = "/acceptKeywordSuggestion";
-        } else if (s_id === "btn_saveKeywords") {
-            reqRoute = "/saveKeywords";
-        } else if (s_id === "btn_deleteKeyword") {
-            reqRoute = "/deleteKeyword";
-        }
-        // 2) Route request
-        let gen = await fetch(reqRoute, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(data)
-        });
-        const json = await gen.json();
-        // 3) Display
-    if (json.poem) {
+    let reqRoute = ""
+    const s_id = e.submitter.id
+    if (s_id === "btn_login") {
+        reqRoute = "/login";
+    } else if (s_id === "btn_generatePoem") {
+        reqRoute = "/generatePoem";
+    } else if (s_id === "btn_generateVerse" || s_id.startsWith("btn-f5-lst-sug-v")) {
+        reqRoute = "/generateVerse";
+    } else if (s_id.startsWith("btn_acceptSuggestion_v")) {
+        reqRoute = "/acceptSuggestion";
+    } else if (s_id === "btn_savePoem") {
+        reqRoute = "/savePoem";
+    } else if (s_id === "btn_editPoem") {
+        reqRoute = "/savePoem";
+    } else if (s_id === "btn_randomKeywords" || s_id.startsWith("btn-f5-lst-sug-kw")) {
+        reqRoute = "/randomKeywords";
+    } else if (s_id === "btn_random1Keyword" || s_id.startsWith("btn-f5-lst-1sug-kw")) {
+        reqRoute = "/randomKeywords";
+    } else if (s_id.startsWith("btn_acceptSuggestion_kw")) {
+        reqRoute = "/acceptKeywordSuggestion";
+    } else if (s_id === "btn_saveKeywords") {
+        reqRoute = "/saveKeywords";
+    } else if (s_id === "btn_deleteKeyword") {
+        reqRoute = "/deleteKeyword";
+    }
+    // 2) Route request
+    let gen = await fetch(reqRoute, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        credentials: 'include',
+        body: JSON.stringify(data)
+    });
+
+    const json = await gen.json();
+    // 3) Display
+    if (json.login) {
+        return handleLogin(json.login);
+    } else if (json.poem) {
         receivePoem(json.poem);
         document.getElementById("nmfDim").value = json.poem.parameters.nmfDim;
     } else if (json.suggAccept) {
@@ -68,8 +72,8 @@ form.addEventListener('submit', async e => {
         deleteKeyword(json.kwDelete);
     }
     mockEnableSelect("form")
-        if (reqRoute==="/savePoem" || reqRoute==="/editPoem") getParambox().getFinal().addEdit()
-    });
+    if (reqRoute === "/savePoem" || reqRoute === "/editPoem") getParambox().getFinal().addEdit()
+});
 
 const formFld = document.getElementById('form');
 if (formFld) {

@@ -5,6 +5,7 @@ from sqlalchemy.orm import synonym  # to allow use of synonyms for Columns
 from datetime import datetime, timezone # needed for timestamps
 import random
 import string
+from flask_login import UserMixin
 
 """
  NOTE:
@@ -23,12 +24,24 @@ class ZIP(db.Model):
 """
 
 
-class User(db.Model):
+class User(UserMixin, db.Model):
     __tablename__ = 'users'
-    __table_args__ = (db.PrimaryKeyConstraint('id', name='pk_users'),)
+    __table_args__ = (db.PrimaryKeyConstraint('id', name='pk_users'),
+                        db.UniqueConstraint('email', name='uq_users_email'),)
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(100), nullable=False)
+    email = db.Column(db.String(150), nullable=False)
+    password_hash = db.Column(db.String(128), nullable=False)
+
+    def set_password(self, password):
+        """Set the password hash for the user."""
+        from werkzeug.security import generate_password_hash
+        self.password_hash = generate_password_hash(password)
+    def check_password(self, password):
+        """Check the password against the stored hash."""
+        from werkzeug.security import check_password_hash
+        return check_password_hash(self.password_hash, password)
 
 
 class ConfigurationCategory(db.Model):

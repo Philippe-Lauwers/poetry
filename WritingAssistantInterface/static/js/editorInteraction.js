@@ -71,8 +71,7 @@ export async function initializeEditor({poem = null, parameters = null} = {}) {
         if (v.el.isConnected) setTimeout(function () {
             v.el.focus();
         }, 0);
-    }
-    ;
+    };
     const parambox = new Parambox({
         selector: "#parambox",
         addButtons: true,

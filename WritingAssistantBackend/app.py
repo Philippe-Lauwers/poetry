@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
+from flask_login import LoginManager
 import os
 from dotenv import load_dotenv
 from .poembase_from_cache import get_poem
@@ -9,6 +10,9 @@ from .poembase_from_cache import get_poem
 # from flask_sqlalchemy import SQLAlchemy
 # from flask_migrate import Migrate
 from .extensions import db, migrate
+from .dbModel import User
+from .routes import main_bp
+from .auth.routes import auth_bp
 
 # Read .env
 load_dotenv()  # reads .env and populates os.environ
@@ -17,7 +21,6 @@ load_dotenv()  # reads .env and populates os.environ
 # creates a handle to the app with the values in .env unless otherwise specified
 def create_app(config_object=None):
     app = Flask(__name__)
-    # 1) Load your config
 
     db_file = os.path.join(app.root_path, os.getenv('DATABASE_FILENAME', 'poetry.db')).replace('\\', '/')
 
@@ -30,19 +33,38 @@ def create_app(config_object=None):
         # …any other env-driven settings…
     )
 
-    # app.config['SQLALCHEMY_ECHO'] = True  # optionally see SQL logs
-    # 2) Initialize extensions
+     # 2) Enable CORS
+    CORS(
+        app,
+        resources={r"/*": {"origins": ["http://localhost:5000"]}},
+        supports_credentials=True
+    )
+
+    # Initialize login manager
+    login_manager = LoginManager()
+    login_manager.init_app(app)
+    # Set the login view here, after init_app
+    @login_manager.user_loader
+    def load_user(user_id):
+        return User.query.get(int(user_id))
+
+    # 3) Initialize Flask-Login
+    login_manager = LoginManager()
+    login_manager.init_app(app)
+    # <-- Set the login view here, after init_app
+    login_manager.login_view = "auth.login"
+    login_manager.login_message_category = "warning"
+
+    @login_manager.user_loader
+    def load_user(user_id):
+        return User.query.get(int(user_id))
+
+    # 4) Initialize extensions
     db.init_app(app)
     migrate.init_app(app, db)
 
-    # 3) load routing from routes.py
-    from .routes import main_bp
+    # 5) Register blueprints
     app.register_blueprint(main_bp)
+    app.register_blueprint(auth_bp, url_prefix='/auth')
 
     return app
-
-
-from .dbModel import ActionTargetType, ActionTarget, ActionType, Action, ConfigurationCategory, ConfigurationParameter, \
-    Keyword, PoemLanguage, Poem, RhymeScheme, RhymeSchemeElement, Stanza, Theme, ThemeDescriptor, User, Verse
-
-app = create_app()
