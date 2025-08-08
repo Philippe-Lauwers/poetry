@@ -64,7 +64,7 @@ class BaseContainer():
 
 
 class Poem(BaseContainer):
-    def __init__(self, id = None, poem_text: str = None, title: str = None, form=None, nmfDim=0, lang=None, status = 1):
+    def __init__(self, id = None, poem_text: str = None, title: str = None, form=None, nmfDim=0, lang=None, status = 1, userId=None):
         super().__init__()
         self.id = id
         self._title = title
@@ -73,6 +73,7 @@ class Poem(BaseContainer):
         self._nmfDim = nmfDim
         self._poemLanguage = lang
         self._status = status
+        self._userId = userId
         self._origin = None
         self._keywords = []
         # If the user has already written some text, there will be at least one stanza
@@ -84,6 +85,7 @@ class Poem(BaseContainer):
 
     def addStanza(self, order=-1, id = None, stanzaText: str = None, stanza = None):
         if isinstance(stanza,Stanza):
+            stanza.poem = self
             self._stanzas.append(stanza)
             return
         # else: # if stanza is None and id is present
@@ -102,7 +104,6 @@ class Poem(BaseContainer):
         if not userInput: # if there's no user input, we can skip this
             return False
         if structure:
-            print ("structure", structure)
             stanzas = structure["struct-sandbox"].split(',')
             for s in stanzas:
                 hasVerse = False
@@ -134,10 +135,16 @@ class Poem(BaseContainer):
     @property
     def form(self):
         return self._form
-
     @form.setter
     def form(self, value):
         self._form = value
+
+    @property
+    def userId(self):
+        return self._userId
+    @userId.setter
+    def userId(self, value):
+        self._userId = value
 
     @property
     def title(self):
@@ -187,8 +194,12 @@ class Poem(BaseContainer):
         stanzas = []
         for s in self.stanzas:
             stanzas.append(s.text)
-        return "\n\n".join(stanzas)
+        textOutput = "\n\n".join(stanzas)
 
+        if textOutput !="":
+            return "\n\n".join(stanzas)
+        keywords = [k.text for k in self.keywords if k.text != ""]
+        return ', '.join(keywords)
 
     def blacklists(self):
         # titleWords = [w.lower() for w in self.title.split(" ")] if self.title else []
@@ -235,7 +246,6 @@ class Poem(BaseContainer):
             keywordsTextList = [k.text for k in self.keywords if k.text != ""]
             poem["keywordsText"] = ", ".join(keywordsTextList)
 
-
         if poem["keywords"]:
             if poem["keywords"][-1]["keyword"]["suggestions"]:
                 poem["keywordSuggestions"] = Poem.reorderKeywordSuggestions(poem["keywords"])
@@ -274,6 +284,7 @@ class Stanza(BaseContainer):
         self._verses = []
         self._order = order
         self.id = self.__format_Id__(id)
+        self._poem = None
         # If the user has already written some text, there will be at least one stanza
         # Split the stanza on \n into verses and add verses to the stanza-object
         # If no text is given, there will be no stanza object
@@ -292,6 +303,7 @@ class Stanza(BaseContainer):
 
     def addVerse(self, order=-1, verseText: str = None, id = None, verse = None):
         if isinstance(verse,Verse):
+            verse.stanza = self
             self._verses.append(verse)
             return
         # else: # if verse is None and id is present
@@ -359,6 +371,7 @@ class Verse(BaseContainer):
         self._order = order
         self.id = id
         self._origin = origin
+        self._stanza = None
 
     @property
     def origin(self):

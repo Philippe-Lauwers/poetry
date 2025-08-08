@@ -93,7 +93,7 @@ class PoemRepository(BaseRepository):
                 # look up the id of the status
                 orm_status = db.session.query(PoemStatusModel).filter_by(poemStatusNo=poem.status).first()
                 # create the poem record
-                orm_poem = PoemModel(user_id=1,
+                orm_poem = PoemModel(user_id=poem.userId,
                                      poemLanguage_id=poem.language,
                                      rhymeScheme_id=poem.form,
                                      theme_id=poem.nmfDim,
@@ -699,10 +699,13 @@ class KeywordSuggestionRepository(BaseRepository):
         db.session.add(A)
         db.session.flush()
         # 4) update the status of the suggestions: set their value and set the status to 3 (accepted/final)
+        poem_id = None
         for suggestion in orm_suggestions4collectionId:
             suggestion.status = 3
             orm_keyword = db.session.query(KeywordModel).filter_by(id=suggestion.keyword_id).first()
             orm_keyword.keyword = suggestion.suggestion
+            if not poem_id:
+                poem_id = orm_keyword.poem_id
             db.session.add(orm_keyword)
             db.session.add(suggestion)
             db.session.flush()
@@ -713,6 +716,9 @@ class KeywordSuggestionRepository(BaseRepository):
                                                     'keyword_suggestion_collection': suggestionCollection_id})
 
             output[suggestion.keyword_id] = suggestion.suggestion
+        # 5) update the nmfDim of the poem to the theme_id of the collection
+        orm_poem = db.session.query(PoemModel).filter_by(id=poem_id).first()
+        orm_poem.theme_id = orm_suggestionCollection.theme_id
 
         db.session.commit()
         return {'nmfDim': orm_suggestionCollection.theme_id, 'keywords': output}

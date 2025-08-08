@@ -5,12 +5,28 @@
     <title>Poem Generator</title>
     <link rel="stylesheet" href="/static/css/layout.css">
     <link rel="stylesheet" href="/static/css/login.css">
-    <link rel="stylesheet" href="/static/css/poemlist.css">
-    <link rel="stylesheet" href="/static/css/sandbox.css">
-    <link rel="stylesheet" href="/static/css/suggestionbox.css">
-    <link rel="stylesheet" href="/static/css/parambox.css">
-    <link rel="stylesheet" href="/static/css/keywordbox.css">
     <link rel="stylesheet" href="/static/css/niftyThings.css">
+    <!-- Load the other stylesheets after the page has been loaded, they are only needed after login -->
+    <link rel="preload" href="/static/css/poemlist.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript>
+        <link rel="stylesheet" href="/static/css/poemlist.css">
+    </noscript>
+    <link rel="preload" href="/static/css/sandbox.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript>
+        <link rel="stylesheet" href="/static/css/sandbox.css">
+    </noscript>
+    <link rel="preload" href="/static/css/suggestionbox.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript>
+        <link rel="stylesheet" href="/static/css/suggestionbox.css">
+    </noscript>
+    <link rel="preload" href="/static/css/parambox.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript>
+        <link rel="stylesheet" href="/static/css/parambox.css">
+    </noscript>
+    <link rel="preload" href="/static/css/keywordbox.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript>
+        <link rel="stylesheet" href="/static/css/keywordbox.css">
+    </noscript>
     <link rel="icon" href="static/img/favicon.ico" type="image/x-icon">
     <link rel="shortcut icon" href="static/img/favicon.ico" type="image/x-icon">
     <link rel="icon" sizes="32x32" href="static/img/favicon.ico" type="image/x-icon">

@@ -2,7 +2,7 @@ import {receivePoem} from './sandboxInteraction.js';
 import {activateParambox, getParambox, mockEnableSelect, receiveRhymeScheme} from './paramboxInteraction.js'
 import {closeSuggestionBox} from "./suggestionboxInteraction.js";
 import {activateKeywordbox, deleteKeyword, receiveKeywords, updateNmfDim} from "./keywordboxInteraction.js";
-import {handleLogin} from "./loginInteraction.js";
+import {handleLogin, handleRegister} from "./loginInteraction.js";
 
 const form = document.getElementById('poemForm');
 form.addEventListener('submit', async e => {
@@ -18,6 +18,8 @@ form.addEventListener('submit', async e => {
     const s_id = e.submitter.id
     if (s_id === "btn_login") {
         reqRoute = "/login";
+    } else if (s_id === "btn_registerSave") {
+        reqRoute = "/registerSave";
     } else if (s_id === "btn_generatePoem") {
         reqRoute = "/generatePoem";
     } else if (s_id === "btn_generateVerse" || s_id.startsWith("btn-f5-lst-sug-v")) {
@@ -54,6 +56,8 @@ form.addEventListener('submit', async e => {
     // 3) Display
     if (json.login) {
         return handleLogin(json.login);
+    } else if (json.register) {
+        return handleRegister(json.register);
     } else if (json.poem) {
         receivePoem(json.poem);
         document.getElementById("nmfDim").value = json.poem.parameters.nmfDim;
@@ -73,7 +77,8 @@ form.addEventListener('submit', async e => {
     }
     mockEnableSelect("form")
     if (reqRoute === "/savePoem" || reqRoute === "/editPoem") getParambox().getFinal().addEdit()
-});
+})
+;
 
 const formFld = document.getElementById('form');
 if (formFld) {

@@ -36,6 +36,7 @@ def write_poem():
     data = request.get_json(force=True) or {}
     # extract your fields (with fallbacks)
     lang = data.get("lang", "1")
+    user_id = data.get('user_id', None)
     poem_id = data.get("poem_id", None)
     if poem_id == "undefined":
         poem_id = None
@@ -45,7 +46,7 @@ def write_poem():
     keywords = {k: v for (k, v) in data.items() if k.startswith("kw-")}
     # - create the poem object (or get it from cache)
     poem = get_poem(lang=lang)
-    poem.receiveUserInput(id=poem_id, form=pform, title=title, nmfDim=nmfDim, userInput=keywords)
+    poem.receiveUserInput(id=poem_id, form=pform, title=title, nmfDim=nmfDim, userId=user_id, userInput=keywords)
     poem.write(id=poem_id, form=pform, nmfDim=nmfDim, title=title, keywords=keywords)
     PoemRepository.save(poem.container)
     return jsonify({"poem": poem.container.to_dict()})
@@ -60,6 +61,7 @@ def write_verse():
     # extract your fields (with fallbacks)
     lang = data.get("lang", "1")
     pform = data.get("form", "1")
+    user_id = data.get('user_id', None)
     poem_id = data.get("poem_id", None)
     title = data.get("poemTitle", "")
     nmfDim = convInt(data.get("nmfDim", "random"))
@@ -68,7 +70,7 @@ def write_verse():
     structure = {k: v for (k, v) in data.items() if k.startswith("struct")}
 
     poem = get_poem(lang=lang)
-    poem.receiveUserInput(id=poem_id, form=pform, title=title, nmfDim=nmfDim, structure=structure,
+    poem.receiveUserInput(id=poem_id, form=pform, title=title, nmfDim=nmfDim, userId = user_id, structure=structure,
                           userInput=verses | keywords)
     poem.write(form=pform, nmfDim=nmfDim, structure=structure, userInput=verses, keywords=keywords)
     PoemRepository.save(poem.container)
@@ -105,6 +107,7 @@ def savePoem():
     poem_id = data.get("poem_id", None)
     lang = data.get("lang", "1")
     pform = data.get("form", "1")
+    user_id = data.get('user_id', None)
     title = data.get("poemTitle")
     if title == "": title = None
     status = data.get("chckBx_final")
@@ -115,7 +118,7 @@ def savePoem():
     userInput = {**verses, **keywords}
     structure = {k: v for (k, v) in data.items() if k.startswith("struct")}
 
-    poem_container = Poem(id=poem_id, lang=lang, form=pform, nmfDim=nmfDim, title=title, status=status)
+    poem_container = Poem(id=poem_id, lang=lang, form=pform, nmfDim=nmfDim, title=title, status=status, userId =user_id)
     poem_container.receiveUserInput(title=title, structure=structure, userInput=userInput)
     PoemRepository.save(poem_container)
     if int(status) == 2: PoemRougeScorer(poem_container).analyze()
@@ -154,6 +157,7 @@ def randomKeywords():
     data = request.get_json(force=True) or {}
     lang = int(data.get("lang", "1"))
     form = int(data.get("form", "1"))
+    user_id = data.get('user_id', None)
     nmfDim = convInt(data.get("nmfDim", "random"))
     title = data.get("poemTitle", "")
     poem_id = data.get("poem_id", None)
@@ -176,11 +180,11 @@ def randomKeywords():
             # keywordList = data.get("keywords", [])
 
     if btn == "btn_random1Keyword" or (btn.startswith("btn-f5-lst-1sug") and n == 1):
-        keywordBase = KeywordBase(lang=lang, form=form, nmfDim=nmfDim, title=title, poemId=poem_id)
+        keywordBase = KeywordBase(lang=lang, form=form, nmfDim=nmfDim, title=title, poemId=poem_id, userId=user_id)
         myKeywords = keywordBase.fetch(n=n, inputKeywords=keywordList, userInput=verseList, structure=structure)
         output = jsonify({"keywordSuggestions": True, "keywords": myKeywords})
     elif btn == "btn_randomKeywords" or (btn.startswith("btn-f5-lst-sug") and n > 1):
-        keywordBase = KeywordBase(lang=lang, form=form, title=title, poemId=poem_id)
+        keywordBase = KeywordBase(lang=lang, form=form, title=title, poemId=poem_id, userId=user_id, nmfDim=nmfDim)
         myKeywords = keywordBase.fetch(n=n, inputKeywords=keywordList, userInput=verseList, structure=structure)
         output = jsonify({"keywordSuggestions": True, "keywords": myKeywords})
     return output
@@ -199,6 +203,7 @@ def saveKeywords():
     data = request.get_json(force=True) or {}
     lang = int(data.get("lang", "1"))
     form = int(data.get("form", "1"))
+    user_id = data.get('user_id', None)
     nmfDim = convInt(data.get("nmfDim", "random"))
     title = data.get("poemTitle", "")
     poem_id = data.get("poem_id", None)
@@ -207,7 +212,7 @@ def saveKeywords():
     structure = {k: v for (k, v) in data.items() if k.startswith("struct")}
 
     kwBase = KeywordBase(lang=lang, form=form, nmfDim=nmfDim, title=title,
-                         poemId=poem_id)
+                         poemId=poem_id, userId=user_id,)
     status = kwBase.save(inputKeywords=keywordList, userInput=verseList, structure=structure)
 
     return jsonify({"keywordsSaved": status})

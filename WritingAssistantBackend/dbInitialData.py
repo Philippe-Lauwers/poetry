@@ -32,7 +32,7 @@ with app.app_context():
         password = input("Please enter a password for the admin user: ")
         email = input("Please enter an email address for the admin user: ")
         admin = User(name="admin", email=email)
-        admin.set_password(password)C0
+        admin.set_password(password)
         db.session.add(admin)
         db.session.commit()
         db.session.expunge(admin)

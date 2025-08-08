@@ -18,7 +18,7 @@ export function flashMessage(host, text, ms = 1750) {
 
     const msg = document.createElement('div');
     msg.className = 'inline-msg';
-    msg.textContent = text;
+    msg.innerHTML = text;
     el.insertBefore(msg, el.firstChild);
 
     // Let CSS run its fade-in

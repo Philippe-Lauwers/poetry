@@ -3,8 +3,12 @@ from flask_login import login_user, logout_user, login_required, current_user
 from sqlalchemy import or_
 from ..dbModel import User
 from ..extensions import db
+from .authentication import register
+import re
 
 auth_bp = Blueprint('auth_api', __name__, url_prefix='/api/auth')
+EMAIL_REGEX = re.compile(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")
+
 
 @auth_bp.route('/login', methods=['POST'])
 def login():
@@ -32,21 +36,26 @@ def whoami():
       "user": {"id": u.id, "name": u.name, "email": u.email}
     })
 
-@auth_bp.route('/register', methods=['POST'])
-def api_register():
+@auth_bp.route('/registerSave', methods=['POST'])
+def register_save():
     # Retrieve JSON data from the request
     data = request.get_json() or {}
-    if User.query.filter_by(email=data.get('email')).first():
-        return jsonify({"error": "Email already in use"}), 400
+    user=data.get('user', None)
+    password=data.get('password', None)
+    confirm_password=data.get('confirm_password', None)
+    email=data.get('email', None)
+    gdprConsent = data.get('gdprConsent', None)
 
-    user = User(
-      name=data.get('username'),
-      email=data.get('email').lower()
-    )
-    user.set_password(data.get('password'))
-    db.session.add(user)
-    db.session.commit()
-    return jsonify({"message": "Registration successful"}), 201
+    if gdprConsent is None:
+        return jsonify({"register":{"status":False,"message": "GDPR consent is required"}}), 400
+    if user is None or password is None or confirm_password is None or email is None:
+        return jsonify({"register":{"status":False,"message": "Please fill out the required fields"}}), 400
+    if password != confirm_password:
+        return jsonify({"register":{"status":False,"message": "Passwords do not match"}}), 400
+    if not EMAIL_REGEX.match(data['email']):
+        return jsonify({'register': {'status': False, 'message': "Please enter a valid email address."}})
+    status=register(data)
+    return jsonify({"register": status}), 201
 
 @auth_bp.route('/logout', methods=['POST'])
 @login_required

@@ -72,7 +72,6 @@
     align-items: center;
     gap: 0.5rem;
     position: relative;
-
 }
 
 /* =============== 4.  THE INPUT FIELD ITSELF =============== */
@@ -86,7 +85,8 @@
     /* Smooth focus highlight */
     transition: background 0.2s, border 0.2s;
     margin: 0.1rem;
-}
+    border-bottom: 1px solid #f0f0f0;
+    }
 
 .verseEmpty {
     outline: 1px solid var(--borderColor);

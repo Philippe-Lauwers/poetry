@@ -72,7 +72,6 @@ function loadEditor(poemKey) {
         .then(res => res.text())
         .then(html => {
             const container = document.querySelector(".bottom-pane");
-            console.log("inner html of loadEditPoem:", html);
             container.innerHTML = html;
             // Grabbing the poem-related data as found at the bottom of the editor subtemplate
             const scriptPoem = container.querySelector("#poem-data");

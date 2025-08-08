@@ -24,7 +24,7 @@ export class Stanza extends BaseNode {
     /**
      * Add a new Verse ( = create new verseWrapper and append a new verse) */
     addVerse({id = null, value= "", events = {} , buttons = {}} = {}) {
-        const vw = new VerseWrapper({ id:id, buttons: buttons});
+        const vw = this. addVerseWrapper({ id:id, buttons: buttons});
         const v = vw.addVerse({id: id, value: value, events: events});
         this.append(vw);
         return v;

@@ -1,6 +1,7 @@
 <div class="login-wrapper">
     <div class="login-fields-wrapper">
-        <h1>Log In</h1>
+        <div class="login-header"><h1>Log In</h1>
+            <button type="submit" id="btn_login" name="btn_login" title="Log in"></button></div>
         <div class="login-identifier-wrapper">
             <label for="loginIdentifier">Username or email: </label>
             <input id="loginIdentifier" name="identifier" type="text" required>
@@ -10,7 +11,10 @@
             <input id="loginPassword" name="password" type="password" required>
         </div>
         <div class="login-button-wrapper">
-            <button type="submit" id="btn_login" name="btn_login" title="Login" alt="Login"></button>
             <p id="loginError" style="color: red;"></p></div>
+        <div class="register-link-wrapper">
+            <button type="button" id="btn_register" title="Make a login"></button>
+            <label> Don't have an account? Become a poet now!</label>
+        </div>
     </div>
 </div>

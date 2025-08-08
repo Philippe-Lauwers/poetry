@@ -497,8 +497,6 @@ export function receivePoem(poem) {
     let myStructVw;
     let myStructV;
 
-    console.log("receivePoem",poem)
-
     const idFld = document.getElementById("poem_id")
     idFld.value = poem.id
     if (poem.title) {
@@ -595,7 +593,7 @@ export function receivePoem(poem) {
                     myStructVw.name = myStructVw.id;
                     myStructStz.value = myStructStz.value.replace(oldVwId, myVerse.parent.id);
                 }// ... and set the value if changed
-            } else { // The verse can not be found by id
+            } else { // The verse cannot be found by id
                 // 1. We search by oldId which is the id of the verse in the old poem
                 verseEl = document.getElementById(oldId);
                 // 2. If the verse is not found by id or oldId,the user might have clicked the "generate verse" button
@@ -638,6 +636,7 @@ export function receivePoem(poem) {
                     myStructV.name = myStructV.id;
                 } else { // The verse can neither be found by id, nor by oldId
                     // This scenario occurs when we are loading a full poem and are beyond the first verse
+                    // or when we are loading a poem from the list
                     let events = myVerse.events || {};
                     // Look for the generate verse button in the verse wrapper
                     let myBtn
@@ -652,9 +651,10 @@ export function receivePoem(poem) {
                         value: text,
                         events: events,
                     });
-                    // Move the generate verse button to the new verse wrapper
+                    // Move the generate button to the new verse wrapper
                     if (myBtn) {
-                        sandbox.moveButton(myBtn, myVerse.parent, myNewVerse);
+                        // If the button was found, we move it to the new verse wrapper
+                        sandbox.moveButton(myBtn, myVerse.parent, myNewVerse.parent);
                     }
                     myVerse = myNewVerse;
                 }

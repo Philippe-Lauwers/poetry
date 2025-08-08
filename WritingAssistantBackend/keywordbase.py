@@ -23,15 +23,15 @@ warnings.filterwarnings("ignore")
 
 class KeywordBase:
 
-    def __init__(self, lang, form, nmfDim=0, title=None, poemId=None):
+    def __init__(self, lang, form, nmfDim=0, title=None, poemId=None, userId=None):
 
         self.lang = lang # store the language for this instance of the PoemBase class
-
+        self.user_id = userId
         self.initializeConfig(lang)
         self.loadNMFData()
         self.generator = VerseGenerator(self.MODEL_FILE, self.entropy_threshold)
         self.loadVocabulary()
-        self._poemContainer = PoemContainer(lang=lang, form=form, nmfDim=nmfDim, id=poemId)
+        self._poemContainer = PoemContainer(lang=lang, form=form, nmfDim=nmfDim, id=poemId, userId=userId)
         if title is not None:
             self._poemContainer.title = title
             self._title = title
@@ -47,6 +47,13 @@ class KeywordBase:
     @container.setter
     def container(self, myContainer):
         self._poemContainer = myContainer
+
+    @property
+    def userId(self):
+        return self.user_id
+    @userId.setter
+    def userId(self, user_id):
+        self.user_id = user_id
 
     def timed(func):
         @wraps(func)

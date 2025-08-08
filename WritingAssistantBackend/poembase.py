@@ -53,6 +53,13 @@ class PoemBase:
     def container(self, myContainer):
         self._poemContainer = myContainer
 
+    @property
+    def userId(self):
+        return self.user_id
+    @userId.setter
+    def userId(self, user_id):
+        self.user_id = user_id
+
     def initializeConfig(self, lang):
 
         """with open(config) as json_config_file:
@@ -96,13 +103,14 @@ class PoemBase:
         self.i2w = self.generator.vocab.itos
         self.w2i = self.generator.vocab.stoi
 
-    def initPoemContainer(self, id=None, form=None,nmfDim=None, lang=None, title=None, origin=None):
+    def initPoemContainer(self, id=None, form=None,nmfDim=None, lang=None, title=None, origin=None, userId=None):
         #Delete any lingering instances of the PoemBase class
         try:
             obj = self.container
             del obj
         except AttributeError:
             pass
+        self.user_id = None
 
         if not id is None and id != '':
             self.container = PoemRepository.fetch(id=id)
@@ -114,8 +122,9 @@ class PoemBase:
             self.container.nmfDim = nmfDim
             self.container.language = lang
             self.container.origin = origin
+            self.container.userId = userId
 
-    def receiveUserInput(self, id=None, title=None, form=None, nmfDim=None, userInput=None, structure=None):
+    def receiveUserInput(self, id=None, title=None, form=None, nmfDim=None, userInput=None, structure=None, userId=None):
         if nmfDim is None or nmfDim == 'random':
             # get the nmfDim: None if the argument is None, a random value if the argument is 'random'
             nmfDim = random.randint(0, self.W.shape[1] - 1)
@@ -123,7 +132,7 @@ class PoemBase:
             if nmfDim.isdigit():
                 nmfDim = int(nmfDim)
 
-        self.initPoemContainer(id=id, form=form, nmfDim=nmfDim, lang=self.lang, origin='browser', title=title)
+        self.initPoemContainer(id=id, form=form, nmfDim=nmfDim, lang=self.lang, origin='browser', title=title, userId=userId)
         # Stores a representation of the poem in the database
         self.container.receiveUserInput(userInput, structure, title)
 

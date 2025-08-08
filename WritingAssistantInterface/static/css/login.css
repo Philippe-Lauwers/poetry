@@ -26,11 +26,20 @@
 }
 
 .login-fields-wrapper h1 {
+    display:flex;
+    flex: 1 1 auto;
     font-size: 1.5rem;
     color: var(--borderColor);
     font-weight: bold;
     margin: 0 0 1rem 0;
     border-bottom: 1px solid var(--borderColor);
+}
+
+.login-header {
+    display: flex;
+    gap: 1rem;
+    justify-content: space-between; /* pushes h1 left, button right */
+    align-items: center; /* vertically center */
 }
 
 .login-identifier-wrapper,
@@ -61,11 +70,32 @@
     outline: none;
 }
 
-.login-button-wrapper {
+.login-button-wrapper,
+.register-link-wrapper {
     display: flex;
     align-items: center;
     gap: 0.5rem;
     margin-top: 0.2rem;
+}
+
+.register-link-wrapper {
+    color: var(--borderColor)
+}
+
+.gdpr-consent-wrapper {
+    color: var(--borderColor);
+    display:flex;
+    flex-direction:column;
+    position: relative;
+}
+.gdpr-consent-wrapper p {
+        font-size:1rem;
+}
+.gdpr-consent-checkbox-wrapper {
+    display:flex;
+    flex-direction: row;
+    align-item: center;
+        font-weight: bold;
 }
 
 #loginError {
@@ -74,10 +104,11 @@
     margin: 0;
 }
 
-#btn_login {
+#btn_login,
+#btn_register,
+#btn_registerSave {
     width: 34px;
     height: 34px;
-    background-image: url('../img/btn_login.svg');
     background-position: 0 0;
     background-repeat: no-repeat;
     background-size: auto;
@@ -86,10 +117,23 @@
     padding: 0;
 }
 
-#btn_login:hover {
+#btn_login {
+    background-image: url('../img/btn_login.svg');
+}
+
+#btn_register,
+#btn_registerSave {
+    background-image: url('../img/btn_register.svg');
+}
+
+#btn_login:hover,
+#btn_register:hover,
+#btn_registerSave:hover {
     background-position: -35px 0;
 }
 
-#btn_login:disabled {
+#btn_login:disabled,
+#btn_register:disabled,
+#btn_registerSave:disabled {
     background-position: -70px 0;
 }
