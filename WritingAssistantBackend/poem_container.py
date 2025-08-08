@@ -196,11 +196,6 @@ class Poem(BaseContainer):
             stanzas.append(s.text)
         textOutput = "\n\n".join(stanzas)
 
-        if textOutput !="":
-            return "\n\n".join(stanzas)
-        keywords = [k.text for k in self.keywords if k.text != ""]
-        return ', '.join(keywords)
-
     def blacklists(self):
         # titleWords = [w.lower() for w in self.title.split(" ")] if self.title else []
         rhyme = []

@@ -352,9 +352,9 @@ class PoemBase:
                         previous = previous[lenFirstPart:] + firstPart
                     else:
                         previous = firstPart
-                    # Determine how much of the verse still has to be generated (factor 2 is based on the observation
-                    # that, when using a "first part" of a verse, getSentence genrally generates verses taht are too lon
-                    self.generator.maxLength = math.ceil((1 - 2*lenFirstPart/self.generator.maxLength) * dfltMax_length)
+                    # Determine how much of the verse still has to be generated (factor 1.5 is based on the observation
+                    # that, when using a "first part" of a verse, getSentence generally generates verses that are too long
+                    self.generator.maxLength = math.ceil((1 - 1.5*lenFirstPart/self.generator.maxLength) * dfltMax_length)
                     self.generator.nBatchesDecoder = 0
         except: # If generating a first part fails, we can continue generating an entire verse
             # Before we do that, restore the defaults for maxLength and nBatchesDecoder
@@ -531,8 +531,17 @@ class PoemBase:
 
         userInputLastWords = []
         if userInput:
-            for k in userInput.keys():
-                userInputLastWords.append(self.cleanInputVerse(userInput[k])[-1])
+            for s in self.container.stanzas:
+                for v in s.verses:
+                    if v.verseText:
+                        # If the verse has text, we add the last word to the list
+                        userInputLastWords.append(self.cleanInputVerse(v.verseText)[-1])
+                    # else:
+                    #     pass
+
+        if not poemStructure:
+            # If the poem structure is empty, we return an empty list
+            return self.handleFreeVerse(cutoff=cutoff)
 
         if userInput:
             for i in range(len(userInputLastWords)): # this is the location of the verse we want to generate
@@ -574,6 +583,55 @@ class PoemBase:
                 if poemStructure[i+nEmpties-1] == '':
                     requestedVerse.insert(0, '')
                 return requestedVerse
+
+    def handleFreeVerse(self, cutoff=10, userInput=None):
+        userInputLastWords = []
+        nVersesInStanza = 0
+        if userInput:
+           for s in self.container.stanzas:
+               for v in s.verses:
+                   if v.verseText:
+                       # If the verse has text, we add the last word to the list
+                       userInputLastWords.append(self.cleanInputVerse(v.verseText)[-1])
+                   else:
+                       # If it has no text, we know this is the empty verse we wanted a suggestion for
+                       # The stanza contained one less written verses than the length of the stanza
+                       nVersesInStanza = s.length-1
+
+
+        # If there is user input we will check if a new stanza should be started
+        # If so, append a '' to the rhyme structure and pick a random rhyme
+        if nVersesInStanza == 0 and userInput:
+            # We generate suggestions for the first verse of a stanza, add a "new stanza" marker
+            requestedVerse = ['']
+        else:
+            requestedVerse = []
+        # If there are n non-empty lines after the last empty, we will randomly pick one of these options
+        # 1. go one verse back for the rhyme if n=1 or n=2
+        # 2. go two verses back for the rhyme if n=2
+        # 3. pick a random rhyme if n=0 or n=1 or n=2
+        nLookBack = random.randint(0,min(nVersesInStanza, 2))
+        # if there is only one verse in the input, we can only go back one verse
+        # if there are no verses in the input, we will pick a random rhyme anyway
+        if nLookBack == 0:
+            return [self.randomRhymeSample(cutoff=cutoff, chosenList=[])]
+            # note chosenList is empty <- we allow for more freedom with free verse,
+            # we do not exclude previously used rhymes
+        else:
+            rhymeWord = userInput[-nLookBack][-1]
+            search_kw = rhymeWord
+            rhymeForm = None
+            # Lookup kw in the rhyme dictionary, drop first letter until a match is found or string is empty
+            while search_kw:
+                rhymeForm = next((value for key, value in self.rhymeDictionary.items() if key.endswith(search_kw)),
+                                 None)
+                if rhymeForm:
+                    break  # found a match
+                search_kw = search_kw[1:]
+            if rhymeForm:
+                return requestedVerse.append(rhymeForm)
+            else: #if not found, resort to a random rhyme
+                return requestedVerse.append(self.randomRhymeSample(cutoff=cutoff, chosenList=[])[-1])
 
     def randomRhymeSample(self, cutoff=10, chosenList=None):
         freq = -1
@@ -624,6 +682,7 @@ class PoemBase:
         return rhymeForm
 
     def cleanInputVerse(self, txt):
+        # remove all non-letters, for processing the input, not for saving the input
         return re.sub(r'[^\w\s]', '', txt).strip().split(' ')
 
     def createRhymeProbVector(self, rhyme):

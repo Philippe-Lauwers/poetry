@@ -128,7 +128,10 @@
 
 #btn_login:hover,
 #btn_register:hover,
-#btn_registerSave:hover {
+#btn_registerSave:hover,
+#btn_login:focus,
+#btn_register:focus,
+#btn_registerSave:focus {
     background-position: -35px 0;
 }
 
