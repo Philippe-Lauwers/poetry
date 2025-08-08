@@ -53,9 +53,8 @@ with app.app_context():
         "Octave": ("a", "b", "a", "b", "", "c", "d", "c", "d"),
         "Quatrain": ("a", "b", "a", "b"),
         "Pantoum": ("a", "b", "c", "d", "", "b", "e", "d", "f", "", "e", "g", "f", "h", "", "g", "a", "h", "c"),
-        "Limerick": ("a","a","b","b","a"),
-        "Free verse": (),
-        "test": ("a","a","", "b","a")
+        "Limerick": ("a","a","b","b","a")
+        # "Free verse": (),
 
         # add the rest...
     }
