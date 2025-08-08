@@ -1,4 +1,4 @@
-import {initPoemListInteraction, loadPoemList} from "./poemlistInteraction.js";
+import {loadPoemList} from "./poemlistInteraction.js";
 import {flashMessage} from "./niftyThings.js";
 
 export function handleLogin(login) {

@@ -1,18 +1,19 @@
-from flask import Flask, request, jsonify, render_template
+import os
+
+from dotenv import load_dotenv
+from flask import Flask
 from flask_cors import CORS
 from flask_login import LoginManager
-import os
-from dotenv import load_dotenv
-from .poembase_from_cache import get_poem
+
+from .auth.routes import auth_bp
+from .dbModel import User
 # For database connectivity
 # from flask import Flask (see above, just to remind it is needed for the app in general
 # circular import with dbModel.py -> use .extensions instead
 # from flask_sqlalchemy import SQLAlchemy
 # from flask_migrate import Migrate
 from .extensions import db, migrate
-from .dbModel import User
 from .routes import main_bp
-from .auth.routes import auth_bp
 
 # Read .env
 load_dotenv()  # reads .env and populates os.environ

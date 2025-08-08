@@ -6,7 +6,6 @@ from dotenv import load_dotenv
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 load_dotenv(os.path.join(os.path.dirname(__file__), '.flaskenv'))
-import os
 from WritingAssistantBackend.app import create_app
 from WritingAssistantBackend.extensions import db
 from WritingAssistantBackend.dbModel import (

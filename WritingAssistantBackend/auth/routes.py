@@ -1,10 +1,11 @@
+import re
+
 from flask import Blueprint, request, jsonify
 from flask_login import login_user, logout_user, login_required, current_user
 from sqlalchemy import or_
-from ..dbModel import User
-from ..extensions import db
+
 from .authentication import register
-import re
+from ..dbModel import User
 
 auth_bp = Blueprint('auth_api', __name__, url_prefix='/api/auth')
 EMAIL_REGEX = re.compile(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")

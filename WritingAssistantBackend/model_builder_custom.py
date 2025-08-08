@@ -1,21 +1,14 @@
 import re
-import torch
-import torch.nn as nn
-from torch.nn.init import xavier_uniform_
 
 import onmt.inputters as inputters
 import onmt.modules
-from onmt.encoders import str2enc
-
-from onmt.decoders import str2dec
-
-from onmt.modules import Embeddings, VecEmbedding, CopyGenerator
-from onmt.modules.util_class import Cast
-from onmt.utils.misc import use_gpu
-from onmt.utils.logging import logger
-from onmt.utils.parse import ArgumentParser
-
+import torch
+import torch.nn as nn
 from onmt.model_builder import build_encoder, build_decoder, build_embeddings
+from onmt.modules import CopyGenerator
+from onmt.modules.util_class import Cast
+from onmt.utils.parse import ArgumentParser
+from torch.nn.init import xavier_uniform_
 
 
 def load_test_model_with_projection_layer(opt, model_path=None):

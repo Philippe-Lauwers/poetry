@@ -2,22 +2,14 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import unicode_literals
+
 from argparse import Namespace
 
-import onmt
-from .prior_sampling import PriorSampling
-
-import onmt.opts as opts
-from onmt.utils.parse import ArgumentParser
-
-import pickle
-import torchtext
 import torch
-import codecs
-import random
-import numpy as np
 
 from .model_builder_custom import load_test_model_with_projection_layer
+from .prior_sampling import PriorSampling
+
 
 class VerseGenerator:
     def __init__(self, modelFile, entropy_threshold):

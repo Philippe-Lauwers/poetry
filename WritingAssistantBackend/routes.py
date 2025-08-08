@@ -1,11 +1,11 @@
 from flask import Blueprint, request, jsonify, render_template
 
 from .keywordbase import KeywordBase
-from .poembase_from_cache import get_poem
-from .poembase_config import PoembaseConfig
-from .poem_repository import PoemRepository, SuggestionRepository, KeywordSuggestionRepository, KeywordRepository
 from .poem_container import Poem
+from .poem_repository import PoemRepository, SuggestionRepository, KeywordSuggestionRepository, KeywordRepository
 from .poem_rouge import PoemRougeScorer
+from .poembase_config import PoembaseConfig
+from .poembase_from_cache import get_poem
 
 main_bp = Blueprint("main", __name__)
 

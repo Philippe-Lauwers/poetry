@@ -1,11 +1,13 @@
 # point to the app.py file and import the db variable from there
 # circular import with app.py -> use .extensions instead
-from .extensions import db
-from sqlalchemy.orm import synonym  # to allow use of synonyms for Columns
-from datetime import datetime, timezone # needed for timestamps
 import random
 import string
+from datetime import datetime, timezone  # needed for timestamps
+
 from flask_login import UserMixin
+from sqlalchemy.orm import synonym  # to allow use of synonyms for Columns
+
+from .extensions import db
 
 """
  NOTE:

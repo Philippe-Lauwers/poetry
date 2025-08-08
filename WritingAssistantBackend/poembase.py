@@ -2,19 +2,21 @@
 
 import codecs
 import copy
+import math
 import os
 import pickle
 import random
 import re
-import sys, traceback
+import sys
 import time
-import math
+import traceback
 import warnings
 from datetime import datetime
 
 import kenlm
 import numpy as np
 import scipy.stats
+
 # container to store the output in a hierarchy of Poem>>Stanza>>Verse>>Suggestion and Keyword>>KeywordSuggestion objects
 from .poem_container import Poem as PoemContainer
 from .poem_repository import PoemRepository

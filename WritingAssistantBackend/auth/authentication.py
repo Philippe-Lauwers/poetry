@@ -1,6 +1,6 @@
 from ..dbModel import User
 from ..extensions import db
-import re
+
 
 def register(data:dict):
     orm_user = db.session.query(User).filter(User.name == data.get('user')).first()

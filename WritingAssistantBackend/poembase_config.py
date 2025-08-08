@@ -1,7 +1,8 @@
-from .extensions import db
 from sqlalchemy import func, desc
+
 from .dbModel import Poem as PoemModel, PoemLanguage, RhymeScheme, RhymeSchemeElement, ConfigurationCategory, \
     ConfigurationParameter
+from .extensions import db
 
 
 class PoembaseConfig:

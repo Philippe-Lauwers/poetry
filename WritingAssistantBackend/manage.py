@@ -1,10 +1,12 @@
 # manage.py
 
 import os
+
 from dotenv import load_dotenv
+from flask_migrate import Migrate
+
 from WritingAssistantBackend.app import create_app
 from WritingAssistantBackend.extensions import db
-from flask_migrate import Migrate
 
 # 1) Load your backend’s .env (adjust path if your .env lives elsewhere)
 load_dotenv(os.path.join(os.path.dirname(__file__), "WritingAssistantBackend", ".flaskenv"))

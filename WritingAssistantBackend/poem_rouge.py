@@ -1,21 +1,21 @@
-from .extensions import db
-from rouge_metric import PyRouge
 import jellyfish
+from rouge_metric import PyRouge
+
 from .dbModel import (
-    Poem   as PoemModel,
-    PreviousPoem    as PreviousPoemModel,
-    Stanza  as StanzaModel,
-    Verse   as VerseModel,
-    PreviousVerse   as PreviousVerseModel,
-    Action  as ActionModel,
-    ActionType      as ActionTypeModel,
-    ActionTarget    as ActionTargetModel,
+    Poem as PoemModel,
+    Stanza as StanzaModel,
+    Verse as VerseModel,
+    PreviousVerse as PreviousVerseModel,
+    Action as ActionModel,
+    ActionType as ActionTypeModel,
+    ActionTarget as ActionTargetModel,
     ActionTargetType as ActionTargetTypeModel,
     RougeMetric as RougeMetricModel,
     RougeScore as RougeScoreModel,
     DistanceMetric as DistanceMetricModel,
     DistanceScore as DistanceScoreModel
 )
+from .extensions import db
 
 
 class BaseRouge:
