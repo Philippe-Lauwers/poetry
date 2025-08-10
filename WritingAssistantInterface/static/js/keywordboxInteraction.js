@@ -430,7 +430,7 @@ export function updateElementIds(keywordsSaved) {
         if (oldId) {
             const id = el[oldId]
             const domEl = document.getElementById(oldId);
-            domEl.id = id;
+            domEl.id = domEl.name = id;
             // Look if there is a button next to the element
             const btn = domEl.nextElementSibling;
             if (btn && btn.tagName === "BUTTON") {
