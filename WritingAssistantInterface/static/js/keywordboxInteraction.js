@@ -152,32 +152,12 @@ export function receiveKeywords(input) {
             idFld.value = input.id;
         }
 
-        if (input.keywordSuggestions) { // If there are keyword suggestions, we need to create the suggestionbox
-            const target = firstEmptyKeyword();
-            let myKw;
-            let id;
-            for (const kw of input.keywords) {
-                if (kw.keyword.oldId) {
-                    myKw = kw
-                    break;
-                }
-            }
-            if (myKw) {
-                id = target.el.id = `kw-${myKw.keyword.id}`;
-                target.el.setAttribute("name", target.el.id);
+        updateKeywordIds(input.keywords);
 
-                // Change button values
-                let btn = target.el.nextSibling
-                while (btn) {
-                    if (btn.tagName === "BUTTON") {
-                        btn.value = id;
-                    }
-                    btn = btn.nextSibling;
-                }
-                target.el.parentNode.id = id.replace("kw-", "kww-");
-            } else {
-                id = target.el.id
-            }
+        if (input.keywordSuggestions) { // If there are keyword suggestions, we need to create the suggestionbox
+            const target = lastEmptyKeyword();
+            let id;
+            id = target.el.id;
 
             document.getElementById("btn_generatePoem").setAttribute("disabled", true);
             const SB = new Suggestionbox({
@@ -397,6 +377,20 @@ export function firstEmptyKeyword() {
     }
 }
 
+export function lastEmptyKeyword() {
+    const keywordList = getKeywordbox().list;
+    let lastEmpty;
+    for (let kww of keywordList.children) {
+        let kw = kww.firstChild;
+        if (kw.el.tagName === "INPUT") {
+            if (kw.value === "") {
+                lastEmpty = kw;
+            }
+        }
+    }
+    return lastEmpty;
+}
+
 export function updateNmfDim(nmfDim) {
     const nmfFld = document.getElementById("nmfDim");
     nmfFld.value = nmfDim;
@@ -409,21 +403,7 @@ export function updatePoemId(poemId) {
 
 export function updateElementIds(keywordsSaved) {
     const keywords = keywordsSaved.keywords;
-    keywords.forEach(kw => {
-        if (kw.keyword.oldId) {
-            const domEl = document.getElementById(kw.keyword.oldId)
-            domEl.id = domEl.name = "kw-" + kw.keyword.id;
-            domEl.parentNode.id = "kww-" + kw.keyword.id;
-            // Look if there is a button next to the element
-            let btn = domEl.nextElementSibling;
-            while (btn) {
-                if (btn && btn.tagName === "BUTTON") {
-                    btn.value = "kw-" + kw.keyword.id;
-                }
-                btn = btn.nextElementSibling;
-            }
-        }
-    })
+    updateKeywordIds(keywords);
     const toRename = keywordsSaved.toRename;
     toRename.forEach(el => {
         const oldId = Object.keys(el)[0];
@@ -474,4 +454,22 @@ export function updateElementIds(keywordsSaved) {
         )
     }
     document.getElementById("lang").value = keywordsSaved.lang;
+}
+
+function updateKeywordIds(keywords) {
+    keywords.forEach(kw => {
+        if (kw.keyword.oldId) {
+            const domEl = document.getElementById(kw.keyword.oldId)
+            domEl.id = domEl.name = "kw-" + kw.keyword.id;
+            domEl.parentNode.id = "kww-" + kw.keyword.id;
+            // Look if there is a button next to the element
+            let btn = domEl.nextElementSibling;
+            while (btn) {
+                if (btn && btn.tagName === "BUTTON") {
+                    btn.value = "kw-" + kw.keyword.id;
+                }
+                btn = btn.nextElementSibling;
+            }
+        }
+    })
 }

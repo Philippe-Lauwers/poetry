@@ -136,13 +136,15 @@ class PoemRepository(BaseRepository):
                 # No logging required, we do not need to log the action, there is an action record, referring to
                 # the poem, which was created when the stub was created, we only change the actionType_id to the
                 # action corresponding to the poem origin
-                if poem.origin is None:
-                    pass
-                elif poem.origin == 'GRU': # This is set at the start of generating a poem
-                    orm_poemAction.actionType_id = ActionRepository.actionType('PM_GEN')
-                elif poem.origin == 'browser': # This is set at the start of generating a verse (write with user input)
-                    orm_poemAction.actionType_id = ActionRepository.actionType('PM_WRT')
-
+                if not orm_poemAction is None:
+                    if poem.origin is None:
+                        pass
+                    elif poem.origin == 'GRU': # This is set at the start of generating a poem
+                        orm_poemAction.actionType_id = ActionRepository.actionType('PM_GEN')
+                    elif poem.origin == 'browser': # This is set at the start of generating a verse (write with user input)
+                        orm_poemAction.actionType_id = ActionRepository.actionType('PM_WRT')
+                # else: # The poem is a stub but we already saved that it will be manually written
+                #     pass
             else:
                 # if the poem is not a stub and we arrive here, it is the result of a save
                 # in that case, if the type of the first action is 'PM_STB', we still have to
@@ -159,12 +161,16 @@ class PoemRepository(BaseRepository):
                     ActionModel.actionType_id ==
                     ActionRepository.actionType('PM_STB'))
                                   .first())
-                if poem.origin is None:
-                    pass
-                elif poem.origin == 'GRU':  # This is set at the start of generating a poem
-                    orm_poemAction.actionType_id = ActionRepository.actionType('PM_GEN')
-                elif poem.origin == 'browser':  # This is set at the start of generating a verse (write with user input)
-                    orm_poemAction.actionType_id = ActionRepository.actionType('PM_WRT')
+
+                if not orm_poemAction is None:
+                    if poem.origin is None:
+                        pass
+                    elif poem.origin == 'GRU':  # This is set at the start of generating a poem
+                        orm_poemAction.actionType_id = ActionRepository.actionType('PM_GEN')
+                    elif poem.origin == 'browser':  # This is set at the start of generating a verse (write with user input)
+                        orm_poemAction.actionType_id = ActionRepository.actionType('PM_WRT')
+                # else: # The poem is a stub but we already saved that it will be manually written
+                #     pass
 
                 savePrevious = False
                 actions = {}
