@@ -565,7 +565,7 @@ export function receivePoem(poem) {
                 myVerse.value = (myVerse.value !== text) ? text : myVerse.value;
                 setTitlePlaceholder(verseEl)
 
-                if (suggestions) {
+                if (suggestions && suggestions.length > 0) {
                     deactivateParambox()
                     const SB = new Suggestionbox({
                         selector: Verse.formatID({id: id, prefix: "suggB-v-"}),
@@ -609,7 +609,7 @@ export function receivePoem(poem) {
                     myVerse.id = Verse.formatID({id: id, prefix: "v-"});
                     myVerse.name = myVerse.id;
                     myVerse.value = (myVerse.value !== text) ? text : myVerse.value;
-                    if (suggestions) {
+                    if (suggestions && suggestions.length > 0) {
                         deactivateParambox()
                         const SB = new Suggestionbox({
                             selector: Verse.formatID({id: id, prefix: "suggB-v-"}),

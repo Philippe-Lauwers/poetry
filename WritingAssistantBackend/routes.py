@@ -96,8 +96,6 @@ def accSuggestion():
 
     feedback = SuggestionRepository.acceptSuggestion(verse_id, suggestion_id)
     return jsonify({"suggAccept": feedback})
-
-
 @main_bp.route("/savePoem", methods=["GET", "POST"])
 def savePoem():
     # This endpoint saves the poem to the database
@@ -130,15 +128,11 @@ def listPoems():
     user_id = request.args.get("user_id", default=None, type=str)
     poemList = PoemRepository.list(user_id=user_id)
     return jsonify({"poems": poemList})
-
-
 @main_bp.route("/deletePoem", methods=["GET"])
 def deletePoem():
     key = request.args.get("key", default=None, type=str)
     deleted = PoemRepository.delete(key)
     return jsonify({"deleted": deleted})
-
-
 @main_bp.route("/fetchPoemByKey", methods=["GET"])
 def fetchPoemByKey():
     key = request.args.get("key", default=None, type=str)
@@ -188,16 +182,12 @@ def randomKeywords():
         myKeywords = keywordBase.fetch(n=n, inputKeywords=keywordList, userInput=verseList, structure=structure)
         output = jsonify({"keywordSuggestions": True, "keywords": myKeywords})
     return output
-
-
 @main_bp.route("/acceptKeywordSuggestion", methods=["GET", "POST"])
 def accKwSuggestion():
     data = request.get_json(force=True) or {}
     suggestionCollection_id = data.get("btn_acceptSuggestion", "1").split("-")[-1]
     feedback = KeywordSuggestionRepository.accepKWCollection(suggestionCollection_id)
     return jsonify({"kwAccept": feedback})
-
-
 @main_bp.route("/saveKeywords", methods=["GET", "POST"])
 def saveKeywords():
     data = request.get_json(force=True) or {}
@@ -216,8 +206,6 @@ def saveKeywords():
     status = kwBase.save(inputKeywords=keywordList, userInput=verseList, structure=structure)
 
     return jsonify({"keywordsSaved": status})
-
-
 @main_bp.route("/deleteKeyword", methods=["GET", "POST"])
 def deleteKeyword():
     data = request.get_json(force=True) or {}

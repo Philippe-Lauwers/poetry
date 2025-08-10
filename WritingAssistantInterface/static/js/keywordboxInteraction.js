@@ -148,7 +148,7 @@ export function receiveKeywords(input) {
 
     if (input.keywords) {
         const idFld = document.getElementById("poem_id")
-        if (idFld.value=="") {
+        if (idFld.value == "") {
             idFld.value = input.id;
         }
 
@@ -358,7 +358,7 @@ export function deleteKeyword(keyword) {
     // Look for the first empty keyword
     const kwFields = document.querySelectorAll('input[id^="kw-"]');
     const emptyKwFields = Array.from(kwFields).filter(el => el.value.trim() === "");
-    if (emptyKwFields.length > 0 && !(emptyKwFields.length ===1 && emptyKwFields[0].id === deletedKeywordEL.id)) {
+    if (emptyKwFields.length > 0 && !(emptyKwFields.length === 1 && emptyKwFields[0].id === deletedKeywordEL.id)) {
         emptyKwFields[0].focus();
     } else { // If no empty keyword field is found, we can create a new field
         const Wr = keywordList.addKeywordWrapper({
@@ -382,7 +382,7 @@ export function deleteKeyword(keyword) {
     }
     deletedWrapper.remove()
     activateKeywordbox();
-    if ( document.querySelectorAll('input[id^="kw-"]').length === 1){
+    if (document.querySelectorAll('input[id^="kw-"]').length === 1) {
         keywordBox.header.enable();
     }
 }
@@ -400,4 +400,78 @@ export function firstEmptyKeyword() {
 export function updateNmfDim(nmfDim) {
     const nmfFld = document.getElementById("nmfDim");
     nmfFld.value = nmfDim;
+}
+
+export function updatePoemId(poemId) {
+    const myFld = document.getElementById("poem_id");
+    myFld.value = poemId;
+}
+
+export function updateElementIds(keywordsSaved) {
+    const keywords = keywordsSaved.keywords;
+    keywords.forEach(kw => {
+        if (kw.keyword.oldId) {
+            const domEl = document.getElementById(kw.keyword.oldId)
+            domEl.id = domEl.name = "kw-" + kw.keyword.id;
+            domEl.parentNode.id = "kww-" + kw.keyword.id;
+            // Look if there is a button next to the element
+            let btn = domEl.nextElementSibling;
+            while (btn) {
+                if (btn && btn.tagName === "BUTTON") {
+                    btn.value = "kw-" + kw.keyword.id;
+                }
+                btn = btn.nextElementSibling;
+            }
+        }
+    })
+    const toRename = keywordsSaved.toRename;
+    toRename.forEach(el => {
+        const oldId = Object.keys(el)[0];
+        if (oldId) {
+            const id = el[oldId]
+            const domEl = document.getElementById(oldId);
+            domEl.id = id;
+            // Look if there is a button next to the element
+            const btn = domEl.nextElementSibling;
+            if (btn && btn.tagName === "BUTTON") {
+                btn.value = id;
+            }
+        }
+    })
+    // Update the structure elements
+    if (toRename && toRename.length > 0) {
+        const structRoot = document.getElementById("struct-sandbox");
+        const structStanzas = structRoot.value.split(",");
+        structStanzas.forEach(s => {
+                const stNewId = toRename.find(st => st.hasOwnProperty(s))[s];
+                if (stNewId) {
+                    const stStructFld = document.getElementById("struct-" + s);
+                    const structVerseWrappers = document.getElementById("struct-" + s).value.split(",");
+                    structVerseWrappers.forEach(vw => {
+                        const vwNewId = toRename.find(vrsW => vrsW.hasOwnProperty(vw))[vw];
+                        const vwStructFld = document.getElementById("struct-" + vw);
+                        if (vwNewId) {
+                            const vStructFld = document.getElementById("struct-" + vw);
+                            const structVerses = document.getElementById(vwStructFld.id).value.split(",");
+                            structVerses.forEach(v => {
+                                const vNewId = toRename.find(vrs => vrs.hasOwnProperty(v))[v];
+                                const verseFld = document.getElementById("struct-" + v);
+                                if (vNewId) {
+                                    verseFld.id = verseFld.name = "struct-" + vNewId;
+                                    vwStructFld.value = vwStructFld.value.replace(v, vNewId);
+                                }
+                                vStructFld.id = vStructFld.name = "struct-" + vNewId;
+                                vwStructFld.value = vwStructFld.value.replace(vw, vwNewId);
+                            })
+                            vwStructFld.id = vwStructFld.name = "struct-" + vwNewId;
+                            stStructFld.value = stStructFld.value.replace(vw, vwNewId);
+                        }
+                    })
+                    stStructFld.id = stStructFld.name = "struct-" + stNewId;
+                    structRoot.value = structRoot.value.replace(s, stNewId);
+                }
+            }
+        )
+    }
+    document.getElementById("lang").value = keywordsSaved.lang;
 }

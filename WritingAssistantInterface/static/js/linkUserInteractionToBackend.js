@@ -1,7 +1,14 @@
 import {receivePoem} from './sandboxInteraction.js';
 import {activateParambox, getParambox, mockEnableSelect, receiveRhymeScheme} from './paramboxInteraction.js'
 import {closeSuggestionBox} from "./suggestionboxInteraction.js";
-import {activateKeywordbox, deleteKeyword, receiveKeywords, updateNmfDim} from "./keywordboxInteraction.js";
+import {
+    activateKeywordbox,
+    deleteKeyword,
+    receiveKeywords,
+    updatePoemId,
+    updateNmfDim,
+    updateElementIds
+} from "./keywordboxInteraction.js";
 import {handleLogin, handleRegister} from "./loginInteraction.js";
 
 const form = document.getElementById('poemForm');
@@ -70,8 +77,10 @@ form.addEventListener('submit', async e => {
         closeSuggestionBox({keywords: json});
     } else if (json.keywordsSaved) {
         activateKeywordbox();
-        activateParambox()
+        activateParambox();
+        updatePoemId(json.keywordsSaved.id);
         updateNmfDim(json.keywordsSaved.nmfDim);
+        updateElementIds(json.keywordsSaved);
     } else if (json.kwDelete) {
         deleteKeyword(json.kwDelete);
     }

@@ -106,10 +106,9 @@ class PoemBase:
         self.w2i = self.generator.vocab.stoi
 
     def initPoemContainer(self, id=None, form=None,nmfDim=None, lang=None, title=None, origin=None, userId=None):
-        #Delete any lingering instances of the PoemBase class
+        #Delete any lingering instances of the PoemContainer class
         try:
-            obj = self.container
-            del obj
+            del self.container
         except AttributeError:
             pass
         self.user_id = None
@@ -141,6 +140,7 @@ class PoemBase:
         PoemRepository.save(self.container)
 
     def write(self, constraints=('rhyme'), id=None, form='sonnet', nmfDim=None, userInput=None, structure=None, title=None, keywords=None):
+        print("write")
         self.form = form
         self.blacklist_words = set()
         self.blacklist = []

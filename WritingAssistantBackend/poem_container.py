@@ -1,5 +1,4 @@
-import re # Regular expressions
-
+import re  # Regular expressions
 
 
 class BaseContainer():
@@ -10,6 +9,7 @@ class BaseContainer():
     @property
     def id(self):
         return self._id
+
     @id.setter
     def id(self, idValue):
         inValue = self.__format_Id__(idValue) if idValue is not None else None
@@ -22,8 +22,9 @@ class BaseContainer():
     @property
     def oldId(self):
         return self._oldId
+
     @oldId.setter
-    def oldId(self,value):
+    def oldId(self, value):
         if value is not None:
             self._oldId = self.__format_Id__(value)
         else:
@@ -36,9 +37,9 @@ class BaseContainer():
     def __format_Id__(self, idValue):
         prefix = self.__class__.__name__[0].lower()
         if prefix == "k": prefix = "kw"
-        if isinstance(idValue,(int,float)):
+        if isinstance(idValue, (int, float)):
             inValue = idValue
-        elif isinstance(idValue,(str)):
+        elif isinstance(idValue, (str)):
             if idValue.endswith("-tmp"):
                 inValue = idValue
             else:
@@ -62,9 +63,9 @@ class BaseContainer():
         self.text = text
 
 
-
 class Poem(BaseContainer):
-    def __init__(self, id = None, poem_text: str = None, title: str = None, form=None, nmfDim=0, lang=None, status = 1, userId=None):
+    def __init__(self, id=None, poem_text: str = None, title: str = None, form=None, nmfDim=0, lang=None, status=1,
+                 userId=None):
         super().__init__()
         self.id = id
         self._title = title
@@ -83,8 +84,8 @@ class Poem(BaseContainer):
             for s in poem_text.split("\n\n"):
                 self.addStanza(stanzaText=s, order=len(self._stanzas))
 
-    def addStanza(self, order=-1, id = None, stanzaText: str = None, stanza = None):
-        if isinstance(stanza,Stanza):
+    def addStanza(self, order=-1, id=None, stanzaText: str = None, stanza=None):
+        if isinstance(stanza, Stanza):
             stanza.poem = self
             self._stanzas.append(stanza)
             return
@@ -101,18 +102,23 @@ class Poem(BaseContainer):
         from .poem_repository import KeywordRepository
         if title is not None:
             self.title = title
-        if not userInput: # if there's no user input, we can skip this
+        if not userInput:  # if there's no user input, we can skip this
             return False
         if structure:
             stanzas = structure["struct-sandbox"].split(',')
             for s in stanzas:
-                hasVerse = False
-                for vw in structure["struct-"+s].split(','):
-                    hasVerse = True
+                StanzaHasAVerse = False
+                for vw in structure["struct-" + s].split(','):
+                    StanzaHasAVerse = True
                     break
-                if hasVerse:
-                    self._stanzas.append(Stanza(id=s, userInput=userInput, structure=structure))
-
+                if StanzaHasAVerse:
+                    containerStanza = self.hasStanza(s.split("-")[1])
+                    if containerStanza:
+                        containerStanza.addVerses(id=s, userInput=userInput, structure=structure)
+                    else:
+                        myStanza = Stanza(id=s, userInput=userInput, structure=structure)
+                        self._stanzas.append(myStanza)
+                        myStanza.addVerses(id=s,userInput=userInput,structure=structure)
         keywordItems = {k: v for k, v in userInput.items() if k.startswith("kw-")}
         if len(keywordItems) == 1:
             # If the input contains only one keyword and the keyword is empty,
@@ -125,7 +131,7 @@ class Poem(BaseContainer):
                 keywordStubs = KeywordRepository.lookupKeywordsByPoem(self.id)
                 for id, kw in keywordStubs.items():
                     self.addKeyword(id, kw['text'])
-        else: # if len(keywordItems) > 1:
+        else:  # if len(keywordItems) > 1:
             # If the input contains multiple keywords, we add them to the poem
             # and store them in the database
             for id, kw in keywordItems.items():
@@ -135,6 +141,7 @@ class Poem(BaseContainer):
     @property
     def form(self):
         return self._form
+
     @form.setter
     def form(self, value):
         self._form = value
@@ -142,6 +149,7 @@ class Poem(BaseContainer):
     @property
     def userId(self):
         return self._userId
+
     @userId.setter
     def userId(self, value):
         self._userId = value
@@ -149,13 +157,15 @@ class Poem(BaseContainer):
     @property
     def title(self):
         return self._title
+
     @title.setter
-    def title(self,title):
+    def title(self, title):
         self._title = title
 
     @property
     def language(self):
         return self._poemLanguage
+
     @language.setter
     def language(self, value):
         self._poemLanguage = value
@@ -163,6 +173,7 @@ class Poem(BaseContainer):
     @property
     def nmfDim(self):
         return self._nmfDim
+
     @nmfDim.setter
     def nmfDim(self, value):
         self._nmfDim = value
@@ -170,17 +181,25 @@ class Poem(BaseContainer):
     @property
     def status(self):
         return self._status
+
     @status.setter
-    def status(self,value):
+    def status(self, value):
         self._status = value
 
     @property
     def stanzas(self):
         return list(self._stanzas)
 
+    def hasStanza(self, id):
+        for s in self.stanzas:
+            if s.id == self.__format_Id__(id) or s.oldId == self.__format_Id__(id):
+                return s
+        return None
+
     @property
     def origin(self):
         return self._origin
+
     @origin.setter
     def origin(self, value):
         self._origin = value
@@ -193,10 +212,11 @@ class Poem(BaseContainer):
     def text(self):
         stanzas = []
         for s in self.stanzas:
-            stanzas.append(s.text)
+            if s.text and s.text != "":
+                stanzas.append(s.text)
         textOutput = "\n\n".join(stanzas)
 
-        if textOutput !="":
+        if textOutput != "":
             return "\n\n".join(stanzas)
         keywords = [k.text for k in self.keywords if k.text != ""]
         return ', '.join(keywords)
@@ -216,7 +236,7 @@ class Poem(BaseContainer):
     def isStub(self):  # Detects when a complete poem is being generated from a stub to which keywords are attached
         if not self.stanzas:
             return True
-        elif len(self.stanzas) > 1 :
+        elif len(self.stanzas) > 1:
             return False
         elif (self.stanzas[0].verses and len(self.stanzas[0].verses) > 1):
             return False
@@ -233,7 +253,8 @@ class Poem(BaseContainer):
                 "form": self.form,
                 "nmfDim": self.nmfDim,
                 "lang": self.language,
-                "status": self.status
+                "status": self.status,
+                "id": self.id
             },
             "stanzas": [s.to_dict() for s in self.stanzas]
         }
@@ -279,7 +300,7 @@ class Poem(BaseContainer):
 
 
 class Stanza(BaseContainer):
-    def __init__(self, order=0, stanzaText: str = None, id = None, structure = None, userInput = None):
+    def __init__(self, order=0, stanzaText: str = None, id=None, structure=None, userInput=None):
         super().__init__()
         self._verses = []
         self._order = order
@@ -295,14 +316,38 @@ class Stanza(BaseContainer):
         if structure is not None:
             self.id = self.__format_Id__(id)
             for key in structure.keys():
-                if key == "struct-"+id:
+                if key == "struct-" + id:
                     for v in structure[key].split(','):
                         if not v.startswith("suggB"):
-                            vTxt = userInput[structure["struct-"+v]]
-                            self.addVerse(id = structure["struct-"+v], verseText=vTxt)
+                            if structure["struct-" + v] in userInput.keys():
+                                vTxt = userInput[structure["struct-" + v]]
+                                verseById = self.hasVerse(v)
+                                if verseById:
+                                    verseById.text = vTxt
+                                else:
+                                    self.addVerse(id=structure["struct-" + v], verseText=vTxt)
+                            else:  # this is a stub verse
+                                self.addVerse(id=structure["struct-" + v])
 
-    def addVerse(self, order=-1, verseText: str = None, id = None, verse = None):
-        if isinstance(verse,Verse):
+    def addVerses(self, id=None, structure=None, userInput=None):
+        verseWrappers = structure["struct-" + id].split(',')
+        for vw in verseWrappers:
+            if not vw.startswith("suggB"):
+                v = structure["struct-" + vw]
+                if not v.startswith("suggB"):
+                    if v in userInput.keys():
+                        vTxt = userInput[v]
+                        if v.endswith("-tmp"):
+                            verseById = self.hasVerse(v)
+                        else:
+                            verseById = self.hasVerse(v.split("-")[1])
+                        if verseById:
+                            verseById.text = vTxt
+                        else:
+                            self.addVerse(id=v, verseText=vTxt)
+
+    def addVerse(self, order=-1, verseText: str = None, id=None, verse=None):
+        if isinstance(verse, Verse):
             verse.stanza = self
             self._verses.append(verse)
             return
@@ -316,6 +361,7 @@ class Stanza(BaseContainer):
     @property
     def poem(self):
         return self._poem
+
     @poem.setter
     def poem(self, value):
         self._poem = value
@@ -323,6 +369,12 @@ class Stanza(BaseContainer):
     @property
     def verses(self):
         return list(self._verses)
+
+    def hasVerse(self, id):
+        for v in self.verses:
+            if v.id == self.__format_Id__(id) or v.oldId == self.__format_Id__(id):
+                return v
+        return None
 
     @property
     def order(self):
@@ -336,8 +388,12 @@ class Stanza(BaseContainer):
     def text(self):
         verses = []
         for v in self.verses:
-            verses.append(v.text)
-        return "\n".join(verses)
+            if v.text is not None and v.text != "":
+                verses.append(v.text)
+        if verses:
+            return "\n".join(verses)
+        else:
+            return ""
 
     def blacklists(self):
         words = set()
@@ -345,7 +401,7 @@ class Stanza(BaseContainer):
         for v in self.verses:
             BL = v.blacklists()
             rhyme.extend(BL["rhyme"])
-            if BL["words"] is not None: # do not try to append if the verse is empty
+            if BL["words"] is not None:  # do not try to append if the verse is empty
                 words.update(BL["words"])
         return {"rhyme": rhyme, "words": words}
 
@@ -360,14 +416,17 @@ class Stanza(BaseContainer):
 
 
 class Verse(BaseContainer):
-    def __init__(self, order=0, verseText: str = None, id= None, origin=None):
+    def __init__(self, order=0, verseText: str = None, id=None, origin=None):
         super().__init__()
-        if isinstance(verseText,(str)):
-            self._suggestions = None
+        self._words = None
+        if isinstance(verseText, (str)):
+            self._suggestions = []
             self._words = self.cleanupText(verseText) or ""
-        else:
+        elif verseText is not None and len(verseText) > 0:
             self._suggestions = [Suggestion(text=txt) for txt in verseText]
             self._words = ""
+        else:  # the verse is a stub and there is no input from the user or any suggestion
+            self.suggestions = []
         self._order = order
         self.id = id
         self._origin = origin
@@ -378,6 +437,7 @@ class Verse(BaseContainer):
         if not self._origin is None:
             return self._origin
         return self.stanza.poem.origin
+
     @origin.setter
     def origin(self, value):
         self._origin = value
@@ -385,6 +445,7 @@ class Verse(BaseContainer):
     @property
     def stanza(self):
         return self._stanza
+
     @stanza.setter
     def stanza(self, value):
         self._stanza = value
@@ -392,6 +453,7 @@ class Verse(BaseContainer):
     @property
     def suggestions(self):
         return self._suggestions
+
     @suggestions.setter
     def suggestions(self, value):
         if isinstance(value, list):
@@ -401,7 +463,11 @@ class Verse(BaseContainer):
 
     @property
     def text(self):
-        return self._words
+        if self._words is not None:
+            return self._words
+        else:
+            return ""
+
     @text.setter
     def text(self, value):
         self._words = self.cleanupText(value) or ""
@@ -409,10 +475,10 @@ class Verse(BaseContainer):
     @property
     def verseText(self):
         return self._words
+
     @text.setter
     def verseText(self, value):
         self._words = self.cleanupText(value) or ""
-
 
     @property
     def order(self):
@@ -426,16 +492,17 @@ class Verse(BaseContainer):
         from .poem_repository import SuggestionRepository
         words = set()
         rhyme = []
-        filteredText = re.sub(r"(?:[^\w\s]|_)+", '', self.text) #filter out non-alphanumeric characters
+        filteredText = re.sub(r"(?:[^\w\s]|_)+", '', self.text)  # filter out non-alphanumeric characters
         wordsList = [w for w in filteredText.split(" ") if w != ""]
-        if len(wordsList) > 0 : rhyme.extend([wordsList[-1].lower()])
+        if len(wordsList) > 0: rhyme.extend([wordsList[-1].lower()])
         words.update([w.lower() for w in wordsList])
 
         if self.text == "":
             previousSugg = SuggestionRepository.lookupSuggestionsByVerse(self.id)
             if not previousSugg is None:
                 for sugg in previousSugg:
-                    filteredText = re.sub(r"(?:[^\w\s]|_)+", '',sugg["suggestion"])  # filter out non-alphanumeric characters
+                    filteredText = re.sub(r"(?:[^\w\s]|_)+", '',
+                                          sugg["suggestion"])  # filter out non-alphanumeric characters
                     wordsList = filteredText.split(" ")
                     rhyme.extend([wordsList[-1]])
                     words.update([w.lower() for w in wordsList])
@@ -451,7 +518,8 @@ class Verse(BaseContainer):
         if self._suggestions is not None:
             verse["suggestions"] = [s.to_dict() for s in self._suggestions]
         return {"verse": verse}
-    
+
+
 class Suggestion(BaseContainer):
     def __init__(self, text: str = None, id=None):
         super().__init__()
@@ -463,6 +531,7 @@ class Suggestion(BaseContainer):
     @property
     def text(self):
         return self._words
+
     @text.setter
     def text(self, value):
         self._words = self.cleanupText(value) or ""
@@ -470,6 +539,7 @@ class Suggestion(BaseContainer):
     @property
     def batchId(self):
         return self._batchId
+
     @batchId.setter
     def batchId(self, value):
         self._batchId = value
@@ -482,8 +552,9 @@ class Suggestion(BaseContainer):
         if self.batchId is not None: suggestion["batchId"] = self.batchId
         return {"suggestion": suggestion}
 
+
 class Keyword(BaseContainer):
-    def __init__(self, text: str = None, id = None):
+    def __init__(self, text: str = None, id=None):
         super().__init__()
         self._text = self.cleanupText(text) or ""
         self.id = self.__format_Id__(id)
@@ -492,9 +563,11 @@ class Keyword(BaseContainer):
     @property
     def text(self):
         return self._text
+
     @text.setter
     def text(self, value):
         self._text = self.cleanupText(value) or ""
+
     @property
     def suggestions(self):
         return self._suggestions
@@ -508,8 +581,9 @@ class Keyword(BaseContainer):
         if self.oldId is not None: keyword["oldId"] = self.oldId
         return {"keyword": keyword}
 
+
 class KeywordSuggestion(BaseContainer):
-    def __init__(self, suggestion = None, id = None):
+    def __init__(self, suggestion=None, id=None):
         super().__init__()
         self._suggestion = suggestion
         self._id = id
@@ -519,18 +593,23 @@ class KeywordSuggestion(BaseContainer):
     @property
     def collectionId(self):
         return self._collectionId
+
     @collectionId.setter
     def collectionId(self, value):
         self._collectionId = value
+
     @property
     def suggestion(self):
         return self._suggestion
+
     @suggestion.setter
     def suggestion(self, value):
         self._suggestion = value
+
     @property
     def nmfDim(self):
         return self._nmfDim
+
     @nmfDim.setter
     def nmfDim(self, value):
         self._nmfDim = value

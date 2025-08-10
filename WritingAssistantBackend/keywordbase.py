@@ -1,5 +1,7 @@
 #!/usr/bin/env python
-import faulthandler; faulthandler.enable()
+import faulthandler;
+
+faulthandler.enable()
 import os
 import pickle
 import random
@@ -21,11 +23,12 @@ from .verse_generator import VerseGenerator
 
 warnings.filterwarnings("ignore")
 
+
 class KeywordBase:
 
     def __init__(self, lang, form, nmfDim=0, title=None, poemId=None, userId=None):
 
-        self.lang = lang # store the language for this instance of the PoemBase class
+        self.lang = lang  # store the language for this instance of the PoemBase class
         self.user_id = userId
         self.initializeConfig(lang)
         self.loadNMFData()
@@ -44,6 +47,7 @@ class KeywordBase:
     @property
     def container(self):
         return self._poemContainer
+
     @container.setter
     def container(self, myContainer):
         self._poemContainer = myContainer
@@ -51,6 +55,7 @@ class KeywordBase:
     @property
     def userId(self):
         return self.user_id
+
     @userId.setter
     def userId(self, user_id):
         self.user_id = user_id
@@ -73,15 +78,20 @@ class KeywordBase:
 
         """with open(config) as json_config_file:
             configData = json.load(json_config_file)"""
-        
+
         location = os.path.join(
             PoembaseConfig.getParameter(category='general', parameterName='data_directory', language=lang),
             PoembaseConfig.getParameter(category='general', parameterName='language', language=lang)
         )
-            
-        self.NMF_FILE = os.path.join(location, PoembaseConfig.getParameter(category='nmf', parameterName='matrix_file', language=lang))
-        self.NMF_DESCRIPTION_FILE = os.path.join(location, PoembaseConfig.getParameter(category='nmf', parameterName='description_file', language=lang))
-        self.MODEL_FILE = os.path.join(location, PoembaseConfig.getParameter(category='model', parameterName='parameter_file', language=lang))
+
+        self.NMF_FILE = os.path.join(location, PoembaseConfig.getParameter(category='nmf', parameterName='matrix_file',
+                                                                           language=lang))
+        self.NMF_DESCRIPTION_FILE = os.path.join(location, PoembaseConfig.getParameter(category='nmf',
+                                                                                       parameterName='description_file',
+                                                                                       language=lang))
+        self.MODEL_FILE = os.path.join(location,
+                                       PoembaseConfig.getParameter(category='model', parameterName='parameter_file',
+                                                                   language=lang))
 
         self.name = PoembaseConfig.getParameter(category='general', parameterName='name', language=lang)
         self.entropy_threshold = float(
@@ -93,12 +103,12 @@ class KeywordBase:
         self.W = np.load(self.NMF_FILE)
         with open(self.NMF_DESCRIPTION_FILE, 'rb') as f:
             self.nmf_descriptions = pickle.load(f, encoding='utf8')
-        
+
     def loadVocabulary(self):
         self.i2w = self.generator.vocab.itos
         self.w2i = self.generator.vocab.stoi
 
-    def save(self, inputKeywords = {}, userInput ={}, structure = []):
+    def save(self, inputKeywords={}, userInput={}, structure=[]):
         # Stores a representation of the poem in the database
         allInput = {}
         allInput.update(inputKeywords)
@@ -128,35 +138,47 @@ class KeywordBase:
             # test2 = ' '.join(
             #     [re.sub(r"(?:[^\w\s]|_)+", '', vrs).lower for vrs in userInput.values() if vrs != ""])
             self.inputWordsList = [word.lower()
-                        for sentence in userInput.values() if sentence.strip()
-                        for word in re.sub(r"[^\w\s]", "", sentence).split()
-                        ] if userInput.values() else []
+                                   for sentence in userInput.values() if sentence.strip()
+                                   for word in re.sub(r"[^\w\s]", "", sentence).split()
+                                   ] if userInput.values() else []
             pass
         else:
             self.inputWordsList = []
 
-        nmfDim = (0,0)
+        nmfDim = (0, 0)
         for i in range(len(self.nmf_descriptions)):
-            if titleWords:
-                nmfScore = self.checkNMF(list(set(titleWords) | set(keywords) | set(self.inputWordsList)), [i])
-                if nmfScore > nmfDim[1]:
-                    scorelist = list(nmfDim)
-                    scorelist[0] = i
-                    scorelist[1] = nmfScore
-                    nmfDim = tuple(scorelist)
+            nmfScore = self.checkNMF(list(set(titleWords) | set(keywords) | set(self.inputWordsList)), [i])
+            if nmfScore > nmfDim[1]:
+                scorelist = list(nmfDim)
+                scorelist[0] = i
+                scorelist[1] = nmfScore
+                nmfDim = tuple(scorelist)
         self.container.nmfDim = nmfDim[0]
         PoemRepository.save(self.container)
-        return {'status':True,'nmfDim':nmfDim[0]}
+        keywords = [kw.to_dict() for kw in self.container.keywords]
+
+        # Some elements are saved as stubs, they have an old id, look for them and pass the new id to the frontend
+        toRename = []
+        for s in self.container.stanzas:
+            if s.oldId:
+                toRename.append({s.oldId: s.oldId.split('-')[0] + '-' + str(s.id)})
+            for v in s.verses:
+                if v.oldId:
+                    toRename.append({v.oldId: v.oldId.split('-')[0] + '-' + str(v.id)})
+                    toRename.append({v.oldId.replace('v','vw'): v.oldId.split('-')[0] + 'w-' + str(v.id)})
+
+        return {'status': True, 'id': self.container.id, 'nmfDim': nmfDim[0], 'keywords': keywords,
+                'toRename': toRename, 'lang':self.container.language}
 
     # @timed
-    def fetch(self, n = 0, inputKeywords = {}, userInput = {}, structure = []):
+    def fetch(self, n=0, inputKeywords={}, userInput={}, structure=[]):
         allInput = {}
         allInput.update(inputKeywords)
         allInput.update(userInput)
 
         keywordCollections = []
         nmfDims = []
-        nmfDim = (0,0)
+        nmfDim = (0, 0)
 
         self.container.receiveUserInput(allInput, structure, self._title)
 
@@ -182,7 +204,8 @@ class KeywordBase:
                 for i in range(n):
                     keywordCollection.append(self.get1Keyword())
                 for j in range(len(self.nmf_descriptions)):
-                    nmfScore = self.checkNMF(list(set(keywordCollection)|set(titleWords)|set(self.inputWordsList)), [j])
+                    nmfScore = self.checkNMF(list(set(keywordCollection) | set(titleWords) | set(self.inputWordsList)),
+                                             [j])
                     if nmfScore > nmfDim[1]:
                         scorelist = list(nmfDim)
                         scorelist[0] = j
@@ -191,14 +214,13 @@ class KeywordBase:
             keywordCollections.append(keywordCollection)
             nmfDims.append(nmfDim[0])
         pass
-        if n >1:
+        if n > 1:
             for sugg in range(n):
                 if sugg > len(self.container.keywords) - 1 or ():
                     kw = Keyword("")
                     self.container.keywords.append(kw)
                 else:
                     kw = self.container.keywords[sugg]
-
 
                 for i in range(len(keywordCollections)):
                     kws = KeywordSuggestion(keywordCollections[i][sugg])
@@ -229,20 +251,18 @@ class KeywordBase:
 
         return kw
 
-
     def checkSyllablesScore(self, words, mean, std):
-        gaussian = scipy.stats.norm(mean,std)
+        gaussian = scipy.stats.norm(mean, std)
         nSyllables = sum([count_syllables(w)[1] for w in words])
         return gaussian.pdf(nSyllables) / 0.19
 
-    def computeNMFScore(self,words,dimList):
+    def computeNMFScore(self, words, dimList):
         sm = 0
-        sm = sum([max(self.W[self.w2i[w],dimList]) for w in words if w in self.w2i])
+        sm = sum([max(self.W[self.w2i[w], dimList]) for w in words if w in self.w2i])
         return sm
 
     def checkNMF(self, words, dimList):
         # words = list(set([w for w in words if not w in self.blacklist_words]))
-        NMFTop = np.max(np.max(self.W[:,dimList], axis=0))
+        NMFTop = np.max(np.max(self.W[:, dimList], axis=0))
         NMFScore = self.computeNMFScore(words, dimList)
         return NMFScore / NMFTop
-
