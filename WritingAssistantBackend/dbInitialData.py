@@ -20,7 +20,7 @@ app = create_app()
 
 app.config["SQLALCHEMY_ECHO"] = True
 
-language_dict = {"fr": "fr-fr", "en": "en-gb"}
+language_dict = {"en": "en-gb","fr": "fr-fr"}
 languageLabel_dict = {"fr":"français","en":"English"}
 
 with app.app_context():
