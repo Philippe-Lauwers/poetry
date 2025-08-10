@@ -316,7 +316,6 @@ class PoemBase:
                 allFirstPartCandidates = []
                 allFirstPartScores = []
                 allFirstPartEncDecScores = []
-
                 # Attempt to spread the keywords evenly, slightly larger chance to pick a keyword
                 if random.choices([True, False], weights=[len(self.keywords)+1,self._numVerses-1])[0]:
                     pickKeyword = 0
@@ -333,8 +332,13 @@ class PoemBase:
                     dfltNBatches = self.generator.nBatchesDecoder
                     self.generator.nBatchesDecoder = math.ceil(4 + (dfltNBatches-4)*self.generator.maxLength/dfltMax_length)
                     # Generate a part of a verse that precedes the keyword
-                    allFirstPartCandidates, allFirstProbScores = self.generator.generateCandidates(previous=previous, rhymePrior=self.createKeywordProbVector(keyword), nmfPrior=nmfPrior)
-                    firstPartScoreList = self.scoreCandidates(allCandidates=allFirstPartCandidates, allProbScores=allFirstProbScores,nmf=nmf, syllables=syllables)
+                    allFirstPartCandidates, allFirstProbScores = self.generator.generateCandidates(previous=previous,
+                                                                                                   rhymePrior=self.createKeywordProbVector(
+                                                                                                       keyword),
+                                                                                                   nmfPrior=nmfPrior)
+                    firstPartScoreList = self.scoreCandidates(allCandidates=allFirstPartCandidates,
+                                                              allProbScores=allFirstProbScores, nmf=nmf,
+                                                              syllables=syllables)
                     # Take the first candidate that contains the keyword (if in the first 12)
                     i = 0
                     while i < 12:
